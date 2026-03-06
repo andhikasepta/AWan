@@ -43,4 +43,33 @@ class MutasiModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+    
+    public function getDataHistory($id, $filters =[], $limit = 10, $offset = 0)
+    {
+      $builder = $this->db->table('mutasi m');
+      $builder->select('m.*, u.nama as nm_user');
+      $builder->join('users u', 'u.id = m.id_users', 'left');
+      $builder->where('m.id_perangkat', $id);
+
+      if(!empty($filters['searchHistory'])){
+        $builder->groupStart()
+                ->like('u.nama', $filters['searchHistory'])
+                ->orLike('m.status', $filters['searchHistory'])
+                ->orLike('m.keterangan', $filters['searchHistory'])
+                ->groupEnd();
+      }
+
+      $countBuilder = clone $builder;
+      $total = $countBuilder->countAllResults(false);
+
+      $builder->orderBy('m.created_at', 'DESC');
+      $builder->limit($limit, $offset);
+
+      $data = $builder->get()->getResultArray();
+
+      return [
+        'data'=>$data,
+        'total'=>$total
+      ];
+    }
 }

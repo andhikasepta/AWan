@@ -10,9 +10,14 @@ $routes->setAutoRoute(false);
 
 $routes->group('', ['filter'=>'auth'], function($routes){
     $routes->get('dashboard', 'AdminController::dashboard');
+    $routes->post('dashboard', 'AdminController::dashboard');
+    // $routes->get('dashboard', 'DashboardController::index');
+    // $routes->post('dashboard', 'DashboardController::index');
     $routes->get('dashboard/edit/(:num)', 'AdminController::getPerangkat/$1');
     $routes->post('dashboard/update', 'AdminController::ajaxUpdate');
     $routes->post('dashboard/check/(:num)', 'AdminController::checkMutasi/$1');
+    $routes->get('dashboard/history/(:num)', 'AdminController::getHistory/$1');
+    $routes->post('dashboard/history/(:num)', 'AdminController::getHistory/$1');
 });
 
 $routes->get('/', 'AdminController::index');

@@ -44,9 +44,51 @@ class PerangkatModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getDataDash()
+    public function getDataDash($filters = [], $limit, $offset)
     {
-        return $this->db->query("
+        $where = [];
+
+        if (!empty($filters['keyword'])){
+            $keyword = $this->db->escapeLikeString($filters['keyword']);
+            $where[] = "(p.noreg LIKE '%$keyword%' OR 
+                        p.nama LIKE '%$keyword%' OR 
+                        p.serial_number LIKE '%$keyword%' OR
+                        u.nama LIKE '%$keyword%' OR
+                        m.status LIKE '%$keyword%' OR
+                        m.keterangan LIKE '%$keyword%' OR
+                        m.is_checked LIKE '%$keyword%')";
+        }
+
+        if (!empty($filters['status'])){
+            $status = $this->db->escape($filters['status']);
+            $where[] = "m.status = $status"; 
+        }
+
+        if (!empty($filters['user'])){
+            $user = (int)$filters['user'];
+            $where[] = "m.id_users = $user"; 
+        }
+
+        if (!empty($filters['filter_mutasi'])){
+            if ($filters['filter_mutasi']=='belum'){
+                $where[] = "(m.status != 'Terpasang' OR m.status IS NULL)";
+            }
+
+            elseif ($filters['filter_mutasi']=='crosscheck'){
+                $where[] = "(m.status = 'Terpasang' AND m.is_checked = 0)";
+            }
+
+            elseif ($filters['filter_mutasi']=='check'){
+                $where[] = "(m.status = 'Terpasang' AND m.is_checked = 1)";
+            }
+        }
+
+        $whereSql = '';
+        if (!empty($where)){
+            $whereSql = 'WHERE ' . implode(' AND ', $where);
+        }
+
+        $data = $this->db->query("
         SELECT
         p.*,
         m.id as mutasi_id,
@@ -64,8 +106,26 @@ class PerangkatModel extends Model
         LIMIT 1
         )
         LEFT JOIN users u ON u.id = m.id_users
+        $whereSql
         ORDER BY p.id ASC
+        LIMIT $limit OFFSET $offset
         ")->getResultArray();
+
+        $total = $this->db->query("
+        SELECT COUNT(*) as total
+        FROM perangkat p
+        LEFT JOIN mutasi m ON m.id = (
+        SELECT id FROM mutasi
+        WHERE id_perangkat = p.id
+        ORDER BY created_at DESC
+        LIMIT 1)
+        LEFT JOIN users u ON u.id = m.id_users
+        $whereSql")->getRow()->total;
+
+        return [
+            'data'=>$data,
+            'total'=>$total
+        ];
     }
 
     public function getDetailMutasi($id)
