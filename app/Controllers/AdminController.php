@@ -55,13 +55,42 @@ class AdminController extends BaseController
 
     public function dashboard()
     {
-        $data['perangkat'] = $this->perangkatModel->getDataDash();
+        $page = $this->request->getGet('page') ?? 1;
+        $limit = 30;
+        $offset = ($page - 1)*$limit;
+
+        // $model = new PerangkatModel();
+        // $perangkat = $model->orderBy('id', 'DESC')->findAll($limit, $offset);
+        // $totalData = $model->countAllResults();
+        // $totalPage = ceil($totalData/$limit);
+
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+            'status' => $this->request->getGet('status'),
+            'filter_mutasi' => $this->request->getGet('filter_mutasi'),
+            'user' => $this->request->getGet('user'),
+        ];
+
+        $result = $this->perangkatModel->getDataDash($filters, $limit, $offset);
+
+        $data['perangkat'] = $result['data'];
+        $totalData = $result['total'];
+        $data['currentPage'] = $page;
+        $data['limit'] = $limit;
+        $data['totalPage'] = ceil($totalData/$limit);
 
         $configMutasi = new \Config\Mutasi();
         $data['statuses'] = $configMutasi->status;
 
         $userModel = new \App\Models\UserModel();
         $data['users'] = $userModel->findAll();
+
+        // return view('dashboard', [
+        //     'perangkat'=>$perangkat,
+        //     'currentPage'=>$page,
+        //     'totalPage'=>$totalPage,
+        //     'limit'=>$limit
+        // ]);
 
         return view('dashboard', $data);
     }
@@ -70,6 +99,33 @@ class AdminController extends BaseController
     {
         $data = $this->perangkatModel->getDetailMutasi($id);
         return $this->response->setJSON($data);
+    }
+
+    public function getHistory($id)
+    {
+        $model = new \App\Models\MutasiModel();
+
+        $page = $this->request->getVar('page') ?? 1;
+        $search = $this->request->getVar('searchHistory') ?? '';
+
+        $limit = 30;
+        $offset = ($page - 1) * $limit;
+
+        $filters=[
+            'searchHistory' => $search
+        ];
+
+        $result = $model->getDataHistory($id, $filters, $limit, $offset);
+
+        $total = $result['total'];
+        $totalPage = ceil($total/$limit);
+
+        return $this->response->setJSON([
+            'data'=>$result['data'],
+            'total'=>$total,
+            'totalPage'=>$totalPage,
+            'currentPage'=>(int)$page
+        ]);
     }
 
     public function updatePerangkat($id_perangkat)
