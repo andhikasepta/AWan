@@ -130,18 +130,19 @@
           <label class="block text-sm font-medium text-gray-700">Keterangan</label>
           <textarea x.model="form.reason" id="edit_keterangan" name="keterangan" class="mt-1 block w-full border border-gray-300 shadow-sm rounded-md p-2"></textarea>
         </div>
-
-        <div class="flex justify-end gap-2 mt-4">
+    <div class="flex justify-between items-center mt-4">
+      <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          <i class="fas fa-trash-alt mr-1"></i> Hapus</button>
+      <div class="flex gap-2">
           <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Batal</button>
-          <button type="submit" class="px-4 py-2 bg-[#0066CC] text-white rounded">Simpan</button>
-        </div>
+          <button type="submit" class="px-4 py-2 bg-[#0066CC] text-white rounded hover:bg-blue-700">Simpan</button>
+      </div>
+    </div>
       </form>
-
     </div>
   </div>
 </div>
 <?= $this->endSection() ?>
-
 <?=  $this->section('scripts') ?>
 <script>
   document.addEventListener("click", function(e){
@@ -202,5 +203,51 @@ document.getElementById("editForm").addEventListener("submit", function(e){e.pre
     location.reload();
   });
 });
+window.confirmDelete = function() {
+    const id = document.getElementById("edit_id").value;
+    
+    if (confirm("Apakah Anda yakin ingin menghapus perangkat ini secara permanen?")) {
+        window.location.href = "<?= base_url('perangkat/delete') ?>/" + id;
+    }
+}
+</script>
+</form>
+    </div>
+  </div>
+
+  <a href="/perangkat/tambah" class="btn-floating">
+      <i class="fas fa-plus"></i>
+  </a>
+
+  <style>
+    .btn-floating {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        bottom: 40px;
+        right: 40px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 50px;
+        text-align: center;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        z-index: 1000;
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+    .btn-floating:hover {
+        background-color: #0056b3;
+        transform: scale(1.1);
+        color: white;
+    }
+  </style>
+
+</div> <?= $this->endSection() ?> <?= $this->section('scripts') ?>
+<script>
+  document.addEventListener("click", function(e){ ... });
 </script>
 <?=  $this->endSection() ?>

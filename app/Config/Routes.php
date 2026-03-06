@@ -19,3 +19,6 @@ $routes->get('/', 'AdminController::index');
 $routes->post('login', 'AdminController::login');
 
 $routes->post('logout', 'AdminController::logout');
+$routes->get('perangkat/tambah', 'AdminController::tambah');
+$routes->post('dashboard/save', 'AdminController::simpanPerangkat');
+$routes->get('perangkat/delete/(:num)', 'AdminController::delete/$1');

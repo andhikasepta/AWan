@@ -132,4 +132,32 @@ class AdminController extends BaseController
 
         return $this->response->setJSON(['success'=>true]);
     }
+    
+    public function tambah()
+    {
+        return view('tambahbarang');   
+    }
+    public function simpanPerangkat()
+    {
+        $noreg = $this->request->getPost('noreg');
+        $nama = $this->request->getPost('nama');
+        $sn = $this->request->getPost('serial_number');
+        $this->perangkatModel->insert([
+            'noreg'         => $noreg,
+            'nama'          => $nama,
+            'serial_number' => $sn,
+            'status'        => 'Tersedia'
+    ]);
+    return redirect()->to('/dashboard')->with('success', 'Data berhasil disimpan');
+    }
+    public function delete($id)
+    {
+        $perangkat = $this->perangkatModel->find($id);
+        if ($perangkat) {
+            $this->perangkatModel->delete($id);
+            return redirect()->to('/dashboard')->with('success', 'Perangkat berhasil dihapus.');
+        } else {
+            return redirect()->to('/dashboard')->with('error', 'Data tidak ditemukan.');
+        }
+    }
 }
