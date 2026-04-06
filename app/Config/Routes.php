@@ -9,21 +9,28 @@ use CodeIgniter\Router\RouteCollection;
 $routes->setAutoRoute(false);
 
 $routes->group('', ['filter'=>'auth'], function($routes){
-    $routes->get('dashboard', 'AdminController::dashboard');
-    $routes->post('dashboard', 'AdminController::dashboard');
-    // $routes->get('dashboard', 'DashboardController::index');
-    // $routes->post('dashboard', 'DashboardController::index');
-    $routes->get('dashboard/edit/(:num)', 'AdminController::getPerangkat/$1');
-    $routes->post('dashboard/update', 'AdminController::ajaxUpdate');
-    $routes->post('dashboard/check/(:num)', 'AdminController::checkMutasi/$1');
-    $routes->get('dashboard/history/(:num)', 'AdminController::getHistory/$1');
-    $routes->post('dashboard/history/(:num)', 'AdminController::getHistory/$1');
+    $routes->get('dashboard', 'DashboardController::dashboard');
+    $routes->post('dashboard', 'DashboardController::dashboard');
+
+    $routes->get('dashboard/history/(:num)', 'DashboardController::getHistory/$1');
+    $routes->post('dashboard/history/(:num)', 'DashboardController::getHistory/$1');
+
+    $routes->post('dashboard/check/(:num)', 'DashboardController::checkMutasi/$1');
+
+    $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
+    $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
+
+    $routes->post('dashboard/simpan', 'PerangkatController::tambahPerangkat');
+
+    $routes->get('perangkat/delete/(:num)', 'PerangkatController::delete/$1');
 });
 
-$routes->get('/', 'AdminController::index');
+$routes->get('/', 'FormController::index');
+$routes->post('submit', 'FormController::submit');
+
+$routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');
 
-$routes->post('logout', 'AdminController::logout');
-$routes->get('perangkat/tambah', 'AdminController::tambah');
-$routes->post('dashboard/save', 'AdminController::simpanPerangkat');
-$routes->get('perangkat/delete/(:num)', 'AdminController::delete/$1');
+$routes->get('history', 'HistoryController::index');
+
+$routes->get('logout', 'AdminController::logout');
