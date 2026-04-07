@@ -9,15 +9,15 @@
     </h2>
 
     <div class="flex gap-2 mb-4">
-      <button class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
-        <i class="fa-solid fa-file-pdf"></i>
-        Export PDF
-      </button>
+      <a href="<?= base_url('export/pdf') ?>" target="_blank" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
+     <i class="fa-solid fa-file-pdf"></i>
+     Export PDF
+      </a>
 
-      <button class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
+      <a href="<?= base_url('export/excel') ?>" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
         <i class="fa-solid fa-file-excel"></i>
         Export Excel
-      </button>
+      </a>
     </div>
   </div>
 
