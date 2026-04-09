@@ -125,37 +125,54 @@
   document.addEventListener("DOMContentLoaded", function() {
     const selectElement = document.getElementById('noreg');
 
-    const tom = new TomSelect("#noreg", {
+    const tsNoreg = new TomSelect("#noreg", {
       create: false,
-      sortField: {
-        field: "text",
-        direction: "asc"
-      },
-      onChange: function(value) {
-        const selected = selectElement.querySelector(`option[value="${value}"]`);
+      placeholder: "Scan barcode atau cari noreg...",
+      searchField: ["value"],
+      selectOnTab: false,
+      highlight: false, // Matikan highlight otomatis agar tidak ada yang terpilih tanpa sengaja
 
-        document.getElementById('nama_perangkat_text').innerText = selected?.getAttribute('data-nama') || '';
-        document.getElementById('id_perangkat').value = selected?.getAttribute('data-id') || '';
+      // KUNCI 1: Cegat Enter sebelum Tom Select bereaksi
+      onKeyDown: function(e) {
+        if (e.keyCode === 100000000000000) { 
+          const rawInput = this.control_input.value.trim();
+          const options = Object.values(this.options);
+          const exists = options.find(opt => opt.value.toLowerCase() === rawInput.toLowerCase());
+
+          if (rawInput !== "" && !exists) {
+            alert("No Registrasi '" + rawInput + "' Tidak Ditemukan!");
+            this.clear();
+            this.close();
+            e.preventDefault(); // Batalkan aksi pilih baris pertama
+            return false;
+          }
+        }
+      },
+
+      // KUNCI 2: Validasi ulang saat terjadi perubahan
+      onChange: function(value) {
+        const rawInput = this.control_input.value.trim();
+        
+        // Jika scanner memasukkan teks, tapi value yang terpilih beda (ngasal)
+        if (rawInput !== "" && value.toLowerCase() !== rawInput.toLowerCase()) {
+          this.clear(); // Langsung batalkan pilihan ngasal
+          return;
+        }
+
+        // Autofill Data
+        const selected = selectElement.querySelector(`option[value="${value}"]`);
+        if (selected) {
+          document.getElementById('nama_perangkat_text').innerText = selected.getAttribute('data-nama') || '';
+          document.getElementById('id_perangkat').value = selected.getAttribute('data-id') || '';
+        } else {
+          document.getElementById('nama_perangkat_text').innerText = '';
+          document.getElementById('id_perangkat').value = '';
+        }
       }
     });
-  });
 
-  document.addEventListener("DOMContentLoaded", function() {
-    const selectElement = document.getElementById('user');
-
-    const tom = new TomSelect("#user", {
-      create: false,
-      sortField: {
-        field: "text",
-        direction: "asc"
-      },
-      onChange: function(value) {
-        const selected = selectElement.querySelector(`option[value="${value}"]`);
-
-        document.getElementById('nama_user').value = selected?.getAttribute('data-nama') || '';
-        document.getElementById('id_user').value = selected?.getAttribute('data-id') || '';
-      }
-    });
+    new TomSelect("#user", { create: false });
   });
 </script>
+
 <?= $this->endSection() ?>
