@@ -10,8 +10,8 @@
 
     <div class="flex gap-2 mb-4">
       <a href="<?= base_url('export/pdf') ?>" target="_blank" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
-     <i class="fa-solid fa-file-pdf"></i>
-     Export PDF
+        <i class="fa-solid fa-file-pdf"></i>
+        Export PDF
       </a>
 
       <a href="<?= base_url('export/excel') ?>" class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
@@ -145,15 +145,61 @@
     <?= view('components/tambahperangkat') ?>
 
   </div>
-  
+
   <div class="py-1 sticky bottom-0 mt-2">
     <div class="flex justify-center items-center gap-1 w-full">
-      <?php for ($i = 1; $i <= $totalPage; $i++): ?>
-        <a href="?page=<?= $i ?>" class="px-3 py-1 text-xs rounded 
-            <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
+
+    <?php $query = $_GET; ?>
+
+      <!-- Prev -->
+      <?php if ($currentPage > 1): ?>
+        <?php $query['page']=$currentPage - 1;?>
+        <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
+          &laquo;
+        </a>
+      <?php endif; ?>
+
+      <?php
+      $start = max(1, $currentPage - 2);
+      $end = min($totalPage, $currentPage + 2);
+      ?>
+
+      <!-- First page + dots -->
+      <?php if ($start > 1): ?>
+        <a href="?page=1" class="px-3 py-1 text-xs bg-gray-200 rounded">1</a>
+        <?php if ($start > 2): ?>
+          <span class="px-2">...</span>
+        <?php endif; ?>
+      <?php endif; ?>
+
+      <!-- Middle pages -->
+      <?php for ($i = $start; $i <= $end; $i++): ?>
+        <?php $query['page'] = $i; ?>
+        <a href="?<?= http_build_query($query) ?>"
+          class="px-3 py-1 text-xs rounded 
+          <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
           <?= $i ?>
         </a>
       <?php endfor; ?>
+
+      <!-- Last page + dots -->
+      <?php if ($end < $totalPage): ?>
+        <?php if ($end < $totalPage - 1): ?>
+          <span class="px-2">...</span>
+        <?php endif; ?>
+        <a href="?page=<?= $totalPage ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
+          <?= $totalPage ?>
+        </a>
+      <?php endif; ?>
+
+      <!-- Next -->
+      <?php if ($currentPage < $totalPage): ?>
+        <?php $query['page']=$currentPage+1; ?>
+        <a href="?<?=  http_build_query($query) ?>" class="px-3 py-1 text-xs bg-gray-200 rounded">
+          &raquo;
+        </a>
+      <?php endif; ?>
+
     </div>
   </div>
 </div>
