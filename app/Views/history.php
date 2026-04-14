@@ -42,8 +42,10 @@
             </select>
         </div>
 
-        <a href="/history" class="bg-gray-300 px-4 py-2 text-xs rounded-lg hover:bg-gray-300 transition">
-            Reset
+        <a href="/history" class="bg-gray-300 px-3 py-2 text-xs rounded-lg hover:bg-gray-300 transition">
+            <span>Refresh
+                <i class="fa-solid fa-redo"></i>
+            </span> 
         </a>
     </form>
 
@@ -78,7 +80,8 @@
                             </td>
                             <td
                                 class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]">
-                                <?= esc($h['keterangan']) ?: '-' ?></td>
+                                <?= esc($h['keterangan']) ?: '-' ?>
+                            </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <span class="px-2 py-1 rounded text-xs
@@ -91,9 +94,11 @@
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
-                                <?= $h['created_at'] ?></td>
+                                <?= $h['created_at'] ?>
+                            </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
-                                <?= $h['updated_at'] ?></td>
+                                <?= $h['updated_at'] ?>
+                            </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?php if ($h['status'] == 'Terpasang'): ?>
@@ -150,8 +155,7 @@
             <!-- Middle pages -->
             <?php for ($i = $start; $i <= $end; $i++): ?>
                 <?php $query['page'] = $i; ?>
-                <a href="?<?= http_build_query($query) ?>"
-                    class="px-3 py-1 text-xs rounded 
+                <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs rounded 
           <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
                     <?= $i ?>
                 </a>

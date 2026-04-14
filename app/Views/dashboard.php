@@ -61,8 +61,7 @@
 
   <div class="flex-1 bg-white rounded-md shadow flex flex-col overflow-hidden">
     <div class="flex-1 overflow-auto max-h-[calc(100vh-280px)]">
-
-      <table class="min-w-full text-xs text-left border border-gray-300">
+      <table class="min-w-full text-xs text-left border border-gray-300 text-nowrap">
         <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
           <tr>
             <th class="px-4 py-3 text-xs text-center border border-gray-300">Action</th>

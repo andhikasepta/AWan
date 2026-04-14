@@ -43,7 +43,7 @@
         <div class="w-full flex flex-col relative">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
           <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik noreg"
-            class="w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
+            class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
 
           <!-- Daftar tersembunyi untuk pencarian (Opsional untuk validasi JS) -->
           <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
@@ -56,7 +56,7 @@
 
         <div class="flex flex-col ">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Nama Perangkat</label>
-          <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] overflow-x-auto focus:outline-none" readonly>
+          <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] overflow-x-auto focus:outline-none text-xs" readonly>
             <span id="nama_perangkat_text"></span>
           </div>
         </div>
@@ -93,7 +93,7 @@
         <div class="flex flex-col">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
           <div class="relative">
-            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan" class="border rounded-md p-3 pr-10 text-sm w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
+            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan" class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
           </div>
         </div>
       </div>
@@ -101,6 +101,9 @@
       <div class="flex">
         <button type="submit" class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
           Submit
+        </button>
+        <button type="reset" class="bg-[#858585] text-sm text-white ml-2 px-8 py-2 rounded-md font-semibold shadow hover:bg-[#999999] transition">
+          Clear
         </button>
       </div>
     </form>
