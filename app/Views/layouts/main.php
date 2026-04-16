@@ -62,79 +62,27 @@
     <?= $this->renderSection('content') ?>
   </main>
 
-  <?= $this->renderSection('content') ?>
-
-  <div id="overlayPassword" class="fixed inset-0 left-0 top-0 z-[9999] hidden bg-black/60 flex items-center justify-center p-4">
-      <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl p-12 relative">
-          <button onclick="tutupModalPassword()" class="absolute top-8 right-10 text-3xl font-light">&times;</button>
-          <h2 class="text-3xl font-bold mb-12 text-left">Ganti Password</h2>
-
-          <form action="<?= base_url('update-password') ?>" method="post" class="flex-flex-col gap-6">
-            <div class="grid grid-cols-[180px,1fr] gap-x-6 gap-y-2 items-center text-left">
-    
-    <label class="font-semibold text-[#1C4D8D] text-sm" for="username">
-        Username
-    </label>
-    <input name="username" id="username" type="text" required placeholder="Masukkan username" 
-           class="border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
-
-    <label class="font-semibold text-[#1C4D8D] text-sm" for="current_password">
-        Password Lama
-    </label>
-    <input name="current_password" id="current_password" type="password" required placeholder="Masukkan password lama" 
-           class="border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
-
-    <label class="font-semibold text-[#1C4D8D] text-sm" for="new_password">
-        Password Baru
-    </label>
-    <input name="new_password" id="new_password" type="password" required placeholder="Masukkan password baru" 
-           class="border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
-
-    <label class="font-semibold text-[#1C4D8D] text-sm" for="confirm_password">
-        Konfirmasi Password
-    </label>
-    <input name="confirm_password" id="confirm_password" type="password" required placeholder="Konfirmasi password baru" 
-           class="border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
-  
-          </div>
-            <button class="bg-[#1C4D8D] w-full text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-8" type="submit">
-                Ganti Password
-            </button>
-            </div>
-          </form>
-          </div>
-  <script>
-      function bukaModalPassword() {
-          const overlay = document.getElementById('overlayPassword');
-          overlay.classList.remove('hidden');
-          overlay.classList.add('flex');
-      }
-
-      function tutupModalPassword() {
-          const overlay = document.getElementById('overlayPassword');
-          overlay.classList.add('hidden');
-          overlay.classList.remove('flex');
-      }
-  </script>
-
-  <?php if (session()->getFlashdata('success')) : ?>
-    <div class="bg-green-500 text-white p-4 rounded-lg mb-4 text-center">
-        <?= session()->getFlashdata('success') ?>
-    </div>
-  <?php endif; ?>
-
-  <?php if (session()->getFlashdata('error')) : ?>
-    <div class="bg-red-500 text-white p-4 rounded-lg mb-4 text-center">
-        <?= session()->getFlashdata('error') ?>
-    </div>
-  <?php endif; ?>
-
-
   <footer class="mt-auto text-xs text-[#1C4D8D] p-2 text-center">
     &copy; <?= date('Y') ?> PT. Aplikanusa Lintasarta
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  <script>
+    function showHide(idInput, idIcon) {
+      const inputan = document.getElementById(idInput);
+      const ikon = document.getElementById(idIcon);
+
+      if (inputan.type === "password") {
+          inputan.type = "text";
+          ikon.classList.remove('fa-eye-slash');
+          ikon.classList.add('fa-eye');
+      } else {
+          inputan.type = "password";
+          ikon.classList.remove('fa-eye');
+          ikon.classList.add('fa-eye-slash');
+      }
+}
+</script>
 </body>
 
 </html>
