@@ -21,8 +21,12 @@ $routes->group('', ['filter'=>'auth'], function($routes){
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
 
     $routes->post('dashboard/simpan', 'PerangkatController::tambahPerangkat');
+    $routes->get('perangkat/cek-noreg', 'PerangkatController::cekNoreg');
 
     $routes->get('perangkat/delete/(:num)', 'PerangkatController::delete/$1');
+
+    $routes->get('perangkat/getSpec', 'PerangkatController::getSpec');
+    $routes->get('perangkat/getSpecById', 'PerangkatController::getSpecById');
 });
 
 $routes->get('/', 'FormController::index');

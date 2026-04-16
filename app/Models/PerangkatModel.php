@@ -12,7 +12,7 @@ class PerangkatModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nama', 'noreg', 'status'];
+    protected $allowedFields    = ['id_spec', 'kode_id', 'nama', 'noreg', 'status'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

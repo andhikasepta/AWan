@@ -6,27 +6,97 @@ use App\Controllers\BaseController;
 
 use App\Models\PerangkatModel;
 use App\Models\MutasiModel;
+use App\Models\SpecPerangkatModel;
 
 class PerangkatController extends BaseController
 {
     protected $perangkatModel;
     protected $mutasiModel;
+    protected $specModel;
 
     public function __construct()
     {
         $this->perangkatModel = new PerangkatModel();
         $this->mutasiModel = new MutasiModel();
+        $this->specModel = new SpecPerangkatModel();
     }
 
     public function tambahPerangkat()
     {
-        $this->perangkatModel->insert([
-            'noreg'         => $this->request->getPost('noreg'),
-            'nama'          => $this->request->getPost('nama'),
-            'status'        => 'Tersedia'
-        ]);
+        $kode_id = $this->request->getPost('kode_id');
+        $nama = $this->request->getPost('nama');
+        $id_spec_input = $this->request->getPost('id_spec');
         
+        if(empty($kode_id)){
+            return $this->response->setJSON(['success'=>false, 'msg'=>'Kode ID wajib diisi']);
+        }
+
+        $spec = $this->specModel->find($id_spec_input);
+
+        if($spec){
+            $id_spec = $spec['id'];
+            $kode_spec = $spec['kode_spec'];
+        }else{
+            if(empty($nama)){
+                return $this->response->setJSON(['success'=>false, 'msg'=>'Nama perangkat wajib diisi']);
+            }
+
+            $kode_spec = strtoupper($id_spec_input);
+            $id_spec = $this->specModel->insert([
+                'kode_spec'=>$kode_spec,
+                'nama_perangkat'=>$nama
+            ]);
+        }
+
+        $noreg = $kode_spec . $kode_id;
+        $exist = $this->perangkatModel->where('noreg', $noreg)->first();
+
+        if($exist){
+            return $this->response->setJSON(['success'=>false, 'msg'=>'Nomor registrasi sudah terdaftar']);
+        }
+
+        $this->perangkatModel->insert([
+            'id_spec'=>$id_spec,
+            'kode_id'=>$kode_id,
+            'noreg'=>$noreg,
+            'nama'=>$nama,
+            'status'=>'Tersedia'
+        ]);
+
         return $this->response->setJSON(['success'=>true]);
+    }
+
+    public function cekNoreg()
+    {
+        $noreg = $this->request->getGet('noreg');
+        $exist = $this->perangkatModel->where('noreg', $noreg)->first();
+
+        return $this->response->setJSON([
+            'exists'=>$exist ? true : false
+        ]);
+    }
+
+    public function getSpec()
+    {
+        $search = $this->request->getGet('search') ?? '';
+
+        $data = $this->specModel
+        ->groupStart()
+        ->like('kode_spec', $search)
+        ->orLike('nama_perangkat', $search)
+        ->groupEnd()
+        ->limit(10)
+        ->findAll();
+
+        return $this->response->setJSON($data);
+    }
+
+    public function getSpecById()
+    {
+        $id = $this->request->getGet('id');
+        $data = $this->specModel->find($id);
+
+        return $this->response->setJSON($data);
     }
 
     public function editPerangkat($id)
@@ -64,11 +134,12 @@ class PerangkatController extends BaseController
     public function delete($id)
     {
         $perangkat = $this->perangkatModel->find($id);
+        
         if ($perangkat) {
             $this->perangkatModel->delete($id);
-            return redirect()->to('/dashboard')->with('success', 'Perangkat berhasil dihapus.');
+            return $this->response->setJSON(['success'=>true]);
         } else {
-            return redirect()->to('/dashboard')->with('error', 'Data tidak ditemukan.');
+            return $this->response->setJSON(['success'=>false]);
         }
     }
 

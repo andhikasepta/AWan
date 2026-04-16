@@ -82,7 +82,7 @@
           <?php $no = ($currentPage - 1) * $limit + 1;
           foreach ($perangkat as $p): ?>
 
-            <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
+            <tr id="row-<?= $p['id'] ?>" class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black transition">
               <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
                 <button type="button" onclick="openEdit(<?= $p['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                   <i class="fa-solid fa-pen-to-square"></i>
@@ -218,6 +218,7 @@
     document.getElementById(id).classList.remove("flex");
   }
 
+  // EDIT MODAL
   window.openEdit = function(id) {
     fetch("<?= base_url('dashboard/edit') ?>/" + id)
       .then(res => res.json())
@@ -262,6 +263,7 @@
     });
   }
 
+  // HISTORY MODAL
   window.openHistory = function(id) {
     openModal("historyModal");
 
@@ -340,6 +342,7 @@
     });
   }
 
+  // BUTTON CROSSCHECK INTAN
   document.addEventListener("click", function(e) {
     let btn = e.target.closest(".btn-check");
     if (!btn) return;
@@ -373,11 +376,101 @@
     });
   });
 
+  // TAMBAH PERANGKAT MODAL
+  new TomSelect("#kode_spec", {
+    valueField: "id",
+    labelField: "text",
+    searchField: ["kode_spec", "nama_perangkat"],
+    create: true,
+
+    load: function(query, callback) {
+      if (!query.length) return callback();
+
+      fetch(`/perangkat/getSpec?search=${query}`)
+        .then(res => res.json())
+        .then(data => {
+          callback(data.map(item => ({
+            id: item.id,
+            text: item.kode_spec + " - " + item.nama_perangkat,
+            kode_spec: item.kode_spec,
+            nama: item.nama_perangkat
+          })));
+        }).catch(() => callback());
+    },
+
+    onChange: function(value) {
+      const namaInput = document.getElementById("nama");
+
+      if (/^\d+$/.test(value)) {
+        fetch(`/perangkat/getSpecById?id=${value}`)
+          .then(res => res.json())
+          .then(data => {
+            namaInput.value = data.nama_perangkat;
+            namaInput.removeAttribute("readonly");
+          });
+
+      } else {
+        namaInput.value = value;
+        namaInput.removeAttribute("readonly");
+      }
+    }
+  });
+
+  const kodeInput = document.getElementById('kode_id');
+  const specSelect = document.getElementById('kode_spec');
+
+  const warning = document.getElementById('noregWarning');
+  const ok = document.getElementById('noregOK');
+
+  let debounceTimer;
+
+  function cekNoregRealTime() {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+      let kode_id = kodeInput.value;
+      let selectedOption = specSelect.tomselect.getItem(specSelect.value);
+
+      if (!kode_id || !selectedOption) return;
+
+      let kode_spec = selectedOption.innerText.split(' - ')[0];
+
+      let noreg = kode_spec + kode_id;
+
+      fetch(`/perangkat/cek-noreg?noreg=${noreg}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            warning.classList.remove('hidden');
+            ok.classList.add('hidden');
+          } else {
+            warning.classList.add('hidden');
+            ok.classList.remove('hidden');
+          }
+        });
+    }, 500);
+  }
+
+  kodeInput.addEventListener('input', cekNoregRealTime);
+  specSelect.addEventListener('change', cekNoregRealTime);
+
   const tambahForm = document.getElementById("tambahperangkat");
+
+  let formData = new FormData(document.getElementById("tambahperangkat"));
+  for (let pair of formData.entries()) {
+    console.log(pair[0] + ': ' + pair[1]);
+  }
 
   if (tambahForm) {
     tambahForm.addEventListener("submit", function(e) {
       e.preventDefault();
+
+      const nama = document.getElementById("nama").value;
+
+      if (!nama) {
+        alert("Nama perangkat belum keisi!");
+        return;
+      }
 
       let formData = new FormData(this);
 
@@ -397,10 +490,11 @@
     });
   }
 
+  // HAPUS DATA PERANGKAT
   window.confirmDelete = function(id) {
     Swal.fire({
-      title: "Apakah Anda yakin?",
-      text: "Anda tidak bisa membatalkan ini",
+      title: "Apakah Anda yakin menghapus perangkat ini?",
+      text: "Data perangkat akan terhapus",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#1C4D8D",
@@ -410,6 +504,31 @@
     }).then((result) => {
       if (result.isConfirmed) {
         fetch("<?= base_url('perangkat/delete') ?>/" + id)
+        .then(res=>res.json())
+        .then(res=>{
+          if(res.success){
+
+          const row = document.getElementById("row-" + id);
+
+          row.style.transition = "all 0.4s ease";
+          row.style.opacity = "0";
+          row.style.transform = "translateX(50px)";
+
+          setTimeout(()=>{
+            row.remove();
+          },400);
+
+            Swal.fire({
+              icon: "success",
+              title: "Berhasil",
+              text: "Perangkat berhasil dihapus",
+              showConfirmaButton: false
+            });
+
+          }else{
+            Swal.fire("Gagal", "Data tidak ditemukan", "error");
+          }
+        })
       };
     });
   }
