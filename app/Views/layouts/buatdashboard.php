@@ -110,49 +110,53 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
     <script>
-    function bukaModalPassword() {
         const overlay = document.getElementById('overlayPassword');
-        if (overlay) {
+        
+        function bukaModalPassword() {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            localStorage.setItem('showModal', 'true');
+
+        }
+
+        function tutupModalPassword() {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            localStorage.removeItem('showModal');
+        }
+
+        window.onclick = function(event) {
+            if (event.target == overlay) {
+                tutupModalPassword();
+            }
+        }
+        window.addEventListener('load', function() {
+        if (localStorage.getItem('showModal') === 'true') {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
         }
-    }
+    });
+        function showHide(idInput, idIcon) {
+        const inputan = document.getElementById(idInput);
+        const ikon = document.getElementById(idIcon);
 
-    function tutupModalPassword() {
-        const overlay = document.getElementById('overlayPassword');
-        if (overlay) {
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+        if (inputan.type === "password") {
+            inputan.type = "text";
+            ikon.classList.remove('fa-eye-slash');
+            ikon.classList.add('fa-eye');
+        } else {
+            inputan.type = "password";
+            ikon.classList.remove('fa-eye');
+            ikon.classList.add('fa-eye-slash');
         }
-    }
-
-    window.onclick = function(event) {
-        const overlay = document.getElementById('overlayPassword');
-        if (event.target == overlay) {
-            tutupModalPassword();
-        }
-    }
-    function showHide(idInput, idIcon) {
-    const inputan = document.getElementById(idInput);
-    const ikon = document.getElementById(idIcon);
-
-    if (inputan.type === "password") {
-        inputan.type = "text";
-        ikon.classList.remove('fa-eye-slash');
-        ikon.classList.add('fa-eye');
-    } else {
-        inputan.type = "password";
-        ikon.classList.remove('fa-eye');
-        ikon.classList.add('fa-eye-slash');
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        <?php if (session()->getFlashdata('show_modal')) : ?>
-            const modal = document.getElementById('modalUpdatePassword');
-            if (modal) {
-                modal.classList.remove('hidden'); 
-                modal.classList.add('flex'); 
-            }
-        <?php endif; ?>
+        document.addEventListener("DOMContentLoaded", function() {
+            <?php if (session()->getFlashdata('show_modal')) : ?>
+                const modal = document.getElementById('modalUpdatePassword');
+                if (modal) {
+                    modal.classList.remove('hidden'); 
+                    modal.classList.add('flex'); 
+                }
+            <?php endif; ?>
     });
 }
 </script>
