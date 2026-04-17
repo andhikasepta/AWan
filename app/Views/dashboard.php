@@ -210,6 +210,9 @@
   function openModal(id) {
     document.getElementById(id).classList.remove("hidden");
     document.getElementById(id).classList.add("flex");
+
+    const namaWrapper = document.getElementById("namaWrapper");
+    if(namaWrapper)namaWrapper.classList.remove("hidden");
   }
 
   function closeModal(id) {
@@ -399,18 +402,23 @@
 
     onChange: function(value) {
       const namaInput = document.getElementById("nama");
+      const namaWrapper = document.getElementById("namaWrapper");
 
       if (/^\d+$/.test(value)) {
         fetch(`/perangkat/getSpecById?id=${value}`)
           .then(res => res.json())
           .then(data => {
             namaInput.value = data.nama_perangkat;
-            namaInput.removeAttribute("readonly");
+
+            namaWrapper.classList.add("hidden");
+            // namaInput.removeAttribute("readonly");
           });
 
       } else {
         namaInput.value = value;
-        namaInput.removeAttribute("readonly");
+
+        namaWrapper.classList.remove("hidden");
+        // namaInput.removeAttribute("readonly");
       }
     }
   });

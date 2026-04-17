@@ -55,11 +55,13 @@ class PerangkatController extends BaseController
             return $this->response->setJSON(['success'=>false, 'msg'=>'Nomor registrasi sudah terdaftar']);
         }
 
+        $nama_final = $spec ? $spec['nama_perangkat']:$nama;
+
         $this->perangkatModel->insert([
             'id_spec'=>$id_spec,
             'kode_id'=>$kode_id,
             'noreg'=>$noreg,
-            'nama'=>$nama,
+            'nama'=>$nama_final,
             'status'=>'Tersedia'
         ]);
 
