@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\HistoryController;
 use CodeIgniter\Router\RouteCollection;
 
 /**
@@ -36,6 +37,8 @@ $routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');
 
 $routes->get('history', 'HistoryController::index');
+$routes->get('history/log/(:num)', 'HistoryController::historylog/$1');
+$routes->post('history/log/(:num)', 'HistoryController::historylog/$1');
 
 $routes->get('logout', 'AdminController::logout');
 $routes->get('export/excel', 'ExportController::exportExcel');

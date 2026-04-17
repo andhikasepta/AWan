@@ -37,4 +37,31 @@ class HistoryController extends BaseController
 
         return view('history', $data);
     }
+
+    public function historylog($id)
+    {
+        $model = new \App\Models\MutasiModel();
+
+        $page = $this->request->getVar('page') ?? 1;
+        $search = $this->request->getVar('searchHistory') ?? '';
+
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        $filters=[
+            'searchHistory' => $search
+        ];
+
+        $result = $model->getDataHistory($id, $filters, $limit, $offset);
+
+        $total = $result['total'];
+        $totalPage = ceil($total/$limit);
+
+        return $this->response->setJSON([
+            'data'=>$result['data'],
+            'total'=>$total,
+            'totalPage'=>$totalPage,
+            'currentPage'=>(int)$page
+        ]);
+    }
 }
