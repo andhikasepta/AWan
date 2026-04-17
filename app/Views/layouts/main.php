@@ -81,7 +81,10 @@
           ikon.classList.remove('fa-eye');
           ikon.classList.add('fa-eye-slash');
       }
-}
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        localStorage.removeItem('showModal');
+    });
 </script>
 <?= $this->renderSection('scripts') ?>
 </body>
