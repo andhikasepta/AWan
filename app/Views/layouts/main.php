@@ -34,8 +34,8 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col">
   <?php $uri = service('uri'); ?>
 
-  <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 flex justify-between items-center shadow-md">
-    <img src="<?= base_url('images/awan.png') ?>" width="250px">
+  <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md">
+    <img src="<?= base_url('images/awan.png') ?>" width="130px">
 
     <div class="flex gap-8 items-center">
       <a href="<?= base_url('/') ?>" class="flex flex-col items-center cursor-pointer transition group
@@ -83,6 +83,7 @@
       }
 }
 </script>
+<?= $this->renderSection('scripts') ?>
 </body>
 
 </html>

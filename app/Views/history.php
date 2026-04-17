@@ -42,8 +42,10 @@
             </select>
         </div>
 
-        <a href="/history" class="bg-gray-300 px-4 py-2 text-xs rounded-lg hover:bg-gray-300 transition">
-            Reset
+        <a href="/history" class="bg-gray-300 px-3 py-2 text-xs rounded-lg hover:bg-gray-300 transition">
+            <span>Refresh
+                <i class="fa-solid fa-redo"></i>
+            </span>
         </a>
     </form>
 
@@ -53,6 +55,7 @@
             <table class="min-w-full text-xs text-left border border-gray-300">
                 <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
                     <tr>
+                        <th class="px-4 py-3 text-xs text-center border border-gray-300">Action</th>
                         <th class="px-4 py-3 text-xs text-center border border-gray-300">No</th>
                         <th class="px-4 py-3 text-xs text-left border border-gray-300">No Registrasi</th>
                         <th class="px-4 py-3 text-xs text-left border border-gray-300">Nama Perangkat</th>
@@ -70,6 +73,11 @@
                     foreach ($history as $h): ?>
 
                         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
+                            <td class="px-4 py-3 text-center text-sm
+                             text-blue-700 border border-gray-300">
+                                <button type="button" onclick="openHistory(<?= $h['id_perangkat'] ?>)" class="hover:text-blue-400 mr-1 transition">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </button>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['nm_perangkat']) ?>
@@ -78,7 +86,8 @@
                             </td>
                             <td
                                 class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]">
-                                <?= esc($h['keterangan']) ?: '-' ?></td>
+                                <?= esc($h['keterangan']) ?: '-' ?>
+                            </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <span class="px-2 py-1 rounded text-xs
@@ -91,9 +100,11 @@
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
-                                <?= $h['created_at'] ?></td>
+                                <?= $h['created_at'] ?>
+                            </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
-                                <?= $h['updated_at'] ?></td>
+                                <?= $h['updated_at'] ?>
+                            </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?php if ($h['status'] == 'Terpasang'): ?>
@@ -119,6 +130,8 @@
                 </tbody>
             </table>
         </div>
+
+        <?= view('components/historyperangkat') ?>
     </div>
 
     <div class="py-1 sticky bottom-0 mt-2">
@@ -150,8 +163,7 @@
             <!-- Middle pages -->
             <?php for ($i = $start; $i <= $end; $i++): ?>
                 <?php $query['page'] = $i; ?>
-                <a href="?<?= http_build_query($query) ?>"
-                    class="px-3 py-1 text-xs rounded 
+                <a href="?<?= http_build_query($query) ?>" class="px-3 py-1 text-xs rounded 
           <?= $i == $currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
                     <?= $i ?>
                 </a>
@@ -178,4 +190,96 @@
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove("hidden");
+        document.getElementById(id).classList.add("flex");
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add("hidden");
+        document.getElementById(id).classList.remove("flex");
+    }
+    // HISTORY MODAL
+    window.openHistory = function(id) {
+        openModal("historyModal");
+
+        const input = document.getElementById("searchHistory");
+        input.dataset.id = id;
+
+        loadHistory(id, 1);
+    }
+
+    function loadHistory(id, page = 1, search = '') {
+        fetch(`<?= base_url('history/log') ?>/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `page=${page}&searchHistory=${encodeURIComponent(search)}`
+            })
+            .then(res => res.json())
+            .then(res => {
+                console.log(res);
+
+                let tbody = document.getElementById("historyBody");
+                tbody.innerHTML = "";
+
+                if (res.data.length === 0) {
+                    tbody.innerHTML =
+                        `<tr>
+            <td colspan="5" class="text-center py-4">Belum Ada History Mutasi</td>
+          </tr>`;
+                    return;
+                }
+
+                let no = (res.currentPage - 1) * 50 + 1;
+
+                res.data.forEach(row => {
+                    tbody.innerHTML += `
+          <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
+            <td class="px-4 py-3 text-center">${no++}</td>
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px]">${row.updated_at ?? '-'}</td>
+            <td class="px-4 py-3 text-center">${row.nm_user ?? '-'}</td>
+            <td class="px-4 py-3 text-center">${row.status ?? '-'}</td>            
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px]">${row.keterangan ?? '-'}</td>
+          </tr>`;
+                });
+
+                renderPagination(id, res.currentPage, res.totalPage, search);
+            });
+    }
+
+    function renderPagination(id, currentPage, totalPage, search) {
+        let container = document.getElementById("paginationHistory");
+
+        container.innerHTML = "";
+
+        for (let i = 1; i <= totalPage; i++) {
+            container.innerHTML += `
+      <button onclick="loadHistory(${id}, ${i}, '${search}')" class="px-3 py-1 text-xs rounded ${i===currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}">${i}</button>`;
+        }
+    }
+
+    window.closeHistory = function() {
+        closeModal("historyModal");
+    }
+
+    document.getElementById("historyModal").addEventListener("click", function(e) {
+        if (e.target.id === "historyModal") {
+            closeHistory();
+        }
+    });
+
+    const searchInput = document.getElementById("searchHistory");
+    if (searchInput) {
+        searchInput.addEventListener("keyup", function() {
+            let id = this.dataset.id;
+            loadHistory(id, 1, this.value);
+        });
+    }
+</script>
 <?= $this->endSection() ?>

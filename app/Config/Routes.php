@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\HistoryController;
 use CodeIgniter\Router\RouteCollection;
 
 /**
@@ -21,8 +22,12 @@ $routes->group('', ['filter'=>'auth'], function($routes){
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
 
     $routes->post('dashboard/simpan', 'PerangkatController::tambahPerangkat');
+    $routes->get('perangkat/cek-noreg', 'PerangkatController::cekNoreg');
 
     $routes->get('perangkat/delete/(:num)', 'PerangkatController::delete/$1');
+
+    $routes->get('perangkat/getSpec', 'PerangkatController::getSpec');
+    $routes->get('perangkat/getSpecById', 'PerangkatController::getSpecById');
 });
 
 $routes->get('/', 'FormController::index');
@@ -32,6 +37,8 @@ $routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');
 
 $routes->get('history', 'HistoryController::index');
+$routes->get('history/log/(:num)', 'HistoryController::historylog/$1');
+$routes->post('history/log/(:num)', 'HistoryController::historylog/$1');
 
 $routes->get('logout', 'AdminController::logout');
 $routes->get('export/excel', 'ExportController::exportExcel');

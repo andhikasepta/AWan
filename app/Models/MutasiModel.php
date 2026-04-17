@@ -47,24 +47,38 @@ class MutasiModel extends Model
   public function getAllHistory($filters = [], $limit = 50, $offset = 0)
   {
     $builder = $this->db->table('mutasi m');
+
+    $subQuery = $this->db->table('mutasi')
+    ->select('id_perangkat, MAX(updated_at) as latest')
+    ->groupBy('id_perangkat')
+    ->getCompiledSelect();
+
+    $builder=$this->db->table('mutasi m');
     $builder->select('
       m.*,
       u.nama as nm_user,
       p.noreg,
-      p.nama as nm_perangkat
+      sp.nama_perangkat as nm_perangkat
     ');
-    $builder->join('users u', 'u.id = m.id_users', 'left');
+
+    $builder->join("($subQuery) latest_data",
+    'm.id_perangkat = latest_data.id_perangkat
+    AND m.updated_at = latest_data.latest');
+
+    $builder->join('users u', 'u.id=m.id_users', 'left');
     $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
+    $builder->join('spec_perangkat sp', 'sp.id=p.id_spec', 'left');
 
     if (!empty($filters['search'])) {
       $keyword = $filters['search'];
-      $fields = ['u.nama', 'p.nama', 'p.noreg', 'm.status', 'm.keterangan'];
 
-      $builder->groupStart();
-      foreach ($fields as $field) {
-        $builder->orLike($field, $keyword);
-      }
-      $builder->groupEnd();
+      $builder->groupStart()
+      ->like('u.nama', $keyword)
+      ->orLike('sp.nama_perangkat', $keyword)
+      ->orLike('p.noreg', $keyword)
+      ->orLike('m.status', $keyword)
+      ->orLike('m.keterangan', $keyword)
+      ->groupEnd();
     }
 
     if (!empty($filters['status'])){
@@ -96,7 +110,7 @@ class MutasiModel extends Model
     }
 
     $countBuilder = clone $builder;
-    $total = $countBuilder->countAllResults(false);
+    $total = $countBuilder->countAllResults();
 
     $data = $builder->orderBy('m.created_at', 'DESC')
         ->limit($limit, $offset)

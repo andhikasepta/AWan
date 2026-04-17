@@ -9,16 +9,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="sweetalert2.all.min.js"></script>
-    <script src="sweetalert2.min.js"></script>
 
     <link rel="icon" href="<?= base_url('images/LogoLintas.png') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css">
-    <link rel="stylesheet" href="sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         body {
             font-family: 'Poppins';
@@ -38,8 +36,8 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
     <?php $uri = service('uri'); ?>
 
-    <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 flex justify-between items-center shadow-md">
-        <img src="<?= base_url('images/awan.png') ?>" width="250px">
+    <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md">
+        <img src="<?= base_url('images/awan.png') ?>" width="130px">
 
         <div class="flex gap-8 items-center">
             <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-gray-300">
@@ -106,8 +104,8 @@
         &copy; <?= date('Y') ?> PT. Aplikanusa Lintasarta
     </footer>
 
-    <?= $this->renderSection('scripts') ?>
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <?= $this->renderSection('scripts') ?>
 
     <script>
         const overlay = document.getElementById('overlayPassword');
