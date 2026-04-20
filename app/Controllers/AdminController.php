@@ -77,7 +77,7 @@ class AdminController extends BaseController
         }
 
         if (strlen($newPass) < 5) {
-            return redirect()->back()->with('error', 'Password baru harus minimal 6 karakter.')->with('openModal', true);
+            return redirect()->back()->with('error', 'Password baru harus minimal 5 karakter.')->with('openModal', true);
         }
 
         if ($oldPass === $newPass) {
