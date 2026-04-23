@@ -38,31 +38,45 @@
     <h2 class="text-center text-xl font-extrabold text-[#1C4D8D] mb-8">FORM MUTASI</h2>
 
     <form action="<?= base_url('/submit') ?>" method="POST">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 mb-5">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
         <div class="w-full flex flex-col relative">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
           <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik noreg"
             class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]" required>
 
-          <!-- Daftar tersembunyi untuk pencarian (Opsional untuk validasi JS) -->
           <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
         </div>
 
-        <!-- Hidden input untuk ID Perangkat (tetap ada) -->
-        <input type="hidden" id="id_perangkat" name="id_perangkat">
-        <input type="hidden" id="noreg_hidden" name="noreg"> <!-- Ini yang dikirim ke server -->
+        <div class="w-full flex flex-col justify-end">
+          <label class="invisible text-sm mb-2">Hidden</label>
+          <button type="button" id="btn_tambah" class="bg-[#1C4D8D] h-[42px] px-3 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end">
+            Tambah
+          </button>
+        </div>
 
-
-        <div class="flex flex-col ">
+        <!-- <div class="flex flex-col ">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Nama Perangkat</label>
           <div class="bg-[#EFEFEF] border rounded-md p-2 min-h-[42px] overflow-x-auto focus:outline-none text-xs" readonly>
             <span id="nama_perangkat_text"></span>
           </div>
-        </div>
+        </div> -->
       </div>
 
-      <input type="hidden" id="id_perangkat" name="id_perangkat">
+      <div class="mt-4 mb-4">
+          <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
+          <table class="w-full text-xs border">
+            <thead class="bg-gray-200 border border-gray-300">
+              <tr>
+                <th class="p-2 border border-gray-300">No</th>
+                <th class="p-2 border border-gray-300">Nomor Registrasi</th>
+                <th class="p-2 border border-gray-300">Nama Perangkat</th>
+                <th class="p-2 border border-gray-300">Action</th>
+              </tr>
+            </thead>
+            <tbody id="list_perangkat"></tbody>
+          </table>
+        </div>
 
       <div class="flex flex-col mb-4">
         <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
@@ -112,49 +126,90 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    // Data perangkat dari PHP ke JSON Javascript
     const daftarPerangkat = <?= json_encode($perangkat) ?>;
-
     const inputScan = document.getElementById('noreg_input');
-    const textNama = document.getElementById('nama_perangkat_text');
-    const inputId = document.getElementById('id_perangkat');
-    const inputNoregHidden = document.getElementById('noreg_hidden');
+    // const textNama = document.getElementById('nama_perangkat_text');
+    // const inputId = document.getElementById('id_perangkat');
+    // const inputNoregHidden = document.getElementById('noreg_hidden');
+
+    let cart = [];
+
+    function multiAdd(noregInput){
+      const noreg = noregInput.trim();
+      
+      if(!noreg){
+        alert("Masukkan noreg terlebih dahulu");
+        return;
+      }
+      
+      const hasil = daftarPerangkat.find(p=>p.noreg.toLowerCase()===noreg.toLowerCase());
+
+      if(!hasil){
+        alert("No registrasi tidak tersedia");
+        return;
+      }
+
+      if(cart.some(item=>item.noreg===hasil.noreg)){
+        alert("Perangkat sudah ditambahkan!");
+        return;
+      }
+
+      cart.push({
+        id: hasil.id,
+        noreg: hasil.noreg,
+        nama: hasil.nama
+      });
+
+      renderTable();
+      inputScan.value="";
+    }
 
     inputScan.addEventListener('keydown', function(e) {
-      if (e.keyCode === 13) { // Jika Enter dari Scanner
-        e.preventDefault(); // Stop form submit otomatis
-
-        const noregDiScan = this.value.trim();
-
-        // Cari yang SAMA PERSIS (Exact Match)
-        const hasil = daftarPerangkat.find(p => p.noreg.toLowerCase() === noregDiScan.toLowerCase());
-
-        if (hasil) {
-          // JIKA KETEMU
-          textNama.innerText = hasil.nama;
-          inputId.value = hasil.id;
-          inputNoregHidden.value = hasil.noreg;
-
-          // Beri tanda sukses
-          this.classList.remove('border-red-500');
-          this.classList.add('border-green-500');
-        } else {
-          // JIKA TIDAK KETEMU
-          alert("No Registrasi '" + noregDiScan + "' tidak terdaftar di sistem!");
-          this.value = "";
-          textNama.innerText = "";
-          inputId.value = "";
-          inputNoregHidden.value = "";
-
-          this.classList.add('border-red-500');
-        }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        multiAdd(this.value);
       }
     });
 
-    // Inisialisasi TomSelect hanya untuk USER (karena user tidak di-scan)
-    new TomSelect("#user", {
-      create: false
+    document.getElementById('btn_tambah').addEventListener('click', function(){
+      multiAdd(inputScan.value);
     });
+
+    function renderTable(){
+      const tbody = document.getElementById('list_perangkat');
+      tbody.innerHTML="";
+
+      cart.forEach((item, index)=>{
+        tbody.innerHTML += `
+        <tr>
+          <td class="p-2 text-center border border-gray-300">${index+1}</td>
+          <td class="p-2 border border-gray-300">${item.noreg}</td>
+          <td class="p-2 border border-gray-300">${item.nama}</td>
+          <td class="p-2 text-center border border-gray-300">
+            <button onclick="hapusItem(${index})" class="text-red-500">
+            <span>
+            <i class="fa-solid fa-trash"></i>
+            </span>
+            </button>
+          </td>
+        </tr>
+
+        <input type="hidden" name="perangkat[${index}][id]" value="${item.id}">
+        <input type="hidden" name="perangkat[${index}][noreg]" value="${item.noreg}">
+        `;
+      });
+    }
+
+    window.hapusItem = function(index){
+      cart.splice(index,1);
+      renderTable();
+    }
+
+    new TomSelect("#user", {
+      create: false,
+      // allowEmptyOption: true,
+      // openOnFocus: true
+    });  
   });
 </script>
 <?= $this->endSection() ?>

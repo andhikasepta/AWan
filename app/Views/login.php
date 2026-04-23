@@ -9,17 +9,17 @@
                 <label class="font-semibold text-[#1C4D8D] text-sm mb-2" for="username">
                     Username
                 </label>
-                <input name="username" class="border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400 mb-3" id="username" placeholder="Masukkan username" required type="text" />
+                <input name="username" class="text-sm border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400 mb-3" id="username" placeholder="Masukkan username" required type="text" />
             </div>
 
             <div class="flex flex-col">
-                <label class="font-semibold text-[#1C4D8D] text-sm mb-2" for="password">
+                <label class="font-semibold text-sm ext-[#1C4D8D] text-sm mb-2" for="password">
                     Password
                 </label>
                 
                 <div class="relative">
                     <input name="password" id="password" type="password" required placeholder="Masukkan password"
-                        class="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
+                        class="w-full text-sm border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
                     
                     <button type="button" onclick="showHide('password', 'eye_password')" 
                             class="absolute inset-y-0 right-3 flex items-center text-gray-400">
@@ -33,7 +33,7 @@
                     <span class="block sm:inline text-sm"><?= session()->getFlashdata('error') ?></span>
                 </div>
             <?php endif; ?>
-            <button class="bg-[#1C4D8D] w-full text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-4" type="submit">
+            <button class="bg-[#1C4D8D] w-full text-sm text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-4" type="submit">
                 Login
             </button>
         </form>

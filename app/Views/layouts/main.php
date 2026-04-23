@@ -39,19 +39,19 @@
 
     <div class="flex gap-8 items-center">
       <a href="<?= base_url('/') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == '' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
+        <?= $uri->getSegment(1) == '' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
         <i class="fa-solid fa-table-list text-lg mb-1"></i>
         <span class="text-sm">Form</span>
       </a>
 
       <a href="<?= base_url('history') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == 'history' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
+        <?= $uri->getSegment(1) == 'history' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
         <i class="fa-solid fa-clock-rotate-left text-lg mb-1"></i>
         <span class="text-sm">History</span>
       </a>
 
       <a href="<?= base_url('login') ?>" class="flex flex-col items-center cursor-pointer transition group
-        <?= $uri->getSegment(1) == 'login' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
+        <?= $uri->getSegment(1) == 'login' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
         <i class="fa-solid fa-arrow-right-to-bracket text-lg mb-1"></i>
         <span class="text-sm">Login</span>
       </a>
@@ -81,7 +81,10 @@
           ikon.classList.remove('fa-eye');
           ikon.classList.add('fa-eye-slash');
       }
-}
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        localStorage.removeItem('showModal');
+    });
 </script>
 <?= $this->renderSection('scripts') ?>
 </body>

@@ -40,12 +40,12 @@
         <img src="<?= base_url('images/awan.png') ?>" width="130px">
 
         <div class="flex gap-8 items-center">
-            <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-gray-300">
-                <i class="fa-solid fa-key text-2xl mb-1 rotate-[135deg]"></i>
-                <span class="text-sm font-medium">Password</span>
+            <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-[#B3B3B3]">
+                <i class="fa-solid fa-key text-xl mb-1"></i>
+                <span class="text-sm">Password</span>
             </a>
             <a href="<?= base_url('logout') ?>" class="flex flex-col items-center cursor-pointer transition group
-                <?= $uri->getSegment(1) == 'logout' ? 'text-[#7FB3D5] font-semibold border-b-2 border-[#7FB3D5]' : 'hover:text-[#7FB3D5]' ?>">
+                <?= $uri->getSegment(1) == 'logout' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
                 <i class="fa-solid fa-arrow-right-from-bracket text-xl mb-1"></i>
                 <span class="text-sm">Logout</span>
             </a>
@@ -55,22 +55,29 @@
     <main class="flex-1 pt-24 pl-6 pr-6">
         <?= $this->renderSection('content') ?>
     </main>
-        <div id="overlayPassword" class="fixed inset-0 left-0 top-0 z-[9999] hidden bg-black/60 flex items-center justify-center p-4">
-            <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl p-12 relative">
-                <button onclick="tutupModalPassword()" class="absolute top-8 right-10 text-3xl font-light hover:text-red-500">&times;</button>
-                <h2 class="text-3xl font-bold mb-12 text-left text-[#1C4D8D]">Ganti Password</h2>
+        <div id="overlayPassword" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+            <div class="bg-white border border-gray-200 rounded-md shadow-md w-full max-w-lg p-6 relative">
+
+                <button onclick="tutupModalPassword()" class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none hover:text-gray-400">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <h2 class="text-lg font-bold text-[#1C4D8D]">Ganti Password</h2>
+
                 <?php if (session()->getFlashdata('error')) : ?>
                     <div class="bg-red-100 text-red-700 p-2 mb-4 text-sm rounded">
                         <?= session()->getFlashdata('error') ?>
                     </div>
                 <?php endif; ?>
-                <form action="<?= base_url('update-password') ?>" method="post" class="flex flex-col">
+                
+                <form action="<?= base_url('update-password') ?>" method="post" class="flex flex-col space-y-4">
                     <?= csrf_field() ?>
-                    <div class="grid grid-cols-[180px,1fr] gap-x-6 gap-y-4 items-center text-left">
+
+                    <div class="grid grid-cols-[180px,1fr] gap-x-6 gap-y-4 items-center text-left mb-5">
+
                         <label class="font-semibold text-[#1C4D8D] text-sm" for="current_password">Password Lama</label>
                         <div class="relative">
-                            <input name="current_password" id="current_password" type="password" required 
-                                class="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]">
+                            <input name="current_password" id="current_password" type="password" class="w-full border rounded-sm p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]" required>
                             <button type="button" onclick="showHide('current_password', 'eye_old')" class="absolute inset-y-0 right-3 flex items-center text-gray-400">
                                 <i id="eye_old" class="fa-solid fa-eye-slash"></i>
                             </button>
@@ -78,25 +85,26 @@
 
                         <label class="font-semibold text-[#1C4D8D] text-sm" for="new_password">Password Baru</label>
                         <div class="relative">
-                            <input name="new_password" id="new_password" type="password" required 
-                                class="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]">
+                            <input name="new_password" id="new_password" type="password" class="w-full border rounded-sm p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]" required>
                             <button type="button" onclick="showHide('new_password', 'eye_new')" class="absolute inset-y-0 right-3 flex items-center text-gray-400">
                                 <i id="eye_new" class="fa-solid fa-eye-slash"></i>
-                        </button>
-                    </div>
+                            </button>
+                        </div>
 
                         <label class="font-semibold text-[#1C4D8D] text-sm" for="confirm_password">Konfirmasi Password</label>
                         <div class="relative">
-                            <input name="confirm_password" id="confirm_password" type="password" required 
-                                class="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]">
+                            <input name="confirm_password" id="confirm_password" type="password" class="w-full border rounded-sm p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]" required>
                             <button type="button" onclick="showHide('confirm_password', 'eye_conf')" class="absolute inset-y-0 right-3 flex items-center text-gray-400">
                                 <i id="eye_conf" class="fa-solid fa-eye-slash"></i>
                             </button>
                         </div>
                     </div>
-                    <button class="bg-[#1C4D8D] w-full text-white p-3 rounded-lg font-bold shadow-md hover:bg-[#3E679E] transition mt-8" type="submit">
-                        Ganti Password
-                    </button>
+
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button type="submit" class="bg-[#1C4D8D] text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#3E679E] transition">
+                            Ganti Password
+                        </button>
+                    </div>
                 </form>
             </div>
         </div> 
@@ -108,49 +116,53 @@
     <?= $this->renderSection('scripts') ?>
 
     <script>
-    function bukaModalPassword() {
         const overlay = document.getElementById('overlayPassword');
-        if (overlay) {
+        
+        function bukaModalPassword() {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            localStorage.setItem('showModal', 'true');
+
+        }
+
+        function tutupModalPassword() {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            localStorage.removeItem('showModal');
+        }
+
+        window.onclick = function(event) {
+            if (event.target == overlay) {
+                tutupModalPassword();
+            }
+        }
+        window.addEventListener('load', function() {
+        if (localStorage.getItem('showModal') === 'true') {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
         }
-    }
+    });
+        function showHide(idInput, idIcon) {
+        const inputan = document.getElementById(idInput);
+        const ikon = document.getElementById(idIcon);
 
-    function tutupModalPassword() {
-        const overlay = document.getElementById('overlayPassword');
-        if (overlay) {
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+        if (inputan.type === "password") {
+            inputan.type = "text";
+            ikon.classList.remove('fa-eye-slash');
+            ikon.classList.add('fa-eye');
+        } else {
+            inputan.type = "password";
+            ikon.classList.remove('fa-eye');
+            ikon.classList.add('fa-eye-slash');
         }
-    }
-
-    window.onclick = function(event) {
-        const overlay = document.getElementById('overlayPassword');
-        if (event.target == overlay) {
-            tutupModalPassword();
-        }
-    }
-    function showHide(idInput, idIcon) {
-    const inputan = document.getElementById(idInput);
-    const ikon = document.getElementById(idIcon);
-
-    if (inputan.type === "password") {
-        inputan.type = "text";
-        ikon.classList.remove('fa-eye-slash');
-        ikon.classList.add('fa-eye');
-    } else {
-        inputan.type = "password";
-        ikon.classList.remove('fa-eye');
-        ikon.classList.add('fa-eye-slash');
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        <?php if (session()->getFlashdata('show_modal')) : ?>
-            const modal = document.getElementById('modalUpdatePassword');
-            if (modal) {
-                modal.classList.remove('hidden'); 
-                modal.classList.add('flex'); 
-            }
-        <?php endif; ?>
+        document.addEventListener("DOMContentLoaded", function() {
+            <?php if (session()->getFlashdata('show_modal')) : ?>
+                const modal = document.getElementById('modalUpdatePassword');
+                if (modal) {
+                    modal.classList.remove('hidden'); 
+                    modal.classList.add('flex'); 
+                }
+            <?php endif; ?>
     });
 }
 </script>

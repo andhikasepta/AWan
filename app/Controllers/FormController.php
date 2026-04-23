@@ -35,26 +35,25 @@ class FormController extends BaseController
         $perangkatModel = new PerangkatModel();
         $mutasiModel = new MutasiModel();
 
-        $noreg = $this->request->getPost('noreg');
+        $perangkatList = $this->request->getPost('perangkat');
 
-        $perangkat = $perangkatModel->where('noreg', $noreg)->first();
-
-        if (!$perangkat){
-            return redirect()->back()->with('error', 'Perangkat tidak ditemukan!');
-        }
-        if ($perangkat['status']=='Tidak Tersedia'){
-            return redirect()->back()->with('error', 'Perangkat sedang digunakan!');
+        if (empty($perangkatList)){
+            return redirect()->back()->with('error', 'Belum ada perangkat yang ditambahkan!');
         }
 
-        $mutasiModel->insert([
-            'id_perangkat'=>$perangkat['id'],
-            'id_users'=>$this->request->getPost('user'),
-            'keterangan'=>$this->request->getPost('keterangan'),
-            'status'=>'Dibawa'
-        ]);
-        $perangkatModel->update($perangkat['id'], [
-            'status'=>$this->mapStatusPerangkat('Dibawa')
-        ]);
+        foreach ($perangkatList as $pl){
+            $mutasiModel->insert([
+                'id_perangkat'=>$pl['id'],
+                'noreg'=>$pl['noreg'],
+                'id_users'=>$this->request->getPost('user'),
+                'keterangan'=>$this->request->getPost('keterangan'),
+                'status'=>'Dibawa'
+            ]);
+
+            $perangkatModel->update($pl['id'],[
+                'status'=>$this->mapStatusPerangkat('Dibawa')
+            ]);
+        }
 
         return redirect()->to('/')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin');
     }

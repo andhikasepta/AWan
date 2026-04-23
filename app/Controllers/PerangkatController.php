@@ -68,6 +68,51 @@ class PerangkatController extends BaseController
         return $this->response->setJSON(['success'=>true]);
     }
 
+    // public function import()
+    // {
+    //     set_time_limit(0);
+
+    //     $file = $this->request->getFile('file');
+    //     $handle = fopen($file->getTempName(), 'r');
+
+    //     fgetcsv($handle);
+
+    //     while (($row = fgetcsv($handle)) !== false){
+    //         $kode_spec = strtoupper(trim($row[0]));
+    //         $nama_spec = trim($row[1]);
+    //         $kode_id = trim($row[2]);
+
+    //         $spec = $this->specModel
+    //         ->where('kode_spec', $kode_spec)
+    //         ->where('nama_perangkat', $nama_spec)
+    //         ->first();
+
+    //         if(!$spec){
+    //             $id_spec = $this->specModel->insert([
+    //                 'kode_spec'=>$kode_spec,
+    //                 'nama_perangkat'=>$nama_spec
+    //             ]);
+    //         }else{
+    //             $id_spec = $spec['id'];
+    //         }
+
+    //         $noreg = $kode_spec . $kode_id;
+
+    //         if($this->perangkatModel->where('noreg', $noreg)->first()) continue;
+
+    //         $this->perangkatModel->insert([
+    //             'id_spec'=>$id_spec,
+    //             'kode_id'=>$kode_id,
+    //             'noreg'=>$noreg,
+    //             'nama'=>$nama_spec,
+    //             'status'=>'Tersedia'
+    //         ]);
+    //     }
+
+    //     fclose($handle);
+    //     return redirect()->to('dashboard')->with('success', 'Import Data Berhasil');
+    // }
+
     public function cekNoreg()
     {
         $noreg = $this->request->getGet('noreg');

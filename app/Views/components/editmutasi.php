@@ -57,7 +57,7 @@
 
             <div class="flex justify-end gap-2 pt-1">
                 <button type="button" onclick="closeModal('editModal')" class="bg-[#D9D9D9] text-[#1C4D8D] text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#EFEFEF] transition">Batal</button>
-                <button type="submit" class="bg-[#1C4D8D] text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">Simpan</button>
+                <button type="submit" class="bg-[#1C4D8D] text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-[#3E679E] transition">Simpan</button>
             </div>
 
         </form>
