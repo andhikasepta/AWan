@@ -242,8 +242,6 @@
 
     new TomSelect("#user", {
       create: false,
-      // allowEmptyOption: true,
-      // openOnFocus: true
     });
   });
 </script>

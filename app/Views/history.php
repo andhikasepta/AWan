@@ -111,7 +111,7 @@
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
-                                <?php if ($h['status'] == ['Terpasang', 'Terkirim']): ?>
+                                <?php if (in_array($h['status'], ['Terpasang', 'Terkirim'])): ?>
                                     <?php if ($h['is_checked'] == 1): ?>
                                         <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
                                     <?php else: ?>
