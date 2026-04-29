@@ -158,7 +158,7 @@ class PerangkatController extends BaseController
         $id_perangkat = $this->request->getPost('id');
         $statusMutasi = $this->request->getPost('status_mutasi');
         $id_users = $this->request->getPost('id_users');
-        $keterangan = $this->request->getPost('keterangan');
+        $keterangan = sanitize_utf8($this->request->getPost('keterangan'));
 
         $this->mutasiModel->insert([
             'id_perangkat'=>$id_perangkat,

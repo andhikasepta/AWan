@@ -49,7 +49,7 @@ class PerangkatModel extends Model
         $where = [];
 
         if (!empty($filters['keyword'])){
-            $keyword = $this->db->escapeLikeString($filters['keyword']);
+            $keyword = $this->db->escapeLikeString(sanitize_utf8($filters['keyword']));
             $where[] = "(p.noreg LIKE '%$keyword%' OR 
                         p.nama LIKE '%$keyword%' OR 
                         u.nama LIKE '%$keyword%' OR

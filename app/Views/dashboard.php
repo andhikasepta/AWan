@@ -399,7 +399,7 @@
           .then(res => res.json())
           .then(data => {
             if (data.success) {
-              btn.outerHTML = '<span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>';
+              btn.outerHTML = '<span class="px-2 py-1 rounded text-xs bg-lime-400 text-lime-800">Checked</span>';
             }
           });
       }

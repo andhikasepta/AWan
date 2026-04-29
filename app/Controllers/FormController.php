@@ -46,7 +46,7 @@ class FormController extends BaseController
                 'id_perangkat'=>$pl['id'],
                 'noreg'=>$pl['noreg'],
                 'id_users'=>$this->request->getPost('user'),
-                'keterangan'=>$this->request->getPost('keterangan'),
+                'keterangan'=>sanitize_utf8($this->request->getPost('keterangan')),
                 'status'=>'Dibawa'
             ]);
 

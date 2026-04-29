@@ -4,6 +4,8 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
+helper('utf8');
+
 class MutasiModel extends Model
 {
   protected $table            = 'mutasi';
@@ -58,7 +60,7 @@ class MutasiModel extends Model
       m.*,
       u.nama as nm_user,
       p.noreg,
-      sp.nama_perangkat as nm_perangkat
+      p.nama as nm_perangkat
     ');
 
     $builder->join("($subQuery) latest_data",
@@ -70,7 +72,7 @@ class MutasiModel extends Model
     $builder->join('spec_perangkat sp', 'sp.id=p.id_spec', 'left');
 
     if (!empty($filters['search'])) {
-      $keyword = $filters['search'];
+      $keyword = sanitize_utf8($filters['search']);
 
       $builder->groupStart()
       ->like('u.nama', $keyword)
@@ -127,7 +129,7 @@ class MutasiModel extends Model
     $builder->where('m.id_perangkat', $id);
 
     if (!empty($filters['searchHistory'])) {
-      $keyword = $filters['searchHistory'];
+      $keyword = sanitize_utf8($filters['searchHistory']);
       $fields = ['u.nama', 'm.status', 'm.keterangan'];
 
       $builder->groupStart();

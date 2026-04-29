@@ -52,27 +52,6 @@ abstract class BaseController extends Controller
     {
         parent::initController($request, $response, $logger);
 
-        // Bersihkan semua input global dari karakter 0xa0
-        $_GET = $this->filterBadUtf8($_GET);
-        $_POST = $this->filterBadUtf8($_POST);
-        $_REQUEST = $this->filterBadUtf8($_REQUEST);
-    }
-
-    private function filterBadUtf8($data)
-    {
-        if (is_array($data)) {
-            return array_map([$this, 'filterBadUtf8'], $data);
-        }
-
-        if (is_string($data)) {
-            // Hapus byte 0xa0 secara eksplisit
-            $data = str_replace(chr(160), ' ', $data);
-            $data = str_replace("\xA0", ' ', $data);
-
-            // Buang karakter yang tidak valid secara UTF-8
-            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
-        }
-
-        return $data;
+        helper('utf8');
     }
 }

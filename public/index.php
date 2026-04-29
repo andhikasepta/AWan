@@ -39,6 +39,36 @@ if (getcwd() . DIRECTORY_SEPARATOR !== FCPATH) {
 
 /*
  *---------------------------------------------------------------
+ * FILTER BAD UTF-8 TO PREVENT POSTGRESQL ERRORS (0xA0)
+ *---------------------------------------------------------------
+ */
+if (!function_exists('filterBadUtf8Global')) {
+    function filterBadUtf8Global($data) {
+        if (is_array($data)) {
+            $result = [];
+            foreach ($data as $key => $value) {
+                $result[$key] = filterBadUtf8Global($value);
+            }
+            return $result;
+        }
+        if (is_string($data)) {
+            // Remove 0xa0 byte explicitly
+            $data = str_replace(chr(160), ' ', $data);
+            $data = str_replace("\xA0", ' ', $data);
+            // Drop any invalid UTF-8 characters
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        }
+        return $data;
+    }
+}
+
+$_GET = filterBadUtf8Global($_GET);
+$_POST = filterBadUtf8Global($_POST);
+$_REQUEST = filterBadUtf8Global($_REQUEST);
+$_COOKIE = filterBadUtf8Global($_COOKIE);
+
+/*
+ *---------------------------------------------------------------
  * BOOTSTRAP THE APPLICATION
  *---------------------------------------------------------------
  * This process sets up the path constants, loads and registers

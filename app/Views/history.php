@@ -84,14 +84,15 @@
                                 </button>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
-                            <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['nm_perangkat']) ?>
+                            <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
+                                <?= esc($h['nm_perangkat']) ?>
                             </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
                                 <?= $h['nm_user'] ?? '-' ?>
                             </td>
                             <td
-                                class="px-4 py-3 text-xs text-left border border-gray-300 break-words whitespace-normal max-w-[225px]">
-                                <!-- <?= esc($h['keterangan']) ?: '-' ?> -->
+                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]">
+                                <?= esc($h['keterangan']) ?: '-' ?>
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
@@ -106,17 +107,17 @@
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?= $h['created_at'] ?>
                             </td>
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?= $h['updated_at'] ?>
                             </td>
 
                             <td class="px-4 py-3 text-xs text-center border border-gray-300">
                                 <?php if (in_array($h['status'], ['Terpasang', 'Terkirim'])): ?>
                                     <?php if ($h['is_checked'] == 1): ?>
-                                        <span class="px-2 py-1 rounded text-xs bg-green-400 text-white">Checked</span>
+                                        <span class="px-2 py-1 rounded text-xs bg-lime-400 text-lime-800">Checked</span>
                                     <?php else: ?>
                                         <span
                                             class="inline-block text-center whitespace-nowrap px-2 py-1 rounded text-xs bg-blue-500 text-white"

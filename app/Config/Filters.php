@@ -35,6 +35,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'auth'          => \App\Filters\Auth::class,
+        'utf8sanitize'  => \App\Filters\Utf8Sanitize::class,
     ];
 
     /**
@@ -73,6 +74,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'utf8sanitize',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',

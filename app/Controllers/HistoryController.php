@@ -15,7 +15,7 @@ class HistoryController extends BaseController
         $userModel = new UserModel();
 
         $page = $this->request->getVar('page') ?? 1;
-        $limit = 50;
+        $limit = 10;
         $offset = ($page - 1) * $limit;
 
         $filters = [
@@ -45,7 +45,7 @@ class HistoryController extends BaseController
         $page = $this->request->getVar('page') ?? 1;
         $search = $this->request->getVar('searchHistory') ?? '';
 
-        $limit = 15;
+        $limit = 10;
         $offset = ($page - 1) * $limit;
 
         $filters=[
