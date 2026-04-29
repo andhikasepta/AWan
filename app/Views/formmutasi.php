@@ -19,7 +19,8 @@
       <div class="bg-[#1C4D8D] p-5 rounded-xl shadow-inner">
         <h2 class="font-bold text-lg mb-2">PENTING!!!</h2>
         <p class="text-xs leading relaxed mb-4 text-white">
-          Mohon untuk pengambilan dan peminjaman perangkat dapat mengisi form yang sudah disediakan atau mengirimkan foto registrasi perangkat dengan <b>JELAS</b>
+          Mohon untuk pengambilan dan peminjaman perangkat dapat mengisi form yang sudah disediakan atau mengirimkan
+          foto registrasi perangkat dengan <b>JELAS</b>
         </p>
         <p class="text-[10px] italic text-white">
           Note: <br>
@@ -57,26 +58,27 @@
 
         <div class="w-full flex flex-col justify-end">
           <label class="invisible text-sm mb-2">Hidden</label>
-          <button type="button" id="btn_tambah" class="bg-[#1C4D8D] h-[42px] px-3 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end">
+          <button type="button" id="btn_tambah"
+            class="bg-[#1C4D8D] h-[42px] px-3 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition items-end">
             Tambah
           </button>
         </div>
       </div>
 
       <div class="mt-4 mb-4">
-          <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
-          <table class="w-full text-xs border">
-            <thead class="bg-gray-100 border border-gray-300">
-              <tr>
-                <th class="p-2 border border-gray-300">No</th>
-                <th class="p-2 border border-gray-300">Nomor Registrasi</th>
-                <th class="p-2 border border-gray-300">Nama Perangkat</th>
-                <th class="p-2 border border-gray-300">Action</th>
-              </tr>
-            </thead>
-            <tbody id="list_perangkat"></tbody>
-          </table>
-        </div>
+        <h3 class="font-semibold text-sm mb-2 text-[#1C4D8D]">Daftar Perangkat</h3>
+        <table class="w-full text-xs border">
+          <thead class="bg-gray-100 border border-gray-300">
+            <tr>
+              <th class="p-2 border border-gray-300">No</th>
+              <th class="p-2 border border-gray-300">Nomor Registrasi</th>
+              <th class="p-2 border border-gray-300">Nama Perangkat</th>
+              <th class="p-2 border border-gray-300">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list_perangkat"></tbody>
+        </table>
+      </div>
 
       <div class="flex flex-col mb-4">
         <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
@@ -107,17 +109,16 @@
         <div class="flex flex-col">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
           <div class="relative">
-            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan" class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
+            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan"
+              class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
           </div>
         </div>
       </div>
 
       <div class="flex">
-        <button type="submit" id="btn_submit" class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
+        <button type="submit" id="btn_submit"
+          class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7FB3D5] transition">
           Submit
-        </button>
-        <button type="reset" class="bg-[#858585] text-sm text-white ml-2 px-8 py-2 rounded-md font-semibold shadow hover:bg-[#999999] transition">
-          Clear
         </button>
       </div>
     </form>
@@ -159,9 +160,29 @@
     }, 3000);
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     <?php if (session()->getFlashData('success')): ?>
       showToast("<?= session()->getFlashdata('success') ?>", "success");
+
+      <?php if (session()->get('mutasi_pdf_ids')): ?>
+        Swal.fire({
+          title: "Data berhasil disimpan!",
+          text: "Apakah Anda ingin mendownload bukti request perangkat dalam format PDF?",
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonColor: "#1C4D8D",
+          cancelButtonColor: "#858585",
+          confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> Download PDF',
+          cancelButtonText: "Lewati"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.open("<?= base_url('submit/pdf') ?>", "_blank");
+          } else {
+            // Clear session data if user skips
+            fetch("<?= base_url('submit/pdf/clear') ?>");
+          }
+        });
+      <?php endif; ?>
     <?php endif; ?>
 
     const daftarPerangkat = <?= json_encode($perangkat) ?>;
@@ -199,14 +220,14 @@
       inputScan.value = "";
     }
 
-    inputScan.addEventListener('keydown', function(e) {
+    inputScan.addEventListener('keydown', function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
         multiAdd(this.value);
       }
     });
 
-    document.getElementById('btn_tambah').addEventListener('click', function() {
+    document.getElementById('btn_tambah').addEventListener('click', function () {
       multiAdd(inputScan.value);
     });
 
@@ -217,7 +238,7 @@
       cart.forEach((item, index) => {
         tbody.innerHTML += `
         <tr>
-          <td class="p-2 text-center border border-gray-300">${index+1}</td>
+          <td class="p-2 text-center border border-gray-300">${index + 1}</td>
           <td class="p-2 border border-gray-300">${item.noreg}</td>
           <td class="p-2 border border-gray-300">${item.nama}</td>
           <td class="p-2 text-center border border-gray-300">
@@ -235,7 +256,7 @@
       });
     }
 
-    window.hapusItem = function(index) {
+    window.hapusItem = function (index) {
       cart.splice(index, 1);
       renderTable();
     }
@@ -243,8 +264,8 @@
     const form = document.querySelector("form");
     const btnSubmit = document.getElementById("btn_submit");
 
-    form.addEventListener("submit", function(e){
-      if (cart.length===0){
+    form.addEventListener("submit", function (e) {
+      if (cart.length === 0) {
         e.preventDefault();
         showToast("Tambahkan minimal 1 perangkat!", "warning");
         return;

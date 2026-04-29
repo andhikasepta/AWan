@@ -107,10 +107,10 @@
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300">
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
                                 <?= $h['created_at'] ?>
                             </td>
-                            <td class="px-4 py-3 text-xs text-center border border-gray-300">
+                            <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
                                 <?= $h['updated_at'] ?>
                             </td>
 

@@ -15,24 +15,24 @@ class HistoryController extends BaseController
         $userModel = new UserModel();
 
         $page = $this->request->getVar('page') ?? 1;
-        $limit = 10;
+        $limit = 20;
         $offset = ($page - 1) * $limit;
 
         $filters = [
-            'search'=>$this->request->getGet('search'),
-            'status'=>$this->request->getGet('status'),
-            'filter_mutasi'=>$this->request->getGet('filter_mutasi'),
-            'user'=>$this->request->getGet('user')
+            'search' => $this->request->getGet('search'),
+            'status' => $this->request->getGet('status'),
+            'filter_mutasi' => $this->request->getGet('filter_mutasi'),
+            'user' => $this->request->getGet('user')
         ];
 
         $result = $mutasiModel->getAllHistory($filters, $limit, $offset);
 
         $data = [
-            'history'=>$result['data'],
-            'totalPage'=>ceil($result['total']/$limit),
-            'currentPage'=>$page,
-            'limit'=>$limit,
-            'users'=>$userModel->findAll()
+            'history' => $result['data'],
+            'totalPage' => ceil($result['total'] / $limit),
+            'currentPage' => $page,
+            'limit' => $limit,
+            'users' => $userModel->findAll()
         ];
 
         return view('history', $data);
@@ -48,20 +48,20 @@ class HistoryController extends BaseController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $filters=[
+        $filters = [
             'searchHistory' => $search
         ];
 
         $result = $model->getDataHistory($id, $filters, $limit, $offset);
 
         $total = $result['total'];
-        $totalPage = ceil($total/$limit);
+        $totalPage = ceil($total / $limit);
 
         return $this->response->setJSON([
-            'data'=>$result['data'],
-            'total'=>$total,
-            'totalPage'=>$totalPage,
-            'currentPage'=>(int)$page
+            'data' => $result['data'],
+            'total' => $total,
+            'totalPage' => $totalPage,
+            'currentPage' => (int) $page
         ]);
     }
 }

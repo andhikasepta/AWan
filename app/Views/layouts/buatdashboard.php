@@ -37,7 +37,7 @@
     <?php $uri = service('uri'); ?>
 
     <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md">
-        <img src="<?= base_url('images/awan.png') ?>" width="148px">
+        <img src="<?= base_url('images/awan.png') ?>" width="150px">
 
         <div class="flex gap-8 items-center">
             <a href="javascript:void(0)" onclick="bukaModalPassword()" class="flex flex-col items-center cursor-pointer transition group text-white hover:text-[#B3B3B3]">

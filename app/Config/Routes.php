@@ -32,6 +32,8 @@ $routes->group('', ['filter'=>'auth'], function($routes){
 
 $routes->get('/', 'FormController::index');
 $routes->post('submit', 'FormController::submit');
+$routes->get('submit/pdf', 'FormController::generatePdf');
+$routes->get('submit/pdf/clear', 'FormController::clearPdfSession');
 
 $routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');
