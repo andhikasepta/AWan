@@ -109,7 +109,7 @@
         <div class="flex flex-col">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
           <div class="relative">
-            <textarea name="keterangan" rows="2" placeholder="Masukkan Keterangan"
+            <textarea name="keterangan" rows="2" placeholder="Masukkan keterangan"
               class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
           </div>
         </div>
@@ -167,16 +167,18 @@
       <?php if (session()->get('mutasi_pdf_ids')): ?>
         Swal.fire({
           title: "Data berhasil disimpan!",
-          text: "Apakah Anda ingin mendownload bukti request perangkat dalam format PDF?",
+          text: "Download Bukti Request Perangkat",
           icon: "success",
           showCancelButton: true,
           confirmButtonColor: "#1C4D8D",
           cancelButtonColor: "#858585",
           confirmButtonText: '<i class="fa-solid fa-file-pdf"></i> Download PDF',
-          cancelButtonText: "Lewati"
+          cancelButtonText: "Lewati",
+          allowOutsideClick: false,
+          allowEscapeKey: false
         }).then((result) => {
           if (result.isConfirmed) {
-            window.open("<?= base_url('submit/pdf') ?>", "_blank");
+            window.open("<?= base_url('submit/pdf') ?>");
           } else {
             // Clear session data if user skips
             fetch("<?= base_url('submit/pdf/clear') ?>");
