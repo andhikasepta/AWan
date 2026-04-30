@@ -49,13 +49,13 @@ class PerangkatModel extends Model
         $where = [];
 
         if (!empty($filters['keyword'])){
-            $keyword = $this->db->escapeLikeString(sanitize_utf8($filters['keyword']));
-            $where[] = "(p.noreg LIKE '%$keyword%' OR 
-                        p.nama LIKE '%$keyword%' OR 
-                        u.nama LIKE '%$keyword%' OR
-                        m.status LIKE '%$keyword%' OR
-                        m.keterangan LIKE '%$keyword%' OR
-                        m.is_checked::text LIKE '%$keyword%')";
+            $keyword = strtolower($this->db->escapeLikeString(sanitize_utf8($filters['keyword'])));
+            $where[] = "(LOWER(p.noreg) LIKE '%$keyword%' OR 
+                        LOWER(p.nama) LIKE '%$keyword%' OR 
+                        LOWER(u.nama) LIKE '%$keyword%' OR
+                        LOWER(m.status) LIKE '%$keyword%' OR
+                        LOWER(m.keterangan) LIKE '%$keyword%' OR
+                        LOWER(m.is_checked::text) LIKE '%$keyword%')";
         }
 
         if (!empty($filters['status'])){

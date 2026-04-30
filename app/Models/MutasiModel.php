@@ -73,13 +73,14 @@ class MutasiModel extends Model
 
     if (!empty($filters['search'])) {
       $keyword = sanitize_utf8($filters['search']);
+      $keyword = $this->db->escapeLikeString($keyword);
 
       $builder->groupStart()
-      ->like('u.nama', $keyword)
-      ->orLike('sp.nama_perangkat', $keyword)
-      ->orLike('p.noreg', $keyword)
-      ->orLike('m.status', $keyword)
-      ->orLike('m.keterangan', $keyword)
+      ->where("u.nama ILIKE '%$keyword%'", null, false)
+      ->orWhere("sp.nama_perangkat ILIKE '%$keyword%'", null, false)
+      ->orWhere("p.noreg ILIKE '%$keyword%'", null, false)
+      ->orWhere("m.status ILIKE '%$keyword%'", null, false)
+      ->orWhere("m.keterangan ILIKE '%$keyword%'", null, false)
       ->groupEnd();
     }
 
@@ -134,7 +135,7 @@ class MutasiModel extends Model
 
       $builder->groupStart();
       foreach ($fields as $field) {
-        $builder->orLike($field, $keyword);
+        $builder->orWhere("$field ILIKE", "%$keyword%");
       }
       $builder->groupEnd();
     }
