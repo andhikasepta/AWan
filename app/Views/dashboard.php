@@ -490,7 +490,6 @@
   //   }
   // });
 
-  // 1. Deklarasi satu kali saja di luar
   let tsSpec;
 
   document.addEventListener("DOMContentLoaded", function () {
