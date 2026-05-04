@@ -97,7 +97,7 @@ class DashboardController extends BaseController
 
     public function simpanPerangkat()
     {
-        $idSpecInput = $this->request->getPost('id_spec'); // Menangkap <select name="id_spec">
+        $idSpecInput = $this->request->getPost('id_spec');
         $namaInput = $this->request->getPost('nama');
         $kodeId = $this->request->getPost('kode_id');
 
@@ -107,20 +107,18 @@ class DashboardController extends BaseController
         ];
 
         if (is_numeric($idSpecInput)) {
-            // Jika user memilih dari list (ID angka)
             $data['id_spec'] = (int) $idSpecInput;
             $data['nama'] = $namaInput;
         } else {
-            // Jika user mengetik teks baru (misal: "B2WN...")
-            $data['id_spec'] = null; // Karena tidak ada di tabel spec
-            $data['nama'] = $idSpecInput; // Gunakan teks yang diketik sebagai nama
+            $data['id_spec'] = null;
+            $data['nama'] = $idSpecInput;
         }
 
         if ($this->perangkatModel->insert($data)) {
             return $this->response->setJSON(['success' => true, 'message' => 'Data berhasil ditambahkan']);
         }
 
-        return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan ke database']);
+        return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan data']);
     }
 
     public function userList()

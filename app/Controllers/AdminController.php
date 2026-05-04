@@ -37,11 +37,10 @@ class AdminController extends BaseController
         $password = $this->request->getPost('password');
 
         $admin = $this->db->table('admin')->where('username', $username)->get()->getRowArray();
-        if ($admin && password_verify($password, $admin['password'])){
+        if ($admin && password_verify($password, $admin['password'])) {
             $this->session->set('admin', $admin);
             return redirect()->to('/dashboard');
-        }
-        else{
+        } else {
             return redirect()->back()->with('error', 'Username atau password salah');
         }
     }
@@ -60,10 +59,10 @@ class AdminController extends BaseController
             return redirect()->back()->with('error', 'Sesi tidak ditemukan, silakan login ulang.');
         }
 
-        $adminId = $adminSession['id']; 
+        $adminId = $adminSession['id'];
 
-        $oldPass  = trim($this->request->getPost('current_password'));
-        $newPass  = trim($this->request->getPost('new_password'));
+        $oldPass = trim($this->request->getPost('current_password'));
+        $newPass = trim($this->request->getPost('new_password'));
         $confPass = trim($this->request->getPost('confirm_password'));
 
         if (empty($oldPass) || empty($newPass)) {
@@ -73,7 +72,7 @@ class AdminController extends BaseController
         $adminDb = $this->db->table('admin')->where('id', $adminId)->get()->getRowArray();
 
         if (!password_verify($oldPass, $adminDb['password'])) {
-            return redirect()->back()->with('error', 'Password lama tidak sesuai. Silakan cek kembali.') ->with('openModal', true)  ;
+            return redirect()->back()->with('error', 'Password lama tidak sesuai. Silakan cek kembali.')->with('openModal', true);
         }
 
         if (strlen($newPass) < 5) {
@@ -89,14 +88,14 @@ class AdminController extends BaseController
         }
 
         $hashedPassword = password_hash($newPass, PASSWORD_DEFAULT);
-        
+
         $update = $this->db->table('admin')->where('id', $adminId)->update([
             'password' => $hashedPassword
         ]);
 
         if ($update) {
-        session()->destroy(); 
-        return redirect()->to('login');
+            session()->destroy();
+            return redirect()->to('login');
         }
 
         return redirect()->back()->with('error', 'Gagal memperbarui database.');

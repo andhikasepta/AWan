@@ -46,8 +46,6 @@ use Psr\Log\LoggerInterface;
 
 abstract class BaseController extends Controller
 {
-    // ... properti lainnya ...
-
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);

@@ -84,7 +84,8 @@
                                 </button>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
-                            <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
+                            <td
+                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
                                 <?= esc($h['nm_perangkat']) ?>
                             </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">

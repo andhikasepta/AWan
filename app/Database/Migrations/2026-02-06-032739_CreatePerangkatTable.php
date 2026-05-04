@@ -9,31 +9,31 @@ class CreatePerangkatTable extends Migration
     public function up()
     {
         $this->forge->addField([
-            'id'=>[
-                'type'=>'INT',
-                'unsigned'=>true,
-                'auto_increment'=>true,
+            'id' => [
+                'type' => 'INT',
+                'unsigned' => true,
+                'auto_increment' => true,
             ],
-            'nama'=>[
-                'type'=>'VARCHAR',
-                'constraint'=>255,
+            'nama' => [
+                'type' => 'VARCHAR',
+                'constraint' => 255,
             ],
-            'noreg'=>[
-                'type'=>'VARCHAR',
-                'constraint'=>50,
+            'noreg' => [
+                'type' => 'VARCHAR',
+                'constraint' => 50,
             ],
-            'status'=>[
-                'type'=>'ENUM',
-                'constraint'=>['Tersedia','Tidak Tersedia'],
-                'default'=>'Tersedia',
+            'status' => [
+                'type' => 'ENUM',
+                'constraint' => ['Tersedia', 'Tidak Tersedia'],
+                'default' => 'Tersedia',
             ],
-            'created_at'=>[
-                'type'=>'DATETIME',
-                'null'=>true,
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
             ],
-            'updated_at'=>[
-                'type'=>'DATETIME',
-                'null'=>true,
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
             ],
         ]);
 

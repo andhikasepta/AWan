@@ -536,11 +536,10 @@
     });
   });
 
-  // 1. Deklarasi satu kali saja di luar
+  // TAMBAH PERANGKAT MODAL
   let tsSpec;
 
   document.addEventListener("DOMContentLoaded", function () {
-    // 1. Inisialisasi TomSelect
     const el = document.getElementById("kode_spec");
     if (el) {
       tsSpec = new TomSelect(el, {
@@ -579,13 +578,11 @@
       });
     }
 
-    // 2. Handle Submit Form
     const tambahForm = document.getElementById("tambahperangkat");
     if (tambahForm) {
       tambahForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        // Ambil elemen tombol secara lokal agar tidak undefined
         const submitBtn = document.getElementById("btn_submit_tambah");
         const namaInput = document.getElementById("nama");
 
@@ -601,7 +598,6 @@
 
         let formData = new FormData(this);
 
-        // Ambil value dari TomSelect secara eksplisit
         if (tsSpec) {
           formData.set('id_spec', tsSpec.getValue());
         }
@@ -675,8 +671,6 @@
 
   kodeInput.addEventListener('input', cekNoregRealTime);
   specSelect.addEventListener('change', cekNoregRealTime);
-
-
 
   // HAPUS DATA PERANGKAT
   window.confirmDelete = function (id) {

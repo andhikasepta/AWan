@@ -93,16 +93,27 @@
           <style>
             .ts-control {
               border-radius: 0.375rem;
-              /* rounded-md */
               padding: 0.7rem;
-              /* p-2 */
               border: 1px solid #d1d5db;
-              /* border gray */
             }
 
             .ts-control:focus {
               border-color: #1C4D8D;
               box-shadow: 0 0 0 1px #1C4D8D;
+            }
+
+            #reader {
+              border: none !important;
+              position: relative;
+            }
+
+            #reader video {
+              border-radius: 8px;
+              object-fit: cover !important;
+            }
+
+            #reader__scan_region {
+              border-radius: 8px;
             }
           </style>
           <option value="">Pilih user</option>
@@ -253,51 +264,144 @@
       }
     });
 
-    let html5QrcodeScanner;
-
+    let html5QrCode;
     let isScanning = false;
 
-    document.getElementById('btn_tambah').addEventListener('click', function () {
-      document.getElementById('scannerModal').classList.remove('hidden');
-      isScanning = true;
+    async function stopScanner() {
+      if (html5QrCode && isScanning) {
+        try {
+          await html5QrCode.stop();
+          isScanning = false;
+          const guide = document.getElementById('scanner-guide');
+          if (guide) guide.remove();
+          document.getElementById('scannerModal').classList.add('hidden');
+        } catch (err) {
+          console.error("Failed to stop scanner", err);
+          document.getElementById('scannerModal').classList.add('hidden');
+        }
+      } else {
+        document.getElementById('scannerModal').classList.add('hidden');
+      }
+    }
 
-      html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader",
-        {
-          fps: 30,
-          qrbox: { width: 300, height: 300 }
+    document.getElementById('btn_tambah').addEventListener('click', async function () {
+      const scannerModal = document.getElementById('scannerModal');
+      scannerModal.classList.remove('hidden');
+
+      if (!html5QrCode) {
+        const formatsToSupport = [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF
+        ];
+        html5QrCode = new Html5Qrcode("reader", { formatsToSupport: formatsToSupport });
+      }
+
+      const config = {
+        fps: 25,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const widthPercentage = 0.8;
+          const heightPercentage = 0.6;
+          const width = Math.floor(viewfinderWidth * widthPercentage);
+          const height = Math.floor(viewfinderHeight * heightPercentage);
+          return {
+            width: width,
+            height: height
+          };
         },
-        /* verbose= */ false);
+        aspectRatio: 1.0,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      };
 
-      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        showToast("Error: Kamera membutuhkan koneksi HTTPS (Secure Context)", "error");
+        scannerModal.classList.add('hidden');
+        return;
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanFailure
+        );
+        isScanning = true;
+
+        const reader = document.getElementById('reader');
+        if (!document.getElementById('scanner-guide')) {
+          const guide = document.createElement('div');
+          guide.id = 'scanner-guide';
+          guide.style.position = 'absolute';
+          guide.style.top = '50%';
+          guide.style.left = '50%';
+          guide.style.transform = 'translate(-50%, -50%)';
+          guide.style.border = '2px solid #1C4D8D';
+          guide.style.borderRadius = '8px';
+          guide.style.zIndex = '10';
+          guide.style.pointerEvents = 'none';
+
+          const rect = reader.getBoundingClientRect();
+          const width = Math.floor(rect.width * 0.8);
+          const height = Math.floor(rect.height * 0.6);
+          guide.style.width = width + 'px';
+          guide.style.height = height + 'px';
+
+          const line = document.createElement('div');
+          line.style.position = 'absolute';
+          line.style.top = '0';
+          line.style.left = '0';
+          line.style.width = '100%';
+          line.style.height = '2px';
+          line.style.background = '#1C4D8D';
+          line.style.boxShadow = '0 0 10px #1C4D8D';
+          line.style.animation = 'scan-line-anim 2s linear infinite';
+
+          if (!document.getElementById('scan-anim-style')) {
+            const style = document.createElement('style');
+            style.id = 'scan-anim-style';
+            style.innerHTML = `@keyframes scan-line-anim { 0% { top: 0%; } 100% { top: 100%; } }`;
+            document.head.appendChild(style);
+          }
+
+          guide.appendChild(line);
+          reader.appendChild(guide);
+        }
+      } catch (err) {
+        console.error("Unable to start scanning.", err);
+        let errorMsg = "Gagal mengakses kamera!";
+        if (err.name === 'NotAllowedError') errorMsg = "Permission kamera ditolak oleh user.";
+        if (err.name === 'NotFoundError') errorMsg = "Kamera tidak ditemukan.";
+        if (err.name === 'NotReadableError') errorMsg = "Kamera sedang digunakan aplikasi lain.";
+
+        showToast(errorMsg, "error");
+        scannerModal.classList.add('hidden');
+      }
     });
 
     function onScanSuccess(decodedText, decodedResult) {
       if (!isScanning) return;
-      isScanning = false;
 
-      showToast("Barcode terdeteksi!", "success");
+      showToast("Barcode added!", "success");
 
-      document.getElementById('scannerModal').classList.add('hidden');
       inputScan.value = decodedText;
       multiAdd(decodedText);
 
-      html5QrcodeScanner.clear().catch(err => console.error(err));
+      stopScanner();
     }
 
     function onScanFailure(error) {
-      // ignore failures to keep scanning
+      // Keep scanning
     }
 
-    document.getElementById('closeScanner').addEventListener('click', function () {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().then(() => {
-          document.getElementById('scannerModal').classList.add('hidden');
-        });
-      } else {
-        document.getElementById('scannerModal').classList.add('hidden');
-      }
-    });
+    document.getElementById('closeScanner').addEventListener('click', stopScanner);
 
     function renderTable() {
       const tbody = document.getElementById('list_perangkat');
