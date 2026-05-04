@@ -168,6 +168,7 @@
     <?= view('components/editmutasi') ?>
     <?= view('components/historyperangkat') ?>
     <?= view('components/tambahperangkat') ?>
+    <?= view('components/usermanage') ?>
 
   </div>
 
@@ -265,6 +266,7 @@
       }, 300);
     }, 3000);
   }
+
   function openModal(id) {
     document.getElementById(id).classList.remove("hidden");
     document.getElementById(id).classList.add("flex");
@@ -277,6 +279,95 @@
     document.getElementById(id).classList.add("hidden");
     document.getElementById(id).classList.remove("flex");
   }
+
+  window.openUserManage = function () {
+    openModal('userManageModal');
+    loadUsers();
+  }
+
+  function loadUsers(){
+    fetch("<?= base_url('dashboard/userList') ?>")
+    .then(res => res.json())
+    .then(res => {
+      console.log("DATA USER:", res);
+      const tbody = document.getElementById("userManageBody");
+      tbody.innerHTML = "";
+
+      if (!res.length){
+        tbody.innerHTML = `
+        <tr>
+          <td colspan="3" class="text-center py-4">
+            Belum ada User
+          </td>
+        </tr>`;
+        return;
+      }
+
+      let no = 1;
+      res.forEach(user=>{
+        tbody.innerHTML += `
+        <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
+          <td class="px-4 py-3 text-center">
+            <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+          <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
+          <td class="px-4 py-3 text-left border border-gray-300">${user.nama}</td>
+        </tr>`;
+      }); 
+    });
+  }
+
+  function addUser(){
+   let nama = prompt("Masukkan nama user : "); 
+   if(!nama) return;
+   fetch("<?= base_url('dashboard/addUser') ?>", {
+    method : "POST",
+    headers: {
+      "X-Requested-With" : "XMLHttpRequest"
+    },
+    body: new URLSearchParams({nama})
+   })
+  .then(async res => {
+  const text = await res.text();
+
+  return JSON.parse(text);
+})
+   .then(res => {
+    if(res.success){
+      showToast("Berhasil Menambahkan User", "success");
+      loadUsers();
+    }else{
+      showToast("Gagal Menambahkan User", "error");
+    }
+   });
+  }
+
+  function deleteUser(id) {
+  Swal.fire({
+    title: "Hapus user ini?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Hapus"
+  }).then(result => {
+    if (result.isConfirmed) {
+      fetch("<?= base_url('dashboard/deleteUser') ?>/" + id, {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            showToast("User berhasil dihapus", "success");
+            loadUsers();
+          }
+        });
+    }
+  });
+}
 
   // EDIT MODAL
   window.openEdit = function (id) {
@@ -370,11 +461,11 @@
         res.data.forEach(row => {
           tbody.innerHTML += `
           <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
-            <td class="px-4 py-3 text-center">${no++}</td>
-            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px]">${row.updated_at ?? '-'}</td>
-            <td class="px-4 py-3 text-center">${row.nm_user ?? '-'}</td>
-            <td class="px-4 py-3 text-center">${row.status ?? '-'}</td>            
-            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px]">${row.keterangan ?? '-'}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px] border border-gray-300">${row.updated_at ?? '-'}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${row.nm_user ?? '-'}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${row.status ?? '-'}</td>            
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px] border border-gray-300">${row.keterangan ?? '-'}</td>
           </tr>`;
         });
 
@@ -444,51 +535,6 @@
       }
     });
   });
-
-  // TAMBAH PERANGKAT MODAL
-  // new TomSelect("#kode_spec", {
-  //   valueField: "id",
-  //   labelField: "text",
-  //   searchField: ["kode_spec", "nama_perangkat"],
-  //   create: true,
-
-  //   load: function(query, callback) {
-  //     if (!query.length) return callback();
-
-  //     fetch(`/perangkat/getSpec?search=${query}`)
-  //       .then(res => res.json())
-  //       .then(data => {
-  //         callback(data.map(item => ({
-  //           id: item.id,
-  //           text: item.kode_spec + " - " + item.nama_perangkat,
-  //           kode_spec: item.kode_spec,
-  //           nama: item.nama_perangkat
-  //         })));
-  //       }).catch(() => callback());
-  //   },
-
-  //   onChange: function(value) {
-  //     const namaInput = document.getElementById("nama");
-  //     const namaWrapper = document.getElementById("namaWrapper");
-
-  //     if (/^\d+$/.test(value)) {
-  //       fetch(`/perangkat/getSpecById?id=${value}`)
-  //         .then(res => res.json())
-  //         .then(data => {
-  //           namaInput.value = data.nama_perangkat;
-
-  //           namaWrapper.classList.add("hidden");
-  //           // namaInput.removeAttribute("readonly");
-  //         });
-
-  //     } else {
-  //       namaInput.value = value;
-
-  //       namaWrapper.classList.remove("hidden");
-  //       // namaInput.removeAttribute("readonly");
-  //     }
-  //   }
-  // });
 
   // 1. Deklarasi satu kali saja di luar
   let tsSpec;

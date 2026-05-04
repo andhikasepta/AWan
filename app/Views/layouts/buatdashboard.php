@@ -37,20 +37,35 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
     <?php $uri = service('uri'); ?>
 
-    <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md">
+    <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md z-[49]">
         <img src="<?= base_url('images/awan.png') ?>" width="200px">
 
-        <div class="flex gap-8 items-center">
-            <a href="javascript:void(0)" onclick="bukaModalPassword()"
-                class="flex flex-col items-center cursor-pointer transition group text-white hover:text-[#B3B3B3]">
-                <i class="fa-solid fa-key text-xl mb-1"></i>
-                <span class="text-sm">Password</span>
-            </a>
-            <a href="<?= base_url('logout') ?>" class="flex flex-col items-center cursor-pointer transition group
-                <?= $uri->getSegment(1) == 'logout' ? 'text-[#B3B3B3] font-semibold' : 'hover:text-[#B3B3B3]' ?>">
-                <i class="fa-solid fa-arrow-right-from-bracket text-xl mb-1"></i>
-                <span class="text-sm">Logout</span>
-            </a>
+        <div x-data="{open:false}" class="relative">
+            <button @click="open = !open" class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
+                <i class="fa-regular fa-circle-user text-xl mb-1"></i>
+                <span class="text-sm font-medium">
+                    <?= session('nama_admin') ?? 'admin' ?>
+                </span>
+                <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="{'rotate-180' : open}"></i>
+            </button>
+
+            <div x-show="open" x-transition @click.outside="open = false"
+                class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg text-sm">
+
+                <button onclick="bukaModalPassword()" @click="open = false"
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                    Ganti Password
+                </button>
+                <button onclick="openUserManage()" @click="open = false"
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                    User Manage
+                </button>
+                <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
+                    Admin Manage
+                </a>
+                <a href="<?= base_url('logout') ?>"
+                    class="block px-4 py-2 hover:bg-gray-100">Logout</a>
+            </div>
         </div>
     </nav>
 

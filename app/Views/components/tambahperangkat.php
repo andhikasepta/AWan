@@ -1,9 +1,9 @@
 <div id="tambahModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white border border-gray-200 rounded-md shadow-md w-full max-w-lg p-6 relative">
 
-        <button onclick="closeModal('tambahModal')" class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none">
+        <!-- <button onclick="closeModal('tambahModal')" class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none">
             <i class="fa-solid fa-xmark"></i>
-        </button>
+        </button> -->
 
         <h2 class="text-lg text-[#1C4D8D] font-bold">Tambah Perangkat</h2>
         

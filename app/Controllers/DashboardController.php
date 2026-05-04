@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 
 use App\Models\PerangkatModel;
 use App\Models\MutasiModel;
+use App\Models\UserModel;
 use Config\Database;
 use Config\Services;
 
@@ -13,11 +14,13 @@ class DashboardController extends BaseController
 {
     protected $perangkatModel;
     protected $mutasiModel;
+    protected $userModel;
 
     public function __construct()
     {
         $this->perangkatModel = new PerangkatModel();
         $this->mutasiModel = new MutasiModel();
+        $this->userModel = new UserModel();
     }
 
     public function dashboard()
@@ -119,4 +122,48 @@ class DashboardController extends BaseController
 
         return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan ke database']);
     }
+
+    public function userList()
+    {
+        $db = \Config\Database::connect();
+        $users = $db->table('users')->get()->getResultArray();
+        return $this->response->setJSON($users);
+    }
+
+    public function addUser()
+    {
+       try {
+        $nama = $this->request->getPost('nama');
+
+        $db = \Config\Database::connect();
+
+        $insert = $db->table('users')->insert([
+            'nama' => $nama
+        ]);
+
+        if (!$insert) {
+            return $this->response->setJSON([
+                'success' => false,
+                'db_error' => $db->error()
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true
+        ]);
+
+    } catch (\Throwable $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function deleteUser($id)
+{
+    $db = \Config\Database::connect();
+    $db->table('users')->delete(['id' => $id]);
+    return $this->response->setJSON(['success' => true]);
+} 
 }

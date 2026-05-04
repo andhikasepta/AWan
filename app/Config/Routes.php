@@ -18,6 +18,10 @@ $routes->group('', ['filter'=>'auth'], function($routes){
 
     $routes->post('dashboard/check/(:num)', 'DashboardController::checkMutasi/$1');
 
+    $routes->get('dashboard/userList', 'DashboardController::userList');
+    $routes->post('dashboard/addUser', 'DashboardController::addUser');
+    $routes->post('dashboard/deleteUser/(:num)', 'DashboardController::deleteUser/$1');
+
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
 

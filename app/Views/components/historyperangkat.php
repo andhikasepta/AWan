@@ -19,14 +19,14 @@
         <div class="flex-1 overflow-y-auto max-h-[400px] px-6 pb-4 rounded-md overflow-hidden">
             <div class="border shadow bg-white rounded-xl">
 
-                <table class="min-w-full text-sm text-left">
+                <table class="min-w-full text-sm text-left border border-gray-300">
                     <thead class="sticky top-0 z-10 bg-[#0F2854] text-white">
                         <tr>
-                            <th class="px-4 py-3 text-center">No</th>
-                            <th class="px-4 py-3 text-left">Update</th>
-                            <th class="px-4 py-3 text-center">User</th>
-                            <th class="px-4 py-3 text-center">Status</th>
-                            <th class="px-4 py-3 text-left">Keterangan</th>
+                            <th class="px-4 py-3 text-center border border-gray-300">No</th>
+                            <th class="px-4 py-3 text-left border border-gray-300">Update</th>
+                            <th class="px-4 py-3 text-center border border-gray-300">User</th>
+                            <th class="px-4 py-3 text-center border border-gray-300">Status</th>
+                            <th class="px-4 py-3 text-left border border-gray-300">Keterangan</th>
                         </tr>
                     </thead>
 
