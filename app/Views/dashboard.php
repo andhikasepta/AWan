@@ -57,7 +57,7 @@
     </div>
 
     <div>
-      <select name="user" onchange="this.form.submit()"
+      <select id="isiUser" name="user" onchange="this.form.submit()"
         class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
         <option value="">Semua User</option>
         <?php foreach ($users as $u): ?>
@@ -290,11 +290,9 @@
     if(id === "tambahModal" && tsSpec){
       tsSpec.clear();
     }
-
-    document.getElementById(id).classList.add("hidden");
-    document.getElementById(id).classList.remove("flex");
   }
 
+  // USER MANAGE
   window.openUserManage = function () {
     openModal('userManageModal');
     loadUsers();
@@ -322,9 +320,12 @@
       res.forEach(user=>{
         tbody.innerHTML += `
         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
-          <td class="px-4 py-3 text-center">
-            <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">
-              <i class="fa-solid fa-trash"></i>
+          <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
+            <button type="button" onclick="editUser(this)" data-id="${user.id}" data-nama="${user.nama}" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button type="button" onclick="deleteUser(${user.id})" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
+              <i class="fa-solid fa-trash-can"></i>
             </button>
           </td>
           <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
@@ -334,9 +335,55 @@
     });
   }
 
+  function editUser(el){
+    const userId = el.dataset.id;
+    const namaLama = el.dataset.nama;
+
+    const row = el.closest("tr");
+    const tdNama = row.children[2];
+
+    tdNama.innerHTML=`
+      <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="border px-2 py-1 rounded text-xs w-full">`;
+
+    const tdAction = row.children[0];
+    tdAction.innerHTML=`
+    <button onclick="saveUser(${userId})" class="text-green-600 mr-2">
+      <i class="fa-solid fa-check"></i>
+    </button>
+    <button onclick="cancelEdit(${userId}, '${namaLama}')" class="text-red-600">
+      <i class="fa-solid fa-xmark"></i>
+    </button>`;
+  }
+
+  function saveUser(id){
+    const nama = document.getElementById(`edit_nama_${id}`).value;
+
+    fetch("<?= base_url('dashboard/updateUser') ?>/" + id, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: new URLSearchParams({nama})
+    })
+    .then(res=>res.json())
+    .then(res=>{
+      if(res.success){
+        showToast("User berhasil diubah", "success");
+        loadUsers();
+      }else{
+        showToast("Gagal mengubah user", "error");
+      }
+    });
+  }
+
+  function cancelEdit(id, namaLama){
+    loadUsers();
+  }
+
   function addUser(){
    let nama = prompt("Masukkan nama user : "); 
-   if(!nama) return;
+
+   if(!nama || !nama.trim()) return;
    fetch("<?= base_url('dashboard/addUser') ?>", {
     method : "POST",
     headers: {
@@ -344,15 +391,14 @@
     },
     body: new URLSearchParams({nama})
    })
-  .then(async res => {
-  const text = await res.text();
-
-  return JSON.parse(text);
-})
-   .then(res => {
+  .then(res => res.json())
+  .then(res => {
+    console.log(res);
     if(res.success){
       showToast("Berhasil Menambahkan User", "success");
       loadUsers();
+      refreshUserDropdown();
+      addUserToTomSelect(res.data);
     }else{
       showToast("Gagal Menambahkan User", "error");
     }
@@ -360,35 +406,98 @@
   }
 
   function deleteUser(id) {
-  Swal.fire({
-    title: "Hapus user ini?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Hapus"
-  }).then(result => {
-    if (result.isConfirmed) {
-      fetch("<?= base_url('dashboard/deleteUser') ?>/" + id, {
-        method: "POST",
-        headers: {
-          "X-Requested-With": "XMLHttpRequest"
-        }
-      })
+    Swal.fire({
+      title: "Hapus user ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Hapus"
+    }).then(result => {
+      if (result.isConfirmed) {
+        fetch("<?= base_url('dashboard/deleteUser') ?>/" + id, {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
         .then(res => res.json())
         .then(res => {
           if (res.success) {
             showToast("User berhasil dihapus", "success");
             loadUsers();
+          }else{
+            showToast("Gagal menghapus user", "error");
           }
         });
-    }
-  });
-}
+      }
+    });
+  }
 
+  function refreshUserDropdown(){
+    fetch("<?= base_url('dashboard/userList') ?>")
+    .then(res=>res.json())
+    .then(users=>{
+      const select = document.getElementById("isiUser");
+
+      const selected = select.value;
+      select.innerHTML = `<option value="">Semua User</option>`;
+
+      users.forEach(u=>{
+        select.innerHTML+=`<option value="${u.id}">${u.nama}</option>`;
+      });
+
+      select.value = selected;
+    });
+  }
+
+  function addUserToTomSelect(user){
+    const select = document.getElementById("edit_user");
+
+    if(select && select.tomselect){
+      select.tomselect.addOption({
+        value: user.id,
+        text: user.nama
+      });
+
+      select.tomselect.refreshOptions(false);
+    }
+  }
   // EDIT MODAL
   window.openEdit = function (id) {
     fetch("<?= base_url('dashboard/edit') ?>/" + id)
       .then(res => res.json())
       .then(data => {
+        fetch("<?= base_url('dashboard/userList') ?>")
+        .then(res=>res.json())
+        .then(users=>{
+          const select = document.getElementById("edit_user");
+
+          if(select.tomselect){
+            select.tomselect.destroy();
+          }
+
+          select.innerHTML = `<option value="">Pilih User</option>`;
+          users.forEach(u=>{
+            select.innerHTML+=`<option value="${u.id}">${u.nama}</option>`;
+          });
+
+          const ts = new TomSelect("#edit_user", {
+            create: false,
+            sortField: {
+              field: "text",
+              direction: "asc"
+            }
+          });
+
+          ts.setValue(data.id_users ?? "");
+
+          // new TomSelect("#edit_user", {
+          //   create: false,
+          //   sortField: {
+          //     field: "text",
+          //     direction: "asc"
+          //   }
+          // });
+        });
         console.log(data);
         console.log("STATUS MUTASI:", data.status_mutasi);
 
@@ -396,21 +505,21 @@
         document.getElementById("edit_noreg").value = data.noreg;
         document.getElementById("edit_np").value = data.nama;
 
-        document.getElementById("edit_user").value = data.id_users ?? "";
+        // document.getElementById("edit_user").value = data.id_users ?? "";
         document.getElementById("edit_status").value = data.status_mutasi ?? "";
         document.getElementById("edit_ket").value = data.keterangan ?? "";
 
         openModal("editModal");
 
-        if (!document.getElementById("edit_user").TomSelect) {
-          new TomSelect("#edit_user", {
-            create: false,
-            sortField: {
-              field: "text",
-              direction: "asc"
-            }
-          });
-        }
+        // if (!document.getElementById("edit_user").TomSelect) {
+        //   new TomSelect("#edit_user", {
+        //     create: false,
+        //     sortField: {
+        //       field: "text",
+        //       direction: "asc"
+        //     }
+        //   });
+        // }
       });
   }
 
@@ -662,7 +771,10 @@
 
     debounceTimer = setTimeout(() => {
       let kode_id = kodeInput.value;
+      if (!specSelect.tomselect || !specSelect.value) return;
+      
       let selectedOption = specSelect.tomselect.getItem(specSelect.value);
+      if (!selectedOption) return;
 
       if (!kode_id || !selectedOption) return;
 
@@ -719,7 +831,7 @@
                 icon: "success",
                 title: "Berhasil",
                 text: "Perangkat berhasil dihapus",
-                showConfirmaButton: false
+                showConfirmButton: false
               });
 
             } else {

@@ -21,6 +21,7 @@ $routes->group('', ['filter'=>'auth'], function($routes){
     $routes->get('dashboard/userList', 'DashboardController::userList');
     $routes->post('dashboard/addUser', 'DashboardController::addUser');
     $routes->post('dashboard/deleteUser/(:num)', 'DashboardController::deleteUser/$1');
+    $routes->post('dashboard/updateUser/(:num)', 'DashboardController::updateUser/$1');
 
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');

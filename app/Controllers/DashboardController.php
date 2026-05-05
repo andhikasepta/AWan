@@ -131,7 +131,14 @@ class DashboardController extends BaseController
     public function addUser()
     {
        try {
-        $nama = $this->request->getPost('nama');
+        $nama = trim($this->request->getPost('nama'));
+
+        if (!$nama){
+            return $this->response->setJSON([
+                'success'=>false,
+                'message'=>'Nama tidak boleh kosong'
+            ]);
+        }
 
         $db = \Config\Database::connect();
 
@@ -146,22 +153,50 @@ class DashboardController extends BaseController
             ]);
         }
 
-        return $this->response->setJSON([
-            'success' => true
-        ]);
+        $insertID = $db->insertID();
 
-    } catch (\Throwable $e) {
         return $this->response->setJSON([
-            'success' => false,
-            'error' => $e->getMessage()
+            'success' => true,
+            'data'=>[
+                'id'=>$insertID,
+                'nama'=>$nama
+            ]
         ]);
+    
+        } catch (\Throwable $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
-}
 
-public function deleteUser($id)
-{
-    $db = \Config\Database::connect();
-    $db->table('users')->delete(['id' => $id]);
-    return $this->response->setJSON(['success' => true]);
-} 
+    public function deleteUser($id)
+    {
+        $db = \Config\Database::connect();
+
+        $deleted = $db->table('users')->delete(['id'=>$id]);
+        return $this->response->setJSON([
+            'success' => $deleted ? true : false]);
+    } 
+
+    public function updateUser($id)
+    {
+        $nama = trim($this->request->getPost('nama'));
+
+        if(!$nama){
+            return $this->response->setJSON([
+                'success'=>false,
+                'message'=>'Nama tidak boleh kosong'
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+
+        $db->table('users')->where('id', $id)->update([
+            'nama'=>$nama
+        ]);
+
+        return $this->response->setJSON(['success'=>true]);
+    }
 }
