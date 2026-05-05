@@ -79,15 +79,19 @@
     <main class="flex-1 pt-24 pl-6 pr-6">
         <?= $this->renderSection('content') ?>
     </main>
-    <div id="overlayPassword" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white border border-gray-200 rounded-md shadow-md w-full max-w-lg p-6 relative">
+
+    <!-- PASSWORD MODAL -->
+    <div id="overlayPassword" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
+            
+            <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                <h3 class="font-bold">Ganti Password</h3>
 
             <button onclick="tutupModalPassword()"
-                class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none hover:text-gray-400">
-                <i class="fa-solid fa-xmark"></i>
+                class="text-white hover:text-gray-400 transition">
+                <i class="fa-solid fa-xmark fa-xl"></i>
             </button>
-
-            <h2 class="text-lg font-bold text-[#1C4D8D]">Ganti Password</h2>
+        </div>
 
             <?php if (session()->getFlashdata('error')): ?>
                 <div class="bg-red-100 text-red-700 p-2 mb-4 text-sm rounded">
@@ -95,7 +99,7 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= base_url('update-password') ?>" method="post" class="flex flex-col space-y-4">
+            <form id="gantiPassword" action="<?= base_url('update-password') ?>" method="post" class="p-4 flex flex-col justify-between">
                 <?= csrf_field() ?>
 
                 <div class="grid grid-cols-[180px,1fr] gap-x-6 gap-y-4 items-center text-left mb-5">
@@ -162,6 +166,10 @@
         }
 
         function tutupModalPassword() {
+            document.getElementById('overlayPassword').classList.add('hidden');
+
+            document.getElementById('gantiPassword').reset();
+            
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
             localStorage.removeItem('showModal');
