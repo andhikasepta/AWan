@@ -50,21 +50,28 @@
             </button>
 
             <div x-show="open" x-transition @click.outside="open = false"
-                class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg text-sm">
+                class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-2xl text-sm">
 
                 <button onclick="bukaModalPassword()" @click="open = false"
-                    class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                    class="w-full rounded-t-md text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                    <i class="fa-solid fa-key mr-2" style="color: #1C4D8D;"></i>
                     Ganti Password
                 </button>
+                <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
                 <button onclick="openUserManage()" @click="open = false"
-                    class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                    <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
                     User Manage
                 </button>
-                <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
-                    Admin Manage
-                </a>
+                <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
                 <a href="<?= base_url('logout') ?>"
-                    class="block px-4 py-2 hover:bg-gray-100">Logout</a>
+                    class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
+                    <i class="fa-solid fa-right-from-bracket mr-2" style="color: #1C4D8D;"></i>
+                    Logout
+                </a>
+                <!-- <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
+                    Admin Manage
+                </a> -->
             </div>
         </div>
     </nav>

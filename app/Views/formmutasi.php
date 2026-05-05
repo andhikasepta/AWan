@@ -148,8 +148,8 @@
   <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
     <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
       <h3 class="font-bold">Scan Barcode / QR Code</h3>
-      <button type="button" id="closeScanner" class="text-white hover:text-red-300 transition">
-        <i class="fa-solid fa-xmark text-xl"></i>
+      <button type="button" id="closeScanner" class="text-white hover:text-gray-400 transition">
+        <i class="fa-solid fa-xmark fa-xl"></i>
       </button>
     </div>
     <div class="p-4 flex flex-col items-center">

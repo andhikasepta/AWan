@@ -1,16 +1,11 @@
-<div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white border border-gray-200 rounded-md w-full max-w-lg p-6 md:p-8 shadow-xl relative">
+<div id="editModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
 
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg text-[#1C4D8D] font-bold">Edit Perangkat</h2>
-
-            <button onclick="closeModal('editModal')"
-                class="absolute right-3 top-3 text-black text-lg font-bold focus:outline-none">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+            <h3 class="font-bold">Edit Perangkat</h3>
         </div>
 
-        <form id="editMutasi" class="space-y-4">
+        <form id="editMutasi" class="p-4 flex flex-col justify-between">
             <input type="hidden" name="id" id="edit_id">
 
             <div>

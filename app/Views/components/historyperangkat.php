@@ -1,13 +1,12 @@
-<div id="historyModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div
-        class="bg-white border border-gray-200 rounded-md w-full max-w-4xl shadow-xl flex flex-col max-h-[85vh] overflow-hidden">
+<div id="historyModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl overflow-hidden">
 
-        <div class="flex justify-between items-center px-6 py-4 border-b sticky top-0 bg-white z-10">
-            <h2 class="text-lg text-[#1C4D8D] font-bold">History Perangkat</h2>
+        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+            <h3 class="font-bold">History Perangkat</h3>
 
             <button onclick="closeModal('historyModal')"
-                class="absolute right-3 top-2 text-black text-lg font-bold focus:outline-none">
-                <i class="fa-solid fa-xmark"></i>
+                class="text-white hover:text-gray-400 transition">
+                <i class="fa-solid fa-xmark fa-xl"></i>
             </button>
         </div>
 
@@ -16,7 +15,7 @@
                 class="border rounded px-3 py-2 w-full mb-4 sticky top-0" placeholder="Cari riwayat perangkat...">
         </div>
 
-        <div class="flex-1 overflow-y-auto max-h-[400px] px-6 pb-4 rounded-md overflow-hidden">
+        <div class="p-4 flex flex-col justify-between overflow-hidden">
             <div class="border shadow bg-white rounded-xl">
 
                 <table class="min-w-full text-sm text-left border border-gray-300">
