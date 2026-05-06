@@ -32,7 +32,7 @@
       <p class="text-[11px] mb-4">Silakan hubungi admin melalui whatsapp di bawah ini</p>
       <a href="https://wa.me/6282133601435?text=Admin,%20terkendala%20No.Registrasi%20perangkat%20tidak%20terdaftar"
         target="_blank"
-        class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-100 transition text-center flex items-center justify-center gap-2">
+        class="bg-white text-[#1C4D8D] font-bold px-2 py-3 rounded-lg w-full text-sm shadow hover:bg-gray-300 transition text-center flex items-center justify-center gap-2">
         Hubungi Admin
       </a>
     </div>
