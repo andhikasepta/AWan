@@ -232,6 +232,12 @@
 
 <?= $this->section('scripts') ?>
 <script>
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      loadUsers();
+    }
+  });
+  
   function showToast(message, type = "error") {
     const toast = document.getElementById("toast");
     const box = document.getElementById("toastBox");
@@ -339,19 +345,49 @@
     const namaLama = el.dataset.nama;
 
     const row = el.closest("tr");
+    row.classList.add("bg-[#F9FBFF]", "ring-1", "ring-[#1C4D8D]/10");
+
     const tdNama = row.children[2];
 
     tdNama.innerHTML=`
-      <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="border px-2 py-1 rounded text-xs w-full">`;
+      <div class="relative group">
+        <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-md text-xs shadow-sm transition-all duration-200">
+      </div>`;
+
+    tdNama.style.opacity = "0";
+    tdNama.style.transform = "translateY(4px)";
+
+    setTimeout(() => {
+      tdNama.style.opacity = "1";
+      tdNama.style.transform = "translateY(0)";
+    }, 120);
 
     const tdAction = row.children[0];
     tdAction.innerHTML=`
-    <button onclick="saveUser(${userId})" class="text-green-600 mr-2">
-      <i class="fa-solid fa-check"></i>
-    </button>
-    <button onclick="cancelEdit(${userId}, '${namaLama}')" class="text-red-600">
-      <i class="fa-solid fa-xmark"></i>
-    </button>`;
+    <div class="flex justify-center items-center gap-2">
+
+      <button onclick="saveUser(${userId})"
+        class="w-6 h-6 flex items-center justify-center rounded-full 
+              bg-green-100 text-green-600 hover:bg-green-200 active:scale-95 transition"
+        title="Simpan">
+        <i class="fa-solid fa-check text-xs"></i>
+      </button>
+
+      <button onclick="cancelEdit(${userId})"
+        class="w-6 h-6 flex items-center justify-center rounded-full 
+              bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition"
+        title="Batal">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+
+    </div>`;
+
+    setTimeout(()=>{
+      const input = document.getElementById(`edit_nama_${userId}`);
+      input.focus();
+
+      input.select();
+    }, 100);
   }
 
   function saveUser(id){
@@ -375,8 +411,10 @@
     });
   }
 
-  function cancelEdit(id, namaLama){
+  function cancelEdit(el, id, namaLama){
     loadUsers();
+    const row = el.closest("tr");
+    row.classList.remove("bg-[#F9FBFF]", "ring-1", "ring-[#1C4D8D]/10");
   }
 
   function addUser(){
