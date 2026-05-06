@@ -135,7 +135,7 @@ class MutasiModel extends Model
 
       $builder->groupStart();
       foreach ($fields as $field) {
-        $builder->orWhere("$field ILIKE", "%$keyword%");
+        $builder->orWhere("$field ILIKE '%$keyword%'", null, false);
       }
       $builder->groupEnd();
     }

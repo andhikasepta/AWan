@@ -11,8 +11,10 @@
         </div>
 
         <div class="px-6 pt-4">
-            <input type="text" id="searchHistory" value="<?= $_GET['searchHistory'] ?? '' ?>"
-                class="border rounded px-3 py-2 w-full mb-4 sticky top-0" placeholder="Cari riwayat perangkat...">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input type="text" id="searchHistory" value="<?= $_GET['searchHistory'] ?? '' ?>" placeholder="Cari User" class="border border-gray-400 pl-8 pr-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+            </div>
         </div>
 
         <div class="p-4 flex flex-col justify-between overflow-hidden">

@@ -718,24 +718,37 @@
         let tbody = document.getElementById("historyBody");
         tbody.innerHTML = "";
 
-        if (res.data.length === 0) {
+        if (!res.data || res.data.length === 0) {
           tbody.innerHTML =
             `<tr>
-            <td colspan="5" class="text-center py-4">Belum Ada History Mutasi</td>
+            <td colspan="5" class="text-center py-4">History tidak ditemukan</td>
           </tr>`;
+
+          document.getElementById("paginationHistory").innerHTML = "";
           return;
         }
 
         let no = (res.currentPage - 1) * 50 + 1;
 
+        const keyword = search.toLowerCase();
+
+        function highlightText(text, keyword) {
+          if(!keyword) return text;
+
+          const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`(${escaped})`, "gi");
+
+          return text.replace(regex, '<span class="bg-blue-200 rounded">$1</span>');
+        }
+        
         res.data.forEach(row => {
           tbody.innerHTML += `
           <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
             <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
-            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px] border border-gray-300">${row.updated_at ?? '-'}</td>
-            <td class="px-4 py-3 text-center border border-gray-300">${row.nm_user ?? '-'}</td>
-            <td class="px-4 py-3 text-center border border-gray-300">${row.status ?? '-'}</td>            
-            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px] border border-gray-300">${row.keterangan ?? '-'}</td>
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[125px] border border-gray-300">${highlightText(row.updated_at ?? '-', keyword)}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.nm_user ?? '-', keyword)}</td>
+            <td class="px-4 py-3 text-center border border-gray-300">${highlightText(row.status ?? '-', keyword)}</td>            
+            <td class="px-4 py-3 text-left break-words whitespace-normal max-w-[200px] border border-gray-300">${highlightText(row.keterangan ?? '-', keyword)}</td>
           </tr>`;
         });
 
