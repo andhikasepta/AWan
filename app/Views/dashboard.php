@@ -247,6 +247,18 @@
       }
     }
   }); 
+
+  document.addEventListener("input", function(e){
+    if(e.target.id === "searchUser"){
+      const keyword = e.target.value.toLowerCase();
+
+      const filtered = allUsers.filter(u => 
+        u.nama.toLowerCase().includes(keyword)
+      );
+
+      renderUsers(filtered);
+    }
+  });
   
   function showToast(message, type = "error") {
     const toast = document.getElementById("toast");
@@ -313,26 +325,34 @@
     loadUsers();
   }
 
+  let allUsers = [];
   function loadUsers(){
     fetch("<?= base_url('dashboard/userList') ?>")
-    .then(res => res.json())
+    .then(res => res.json() )
     .then(res => {
-      console.log("DATA USER:", res);
+      allUsers = res;
+      renderUsers(res);
+    });
+  }
+
+  function renderUsers(users){
       const tbody = document.getElementById("userManageBody");
+      const keyword = (document.getElementById("searchUser")?.value || "").toLowerCase();
+
       tbody.innerHTML = "";
 
-      if (!res.length){
+      if (!users.length){
         tbody.innerHTML = `
         <tr>
           <td colspan="3" class="text-center py-4">
-            Belum ada User
+            User tidak ditemukan
           </td>
         </tr>`;
         return;
       }
 
       let no = 1;
-      res.forEach(user=>{
+      users.forEach(user=>{
         tbody.innerHTML += `
         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
           <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
@@ -344,13 +364,19 @@
             </button>
           </td>
           <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
-          <td class="px-4 py-3 text-left border border-gray-300">${user.nama}</td>
+          <td class="px-4 py-3 text-left border border-gray-300">${highlightText(user.nama, keyword)}</td>
         </tr>`;
       }); 
-    });
-  }
+    }
 
-  function editUser(el){
+    function highlightText(text, keyword){
+      if(!keyword) return text;
+
+      const regex = new RegExp(`(${keyword})`, "gi");
+      return text.replace(regex, '<span class="bg-blue-200 rounded">$1</span>');
+    }
+
+    function editUser(el){
     const userId = el.dataset.id;
     const namaLama = el.dataset.nama;
 
@@ -430,7 +456,7 @@
   function addUser(){
     const tbody = document.getElementById("userManageBody");
     
-    if(document.getElementById("newUserRow")) returnl
+    if(document.getElementById("newUserRow")) return;
 
     const row = document.createElement("tr");
     row.id = "newUserRow";

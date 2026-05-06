@@ -12,11 +12,13 @@
 
         <div class="p-4 flex flex-col overflow-y-auto max-h-[70vh]">
 
-            <div class="p-2 border-b">
+            <div class="p-2 border-b flex justify-between items-center gap-2">
               <button onclick="addUser()" class="bg-[#1C4D8D] text-white px-4 py-2 rounded-md text-xs">
                 <i class="fa-solid fa-plus"></i>
                 Tambah User
               </button>
+
+              <input type="text" id="searchUser" placeholder="Cari User" class="border border-gray-400 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
             </div>
 
             <div class="overflow-y-auto flex-1">
