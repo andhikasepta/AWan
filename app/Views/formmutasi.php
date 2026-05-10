@@ -23,7 +23,7 @@
 
     <button type="button" onclick="closeHomepageOverlay()"
       class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white font-semibold py-4 px-8 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-lg flex items-center gap-2 border border-blue-400/30">
-      Buka Formulir
+      Lanjutkan
     </button>
   </div>
 </div>
