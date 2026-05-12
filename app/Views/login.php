@@ -6,7 +6,7 @@
         <h2 class="text-center text-2xl font-bold text-[#1C4D8D] mb-8 tracking-wide">LOGIN</h2>
         <p class="text-xs text-blue-800 mb-2">
             <i class="fa-solid fa-circle-info mr-1"></i>
-            Akses dibatasi, administrator only
+            Akses Terbatas, Administrator Auth Required
         </p>
         <form action="<?= base_url('login') ?>" method="post" class="flex-flex-col gap-6">
             <div class="flex flex-col">
