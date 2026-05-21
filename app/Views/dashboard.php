@@ -207,6 +207,11 @@
           <i class="fa-solid fa-pen-to-square"></i>
           Edit Selected
         </button>
+        <button onclick="bulkDelete()"
+          class="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-semibold transition">
+          <i class="fa-solid fa-trash-can"></i>
+          Delete Selected
+        </button>
         <button onclick="clearSelection()"
           class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-xs transition">
           <i class="fa-solid fa-xmark"></i>
@@ -1135,6 +1140,58 @@
     updateBulkToolbar();
   }
 
+  function bulkDelete() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) {
+      showToast('Pilih minimal 1 data', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: `Hapus ${ids.length} perangkat?`,
+      text: 'Data perangkat yang dipilih akan dihapus permanen',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch("<?= base_url('perangkat/bulkDelete') ?>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: JSON.stringify({ ids: ids })
+        })
+          .then(res => res.json())
+          .then(res => {
+            if (res.success) {
+              ids.forEach(id => {
+                const row = document.getElementById('row-' + id);
+                if (row) {
+                  row.style.transition = 'all 0.4s ease';
+                  row.style.opacity = '0';
+                  row.style.transform = 'translateX(50px)';
+                  setTimeout(() => row.remove(), 400);
+                }
+              });
+              clearSelection();
+              showToast(`Berhasil menghapus ${res.deleted} perangkat`, 'success');
+            } else {
+              showToast(res.message || 'Gagal menghapus data', 'error');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            showToast('Terjadi kesalahan pada server', 'error');
+          });
+      }
+    });
+  }
+
   let tsBulkUser = null;
   let tsBulkStatus = null;
 
@@ -1352,7 +1409,6 @@
     }
 
     if (ext === 'csv') {
-      // Parse CSV with text reader
       const reader = new FileReader();
       reader.onload = function (e) {
         const text = e.target.result;
@@ -1386,7 +1442,6 @@
       };
       reader.readAsText(file);
     } else {
-      // Parse Excel with SheetJS
       const reader = new FileReader();
       reader.onload = function (e) {
         try {
@@ -1401,7 +1456,6 @@
             return;
           }
 
-          // Find noreg and nama columns (case-insensitive)
           const firstRow = jsonData[0];
           const keys = Object.keys(firstRow);
           const noregKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9_]/g, '') === 'noreg');
@@ -1457,10 +1511,10 @@
         statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-green-100 text-green-700"><i class="fa-solid fa-circle-check"></i> Tersedia</span>';
         valid++;
       } else if (row.status === 'db_duplicate') {
-        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-red-100 text-red-600"><i class="fa-solid fa-circle-xmark"></i> Duplikat DB</span>';
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-red-100 text-red-600"><i class="fa-solid fa-circle-xmark tex-nowrap"></i> Data Duplikat</span>';
         dup++;
       } else if (row.status === 'csv_duplicate') {
-        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-orange-100 text-orange-600"><i class="fa-solid fa-copy"></i> Duplikat CSV</span>';
+        statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-orange-100 text-orange-600"><i class="fa-solid fa-copy text-nowrap"></i> Duplikat CSV</span>';
         dup++;
       } else if (row.status === 'invalid') {
         statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-700"><i class="fa-solid fa-triangle-exclamation"></i> Invalid</span>';
@@ -1514,7 +1568,6 @@
             }
           });
 
-          // Also mark rows with empty nama as invalid
           csvParsedData.forEach((row, idx) => {
             if (row.status === 'tersedia' && !row.nama) {
               row.status = 'invalid';

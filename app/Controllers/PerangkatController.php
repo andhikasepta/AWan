@@ -152,6 +152,30 @@ class PerangkatController extends BaseController
         }
     }
 
+    public function bulkDelete()
+    {
+        $json = $this->request->getJSON();
+        $ids = $json->ids ?? [];
+
+        if (empty($ids) || !is_array($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data yang dipilih']);
+        }
+
+        $deleted = 0;
+        foreach ($ids as $id) {
+            $perangkat = $this->perangkatModel->find($id);
+            if ($perangkat) {
+                $this->perangkatModel->delete($id);
+                $deleted++;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'deleted' => $deleted
+        ]);
+    }
+
     public function bulkUpdatePerangkat()
     {
         $json = $this->request->getJSON();
