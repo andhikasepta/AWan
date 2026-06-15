@@ -61,9 +61,9 @@ class FormController extends BaseController
                     $userName = $user['nama'];
                 }
                 
-                $message = "Status No registrasi {$statusStr} oleh {$userName}";
+                $message = "Status masih {$statusStr} oleh {$userName}";
             } else {
-                $message = "Status No registrasi {$statusStr}";
+                $message = "Status masih {$statusStr}";
             }
             
             return $this->response->setJSON([
