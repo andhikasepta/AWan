@@ -41,23 +41,20 @@
 </div>
 
 <div class="w-full max-w-[1450px] mx-auto rounded-lg overflow-hidden shadow-lg flex flex-col md:flex-row">
-  <div class="w-full md:w-1/5 bg-[#3E679E] p-6 md:p-8 text-white flex flex-col justify-between md:min-h-[510px]">
+  <div class="w-full md:w-1/5 bg-[#2A5FA0] p-6 md:p-8 text-white flex flex-col justify-between md:min-h-[510px]">
     <div>
       <p class="text-xs mb-6 leading-relaxed">
         Welcome, Laskar Lintasarta <br>
         Central Java & D.I.Y Operation
       </p>
 
-      <div class="bg-[#1C4D8D] p-5 rounded-xl shadow-inner">
+      <div class="bg-[#1C4D8D] p-5 rounded-xl shadow-inner text-white">
         <h2 class="font-bold text-lg mb-2">PENTING!!!</h2>
-        <p class="text-xs leading relaxed mb-4 text-white">
-          Mohon untuk pengambilan dan peminjaman perangkat dapat mengisi form yang sudah disediakan atau mengirimkan
-          foto registrasi perangkat dengan <b>JELAS</b>
-        </p>
-        <p class="text-[10px] italic text-white">
-          Note: <br>
-          Pengambilan dan mutasi perangkat <span class="font-bold">WAJIB</span> menginformasikan administrator
-        </p>
+        <ul class="list-disc list-outside ml-4 text-xs leading-relaxed space-y-2">
+          <li>Pengambilan/peminjaman perangkat wajib isi form atau kirim foto registrasi secara <b>JELAS</b>.</li>
+          <li>Perangkat yang terpasang <b>WAJIB</b> di-scan melalui PRISMA atau FLASMA.</li>
+          <li>Segala bentuk pengambilan, mutasi, dan pengembalian perangkat <b>WAJIB</b> laporan ke administrator.</li>
+        </ul>
       </div>
 
       <p class="text-[11px] font-bold mt-5 mb-1">BUTUH BANTUAN?</p>
@@ -76,13 +73,16 @@
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
     <!-- TABS -->
     <div class="flex border-b border-gray-200 mb-8">
-      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/3 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
+      <button type="button" onclick="switchTab('request')" id="tab_request"
+        class="w-1/3 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
         PEMINJAMAN
       </button>
-      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
+      <button type="button" onclick="switchTab('return')" id="tab_return"
+        class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
         PENGEMBALIAN
       </button>
-      <button type="button" onclick="switchTab('install')" id="tab_install" class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
+      <button type="button" onclick="switchTab('install')" id="tab_install"
+        class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
         PEMASANGAN
       </button>
     </div>
@@ -90,111 +90,111 @@
     <!-- SLIDER CONTAINER -->
     <div class="overflow-hidden w-full relative">
       <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[300%]">
-        
+
         <!-- TAB 1: PEMINJAMAN -->
         <div class="w-1/3 flex-shrink-0 pr-4 pl-1">
           <form action="<?= base_url('/submit') ?>" method="POST">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
-        <div class="w-full flex flex-col relative">
-          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
-          <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik no registrasi"
-            class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
+              <div class="w-full flex flex-col relative">
+                <label class="font-semibold text-[#1C4D8D] text-sm mb-2">No Registrasi</label>
+                <input type="text" id="noreg_input" placeholder="Scan barcode atau ketik no registrasi"
+                  class="text-xs w-full rounded-md p-2 min-h-[42px] border border-gray-300 focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D]">
 
-          <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
-        </div>
+                <div id="status_scan" class="text-[10px] mt-1 hidden"></div>
+              </div>
 
-        <div class="w-full flex flex-col justify-end">
-          <label class="invisible text-sm mb-2">Hidden</label>
-          <button type="button" id="btn_tambah"
-            class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7AAACE] transition items-end flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-            </svg> Scan Barcode
-          </button>
-        </div>
-      </div>
+              <div class="w-full flex flex-col justify-end">
+                <label class="invisible text-sm mb-2">Hidden</label>
+                <button type="button" id="btn_tambah"
+                  class="bg-[#1C4D8D] h-[42px] px-4 py-1 text-xs text-white rounded-md font-semibold shadow hover:bg-[#7AAACE] transition items-end flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                  </svg> Scan Barcode
+                </button>
+              </div>
+            </div>
 
-      <div class="mt-4 mb-6">
-        <h3 class="font-semibold text-sm mb-3 text-[#1C4D8D]">Daftar Perangkat</h3>
-        <div class="overflow-y-auto rounded-lg border border-gray-200 shadow-sm max-h-[245px]">
-          <table class="w-full text-xs text-left">
-            <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-              <tr>
-                <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">No</th>
-                <th class="px-2 py-2 font-semibold text-gray-600">Nomor Registrasi</th>
-                <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
-                <th class="px-2 py-2 font-semibold text-gray-600 text-center w-20">Action</th>
-              </tr>
-            </thead>
-            <tbody id="list_perangkat" class="divide-y divide-gray-100 bg-white">
-              <tr>
-                <td colspan="4" class="px-4 py-2 text-center text-gray-400 italic">
-                  Belum ada perangkat yang ditambahkan
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <div class="mt-4 mb-6">
+              <h3 class="font-semibold text-sm mb-3 text-[#1C4D8D]">Daftar Perangkat</h3>
+              <div class="overflow-y-auto rounded-lg border border-gray-200 shadow-sm max-h-[245px]">
+                <table class="w-full text-xs text-left">
+                  <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">No</th>
+                      <th class="px-2 py-2 font-semibold text-gray-600">Nomor Registrasi</th>
+                      <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                      <th class="px-2 py-2 font-semibold text-gray-600 text-center w-20">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="list_perangkat" class="divide-y divide-gray-100 bg-white">
+                    <tr>
+                      <td colspan="4" class="px-4 py-2 text-center text-gray-400 italic">
+                        Belum ada perangkat yang ditambahkan
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-      <div class="flex flex-col mb-4">
-        <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
-        <select id="user" name="user" class="" required>
-          <style>
-            .ts-control {
-              border-radius: 0.375rem;
-              padding: 0.7rem;
-              border: 1px solid #d1d5db;
-            }
+            <div class="flex flex-col mb-4">
+              <label class="font-semibold text-[#1C4D8D] text-sm mb-2">User</label>
+              <select id="user" name="user" class="" required>
+                <style>
+                  .ts-control {
+                    border-radius: 0.375rem;
+                    padding: 0.7rem;
+                    border: 1px solid #d1d5db;
+                  }
 
-            .ts-control:focus {
-              border-color: #1C4D8D;
-              box-shadow: 0 0 0 1px #1C4D8D;
-            }
+                  .ts-control:focus {
+                    border-color: #1C4D8D;
+                    box-shadow: 0 0 0 1px #1C4D8D;
+                  }
 
-            #reader {
-              border: none !important;
-              position: relative;
-            }
+                  #reader {
+                    border: none !important;
+                    position: relative;
+                  }
 
-            #reader video {
-              border-radius: 8px;
-              object-fit: cover !important;
-            }
+                  #reader video {
+                    border-radius: 8px;
+                    object-fit: cover !important;
+                  }
 
-            #reader__scan_region {
-              border-radius: 8px;
-            }
-          </style>
-          <option value="">Pilih user</option>
-          <?php foreach ($users as $u): ?>
-            <option value="<?= $u['id'] ?>" data-nama="<?= $u['nama'] ?>"> <?= $u['nama'] ?>
-            <?php endforeach; ?>
-        </select>
-      </div>
+                  #reader__scan_region {
+                    border-radius: 8px;
+                  }
+                </style>
+                <option value="">Pilih user</option>
+                <?php foreach ($users as $u): ?>
+                  <option value="<?= $u['id'] ?>" data-nama="<?= $u['nama'] ?>"> <?= $u['nama'] ?>
+                  <?php endforeach; ?>
+              </select>
+            </div>
 
-      <div class="mb-8">
-        <div class="flex flex-col">
-          <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
-          <div class="relative">
-            <textarea name="keterangan" rows="2" placeholder="Masukkan keterangan"
-              class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
-          </div>
-        </div>
-      </div>
+            <div class="mb-8">
+              <div class="flex flex-col">
+                <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Keterangan</label>
+                <div class="relative">
+                  <textarea name="keterangan" rows="2" placeholder="Masukkan keterangan"
+                    class="border rounded-md p-3 pr-10 text-xs w-full focus:outline-none focus:border-[#1C4D8D] focus:ring-1 focus:ring-[#1C4D8D] resize-none"></textarea>
+                </div>
+              </div>
+            </div>
 
-      <div class="flex">
-        <button type="submit" id="btn_submit"
-          class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7AAACE] transition">
-          Submit
-        </button>
-      </div>
+            <div class="flex">
+              <button type="submit" id="btn_submit"
+                class="bg-[#1C4D8D] text-sm text-white px-8 py-2 rounded-md font-semibold shadow hover:bg-[#7AAACE] transition">
+                Submit
+              </button>
+            </div>
           </form>
         </div>
 
@@ -203,11 +203,14 @@
           <div class="flex flex-col mb-4">
             <div class="flex items-center gap-2 mb-2">
               <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
-              <a href="javascript:void(0)" onclick="resetReturnForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
+              <a href="javascript:void(0)" onclick="resetReturnForm()"
+                class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5"
+                title="Reset">
                 <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
               </a>
             </div>
-            <select id="return_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+            <select id="return_user"
+              class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
               <option value="">Pilih User...</option>
               <?php foreach ($users as $u): ?>
                 <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
@@ -217,8 +220,10 @@
 
           <div class="mt-4 mb-2 transition-all duration-500 ease-in-out">
             <div class="flex justify-between items-center mb-3">
-              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_dibawa_count">0</span>)</h3>
-              <input type="text" id="search_return_devices" placeholder="Cari perangkat..." class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D] hidden">
+              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span
+                  id="total_dibawa_count">0</span>)</h3>
+              <input type="text" id="search_return_devices" placeholder="Cari perangkat..."
+                class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D] hidden">
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[40vh]">
               <table class="w-full text-xs text-left">
@@ -247,7 +252,9 @@
             <div class="text-xs text-gray-500 font-medium">
               Terpilih: <span id="selected_dibawa_count" class="font-bold text-[#1C4D8D]">0</span> perangkat
             </div>
-            <button type="button" onclick="submitReturnRequest()" class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50" id="btn_submit_return" disabled>
+            <button type="button" onclick="submitReturnRequest()"
+              class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50"
+              id="btn_submit_return" disabled>
               Submit Request
             </button>
           </div>
@@ -258,11 +265,14 @@
           <div class="flex flex-col mb-4">
             <div class="flex items-center gap-2 mb-2">
               <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
-              <a href="javascript:void(0)" onclick="resetInstallForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
+              <a href="javascript:void(0)" onclick="resetInstallForm()"
+                class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5"
+                title="Reset">
                 <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
               </a>
             </div>
-            <select id="install_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+            <select id="install_user"
+              class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
               <option value="">Pilih User...</option>
               <?php foreach ($users as $u): ?>
                 <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
@@ -272,7 +282,8 @@
 
           <div class="mt-2 mb-2 transition-all duration-500 ease-in-out">
             <div class="flex justify-between items-center mb-3">
-              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_install_count">0</span>)</h3>
+              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span
+                  id="total_install_count">0</span>)</h3>
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[25vh]">
               <table class="w-full text-xs text-left">
@@ -301,13 +312,15 @@
           <div class="grid grid-cols-2 gap-3 mt-3 mb-3">
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Arep</label>
-              <select id="install_arep" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+              <select id="install_arep"
+                class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
                 <option value="">Pilih Arep...</option>
               </select>
             </div>
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Node Sentral</label>
-              <select id="install_node" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]" disabled>
+              <select id="install_node"
+                class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]" disabled>
                 <option value="">Pilih Arep dahulu...</option>
               </select>
             </div>
@@ -317,7 +330,9 @@
             <div class="text-xs text-gray-500 font-medium">
               Terpilih: <span id="selected_install_count" class="font-bold text-[#1C4D8D]">0</span> perangkat
             </div>
-            <button type="button" onclick="submitInstallRequest()" class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50" id="btn_submit_install" disabled>
+            <button type="button" onclick="submitInstallRequest()"
+              class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50"
+              id="btn_submit_install" disabled>
               Submit Request
             </button>
           </div>
@@ -327,25 +342,26 @@
     </div>
   </div>
 
-<!-- Modal Scanner -->
-<div id="scannerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
-  <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
-    <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
-      <h3 class="font-bold">Scan Barcode / QR Code</h3>
-      <div class="flex items-center gap-3">
-        <button type="button" id="switchCamera" title="Switch Camera" class="text-white hover:text-gray-300 transition">
-          <i class="fa-solid fa-camera-rotate text-lg"></i>
-        </button>
-        <button type="button" id="closeScanner" class="text-white hover:text-gray-400 transition">
-          <i class="fa-solid fa-xmark fa-xl"></i>
-        </button>
+  <!-- Modal Scanner -->
+  <div id="scannerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
+      <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+        <h3 class="font-bold">Scan Barcode / QR Code</h3>
+        <div class="flex items-center gap-3">
+          <button type="button" id="switchCamera" title="Switch Camera"
+            class="text-white hover:text-gray-300 transition">
+            <i class="fa-solid fa-camera-rotate text-lg"></i>
+          </button>
+          <button type="button" id="closeScanner" class="text-white hover:text-gray-400 transition">
+            <i class="fa-solid fa-xmark fa-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 flex flex-col items-center">
+        <div id="reader" class="w-full"></div>
       </div>
     </div>
-    <div class="p-4 flex flex-col items-center">
-      <div id="reader" class="w-full"></div>
-    </div>
   </div>
-</div>
 
 </div>
 
@@ -393,7 +409,7 @@
     overlay.style.transform = 'translateY(-100%)';
     overlay.style.opacity = '0';
 
-    setTimeout(function() {
+    setTimeout(function () {
       overlay.style.display = 'none';
     }, 800);
   }
@@ -694,13 +710,13 @@
     new TomSelect("#user", {
       create: false,
     });
-    
+
     // Return Request Logic
     let tsReturnUser = new TomSelect("#return_user", {
       create: false,
     });
 
-    tsReturnUser.on('change', function(userId) {
+    tsReturnUser.on('change', function (userId) {
       if (!userId) {
         document.getElementById('return_devices_list').innerHTML = `
           <tr>
@@ -730,7 +746,7 @@
         .then(data => {
           const tbody = document.getElementById('return_devices_list');
           tbody.innerHTML = '';
-          
+
           if (data.length === 0) {
             tbody.innerHTML = `
               <tr>
@@ -753,12 +769,12 @@
 
           data.forEach(device => {
             const isPending = device.is_pending == 1;
-            const statusHtml = isPending 
-                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
-                : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
-            const cbHtml = isPending 
-                ? `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
-                : `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+            const statusHtml = isPending
+              ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+              : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
+            const cbHtml = isPending
+              ? `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
+              : `<input type="checkbox" class="return-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
 
             tbody.innerHTML += `
               <tr class="device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
@@ -772,7 +788,7 @@
             `;
           });
 
-           document.getElementById('btn_submit_return').disabled = false;
+          document.getElementById('btn_submit_return').disabled = false;
 
           // Reset select all checkbox
           var selectAll = document.getElementById('selectAllReturn');
@@ -787,7 +803,7 @@
 
     const searchReturnInput = document.getElementById('search_return_devices');
     if (searchReturnInput) {
-      searchReturnInput.addEventListener('input', function() {
+      searchReturnInput.addEventListener('input', function () {
         const keyword = this.value.toLowerCase();
         const rows = document.querySelectorAll('#return_devices_list tr.device-row');
         rows.forEach(row => {
@@ -797,7 +813,7 @@
       });
     }
 
-    window.resetReturnForm = function() {
+    window.resetReturnForm = function () {
       if (typeof tsReturnUser !== 'undefined') {
         tsReturnUser.clear();
       }
@@ -806,10 +822,10 @@
     // Use event delegation for dynamically created checkboxes
     var returnList = document.getElementById('return_devices_list');
     if (returnList) {
-      returnList.addEventListener('change', function(e) {
+      returnList.addEventListener('change', function (e) {
         if (e.target && e.target.classList.contains('return-device-cb')) {
           updateSelectedCount();
-          
+
           // Update "Select All" checkbox state
           var allCbs = document.querySelectorAll('.return-device-cb');
           var checkedCbs = document.querySelectorAll('.return-device-cb:checked');
@@ -823,15 +839,15 @@
 
     var selectAllEl = document.getElementById('selectAllReturn');
     if (selectAllEl) {
-      selectAllEl.addEventListener('change', function() {
+      selectAllEl.addEventListener('change', function () {
         var isChecked = this.checked;
         var checkboxes = document.querySelectorAll('.return-device-cb');
-        checkboxes.forEach(function(cb) { cb.checked = isChecked; });
+        checkboxes.forEach(function (cb) { cb.checked = isChecked; });
         updateSelectedCount();
       });
     }
-    
-    window.switchTab = function(tab) {
+
+    window.switchTab = function (tab) {
       const slider = document.getElementById('slider_container');
       const tabReq = document.getElementById('tab_request');
       const tabRet = document.getElementById('tab_return');
@@ -856,7 +872,7 @@
       }
     }
 
-    window.submitReturnRequest = function() {
+    window.submitReturnRequest = function () {
       const checkboxes = document.querySelectorAll('.return-device-cb:checked');
       if (checkboxes.length === 0) {
         showToast('Pilih setidaknya satu perangkat untuk dikembalikan', 'warning');
@@ -869,7 +885,7 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
 
       var params = new URLSearchParams();
-      mutasiIds.forEach(function(id) {
+      mutasiIds.forEach(function (id) {
         params.append('mutasi_ids[]', id);
       });
 
@@ -881,23 +897,23 @@
         },
         body: params
       })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          showToast(res.message, 'success');
-          switchTab('request');
-          tsReturnUser.clear();
-        } else {
-          showToast(res.message, 'error');
-        }
-      })
-      .catch(err => {
-        showToast('Terjadi kesalahan', 'error');
-      })
-      .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = 'Submit Request';
-      });
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            showToast(res.message, 'success');
+            switchTab('request');
+            tsReturnUser.clear();
+          } else {
+            showToast(res.message, 'error');
+          }
+        })
+        .catch(err => {
+          showToast('Terjadi kesalahan', 'error');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = 'Submit Request';
+        });
     }
 
     // Installation Request Logic
@@ -924,10 +940,10 @@
     const installArepSelect = document.getElementById('install_arep');
     const installNodeSelect = document.getElementById('install_node');
 
-    installArepSelect.addEventListener('change', function() {
+    installArepSelect.addEventListener('change', function () {
       const selectedArep = this.value;
       installNodeSelect.innerHTML = '<option value="">Pilih Node Sentral...</option>';
-      
+
       if (selectedArep && nodeData[selectedArep]) {
         installNodeSelect.disabled = false;
         nodeData[selectedArep].forEach(node => {
@@ -942,7 +958,7 @@
       }
     });
 
-    tsInstallUser.on('change', function(userId) {
+    tsInstallUser.on('change', function (userId) {
       if (!userId) {
         document.getElementById('install_devices_list').innerHTML = `
           <tr>
@@ -972,7 +988,7 @@
         .then(data => {
           const tbody = document.getElementById('install_devices_list');
           tbody.innerHTML = '';
-          
+
           if (data.length === 0) {
             tbody.innerHTML = `
               <tr>
@@ -992,12 +1008,12 @@
 
           data.forEach(device => {
             const isPending = device.is_pending == 1; // From return_requests check (could be expanded)
-            const statusHtml = isPending 
-                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
-                : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
-            const cbHtml = isPending 
-                ? `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
-                : `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+            const statusHtml = isPending
+              ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+              : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
+            const cbHtml = isPending
+              ? `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
+              : `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
 
             tbody.innerHTML += `
               <tr class="install-device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
@@ -1011,7 +1027,7 @@
             `;
           });
 
-           document.getElementById('btn_submit_install').disabled = false;
+          document.getElementById('btn_submit_install').disabled = false;
 
           var selectAll = document.getElementById('selectAllInstall');
           if (selectAll) selectAll.checked = false;
@@ -1023,7 +1039,7 @@
       document.getElementById('selected_install_count').innerText = selectedCount;
     }
 
-    window.resetInstallForm = function() {
+    window.resetInstallForm = function () {
       if (typeof tsInstallUser !== 'undefined') {
         tsInstallUser.clear();
       }
@@ -1034,10 +1050,10 @@
 
     var installList = document.getElementById('install_devices_list');
     if (installList) {
-      installList.addEventListener('change', function(e) {
+      installList.addEventListener('change', function (e) {
         if (e.target && e.target.classList.contains('install-device-cb')) {
           updateInstallSelectedCount();
-          
+
           var allCbs = document.querySelectorAll('.install-device-cb:not(:disabled)');
           var checkedCbs = document.querySelectorAll('.install-device-cb:checked');
           var selectAll = document.getElementById('selectAllInstall');
@@ -1050,24 +1066,24 @@
 
     var selectAllInstallEl = document.getElementById('selectAllInstall');
     if (selectAllInstallEl) {
-      selectAllInstallEl.addEventListener('change', function() {
+      selectAllInstallEl.addEventListener('change', function () {
         var isChecked = this.checked;
         var checkboxes = document.querySelectorAll('.install-device-cb:not(:disabled)');
-        checkboxes.forEach(function(cb) { cb.checked = isChecked; });
+        checkboxes.forEach(function (cb) { cb.checked = isChecked; });
         updateInstallSelectedCount();
       });
     }
 
-    window.submitInstallRequest = function() {
+    window.submitInstallRequest = function () {
       const checkboxes = document.querySelectorAll('.install-device-cb:checked');
       if (checkboxes.length === 0) {
         showToast('Pilih setidaknya satu perangkat untuk dipasang', 'warning');
         return;
       }
-      
+
       const arep = installArepSelect.value;
       const nodeSentral = installNodeSelect.value;
-      
+
       if (!arep || !nodeSentral) {
         showToast('Pilih Arep dan Node Sentral', 'warning');
         return;
@@ -1079,7 +1095,7 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
 
       var params = new URLSearchParams();
-      mutasiIds.forEach(function(id) {
+      mutasiIds.forEach(function (id) {
         params.append('mutasi_ids[]', id);
       });
       params.append('arep', arep);
@@ -1093,23 +1109,23 @@
         },
         body: params
       })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          showToast(res.message, 'success');
-          switchTab('request');
-          resetInstallForm();
-        } else {
-          showToast(res.message, 'error');
-        }
-      })
-      .catch(err => {
-        showToast('Terjadi kesalahan', 'error');
-      })
-      .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = 'Submit Request';
-      });
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            showToast(res.message, 'success');
+            switchTab('request');
+            resetInstallForm();
+          } else {
+            showToast(res.message, 'error');
+          }
+        })
+        .catch(err => {
+          showToast('Terjadi kesalahan', 'error');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = 'Submit Request';
+        });
     }
   });
 </script>
