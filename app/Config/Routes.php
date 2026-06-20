@@ -48,7 +48,18 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/returns/approve', 'DashboardController::approveReturnGroup');
     $routes->post('dashboard/returns/mark-read', 'DashboardController::markReturnRead');
 
+    // Installation Requests Routes (Admin)
+    $routes->get('dashboard/installations', 'DashboardController::getPendingInstallations');
+    $routes->post('dashboard/installations/approve', 'DashboardController::approveInstallationGroup');
+    $routes->post('dashboard/installations/mark-read', 'DashboardController::markInstallationRead');
+
+    // Nodes CRUD Routes (Admin)
+    $routes->get('dashboard/nodeList', 'DashboardController::nodeList');
+    $routes->post('dashboard/addNode', 'DashboardController::addNode');
+    $routes->post('dashboard/deleteNode/(:num)', 'DashboardController::deleteNode/$1');
+
     $routes->get('dashboard/followUpItems', 'DashboardController::followUpItems');
+    $routes->get('dashboard/checkUpdates', 'DashboardController::checkUpdates');
 });
 
 $routes->get('/', 'FormController::index');
@@ -61,6 +72,10 @@ $routes->get('submit/pdf/clear', 'FormController::clearPdfSession');
 $routes->get('form/devices/(:num)', 'FormController::getDevicesDibawa/$1');
 $routes->post('form/return', 'FormController::submitReturnRequest');
 $routes->get('form/cek-noreg', 'FormController::cekNoreg');
+
+// Installation Requests Routes (Public)
+$routes->get('form/nodes', 'FormController::getNodes');
+$routes->post('form/installation', 'FormController::submitInstallationRequest');
 
 $routes->get('login', 'AdminController::index');
 $routes->post('login', 'AdminController::login');

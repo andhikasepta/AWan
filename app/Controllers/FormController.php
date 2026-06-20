@@ -521,4 +521,55 @@ class FormController extends BaseController
         
         return $this->response->setJSON(['success' => true, 'message' => 'Request pengembalian berhasil dikirim.']);
     }
+
+    public function getNodes()
+    {
+        $nodeModel = new \App\Models\NodeModel();
+        $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
+        
+        // Group by arep
+        $grouped = [];
+        foreach ($nodes as $n) {
+            $grouped[$n['arep']][] = $n['node_sentral'];
+        }
+        
+        return $this->response->setJSON($grouped);
+    }
+
+    public function submitInstallationRequest()
+    {
+        $mutasiIds = $this->request->getPost('mutasi_ids');
+        $arep = $this->request->getPost('arep');
+        $nodeSentral = $this->request->getPost('node_sentral');
+        
+        if (empty($mutasiIds)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
+        }
+        
+        if (empty($arep) || empty($nodeSentral)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Arep dan Node Sentral wajib dipilih.']);
+        }
+        
+        $installationModel = new \App\Models\InstallationRequestModel();
+        
+        $db = \Config\Database::connect();
+        $db->transStart();
+        
+        foreach ($mutasiIds as $mutasiId) {
+            $installationModel->insert([
+                'id_mutasi'    => $mutasiId,
+                'arep'         => $arep,
+                'node_sentral' => $nodeSentral,
+                'status'       => 'Pending'
+            ]);
+        }
+        
+        $db->transComplete();
+        
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengirim request pemasangan.']);
+        }
+        
+        return $this->response->setJSON(['success' => true, 'message' => 'Request pemasangan berhasil dikirim.']);
+    }
 }

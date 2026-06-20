@@ -37,8 +37,8 @@
 <body class="bg-[#F1F1F1] h-screen flex flex-col">
   <?php $uri = service('uri'); ?>
 
-  <nav id="mainNav" class="fixed w-full bg-[#1C4D8D] text-white px-4 md:px-6 py-2 flex justify-between items-center shadow-md z-50">
-    <img src="<?= base_url('images/awan.png') ?>" class="w-[140px] md:w-[200px]">
+  <nav id="mainNav" class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-4 md:px-6 py-2 flex justify-between items-center shadow-md z-50">
+    <img src="<?= base_url('images/awan.png') ?>" class="w-[120px] md:w-[150px]">
 
     <!-- Hamburger button (mobile only) -->
     <button id="hamburgerBtn" onclick="toggleMobileMenu()" class="md:hidden text-white focus:outline-none p-2">
@@ -105,7 +105,7 @@
     }
   </script>
 
-  <main class="flex-1 pt-24 pl-4 pr-4">
+  <main class="flex-1 pt-28 pl-4 pr-4">
     <?= $this->renderSection('content') ?>
   </main>
 

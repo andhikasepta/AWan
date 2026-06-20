@@ -76,20 +76,23 @@
   <div class="w-full md:w-4/5 bg-white p-6 md:p-10 min-h-[510px]">
     <!-- TABS -->
     <div class="flex border-b border-gray-200 mb-8">
-      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all">
+      <button type="button" onclick="switchTab('request')" id="tab_request" class="w-1/3 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
         PEMINJAMAN
       </button>
-      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all">
+      <button type="button" onclick="switchTab('return')" id="tab_return" class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
         PENGEMBALIAN
+      </button>
+      <button type="button" onclick="switchTab('install')" id="tab_install" class="w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm">
+        PEMASANGAN
       </button>
     </div>
 
     <!-- SLIDER CONTAINER -->
     <div class="overflow-hidden w-full relative">
-      <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[200%]">
+      <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[300%]">
         
         <!-- TAB 1: PEMINJAMAN -->
-        <div class="w-1/2 flex-shrink-0 pr-4 pl-1">
+        <div class="w-1/3 flex-shrink-0 pr-4 pl-1">
           <form action="<?= base_url('/submit') ?>" method="POST">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 mb-5">
 
@@ -196,7 +199,7 @@
         </div>
 
         <!-- TAB 2: PENGEMBALIAN -->
-        <div class="w-1/2 flex-shrink-0 pl-4 pr-1 flex flex-col">
+        <div class="w-1/3 flex-shrink-0 px-4 flex flex-col">
           <div class="flex flex-col mb-4">
             <div class="flex items-center gap-2 mb-2">
               <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
@@ -212,7 +215,7 @@
             </select>
           </div>
 
-          <div class="mt-4 mb-2 flex-1">
+          <div class="mt-4 mb-2 transition-all duration-500 ease-in-out">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_dibawa_count">0</span>)</h3>
               <input type="text" id="search_return_devices" placeholder="Cari perangkat..." class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D] hidden">
@@ -245,6 +248,76 @@
               Terpilih: <span id="selected_dibawa_count" class="font-bold text-[#1C4D8D]">0</span> perangkat
             </div>
             <button type="button" onclick="submitReturnRequest()" class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50" id="btn_submit_return" disabled>
+              Submit Request
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: PEMASANGAN -->
+        <div class="w-1/3 flex-shrink-0 pl-4 pr-1 flex flex-col">
+          <div class="flex flex-col mb-4">
+            <div class="flex items-center gap-2 mb-2">
+              <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
+              <a href="javascript:void(0)" onclick="resetInstallForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
+                <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
+              </a>
+            </div>
+            <select id="install_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+              <option value="">Pilih User...</option>
+              <?php foreach ($users as $u): ?>
+                <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="mt-2 mb-2 transition-all duration-500 ease-in-out">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-semibold text-sm text-[#1C4D8D]">Perangkat yang dibawa (<span id="total_install_count">0</span>)</h3>
+            </div>
+            <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[25vh]">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0">
+                  <tr>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">
+                      <input type="checkbox" id="selectAllInstall" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]">
+                    </th>
+                    <th class="px-2 py-2 font-semibold text-gray-600">No Registrasi</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600">Nama Perangkat</th>
+                    <th class="px-2 py-2 font-semibold text-gray-600 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="install_devices_list" class="divide-y divide-gray-100 bg-white">
+                  <tr>
+                    <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                      Pilih user untuk melihat perangkat.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Arep & Node Sentral Dropdowns -->
+          <div class="grid grid-cols-2 gap-3 mt-3 mb-3">
+            <div class="flex flex-col">
+              <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Arep</label>
+              <select id="install_arep" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                <option value="">Pilih Arep...</option>
+              </select>
+            </div>
+            <div class="flex flex-col">
+              <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Node Sentral</label>
+              <select id="install_node" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]" disabled>
+                <option value="">Pilih Arep dahulu...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200 flex justify-between items-center mt-2">
+            <div class="text-xs text-gray-500 font-medium">
+              Terpilih: <span id="selected_install_count" class="font-bold text-[#1C4D8D]">0</span> perangkat
+            </div>
+            <button type="button" onclick="submitInstallRequest()" class="bg-[#1C4D8D] px-6 py-2 text-sm text-white rounded-md shadow hover:bg-[#7AAACE] transition disabled:opacity-50" id="btn_submit_install" disabled>
               Submit Request
             </button>
           </div>
@@ -762,15 +835,24 @@
       const slider = document.getElementById('slider_container');
       const tabReq = document.getElementById('tab_request');
       const tabRet = document.getElementById('tab_return');
+      const tabInst = document.getElementById('tab_install');
+
+      const activeClass = 'w-1/3 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm';
+      const inactiveClass = 'w-1/3 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all text-[10px] md:text-sm';
+
+      tabReq.className = inactiveClass;
+      tabRet.className = inactiveClass;
+      tabInst.className = inactiveClass;
 
       if (tab === 'request') {
         slider.style.transform = 'translateX(0%)';
-        tabReq.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
-        tabRet.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
-      } else {
-        slider.style.transform = 'translateX(-50%)';
-        tabReq.className = 'w-1/2 py-3 font-extrabold text-gray-400 text-center border-b-4 border-transparent hover:text-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
-        tabRet.className = 'w-1/2 py-3 font-extrabold text-[#1C4D8D] text-center border-b-4 border-[#1C4D8D] border-t-0 border-l-0 border-r-0 outline-none focus:outline-none focus:ring-0 transition-all';
+        tabReq.className = activeClass;
+      } else if (tab === 'return') {
+        slider.style.transform = 'translateX(-33.333%)';
+        tabRet.className = activeClass;
+      } else if (tab === 'install') {
+        slider.style.transform = 'translateX(-66.666%)';
+        tabInst.className = activeClass;
       }
     }
 
@@ -805,6 +887,218 @@
           showToast(res.message, 'success');
           switchTab('request');
           tsReturnUser.clear();
+        } else {
+          showToast(res.message, 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Terjadi kesalahan', 'error');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Request';
+      });
+    }
+
+    // Installation Request Logic
+    let tsInstallUser = new TomSelect("#install_user", {
+      create: false,
+    });
+
+    let nodeData = {};
+
+    // Fetch Arep and Node Data
+    fetch(`<?= base_url('form/nodes') ?>`)
+      .then(res => res.json())
+      .then(data => {
+        nodeData = data;
+        const arepSelect = document.getElementById('install_arep');
+        Object.keys(data).forEach(arep => {
+          const option = document.createElement('option');
+          option.value = arep;
+          option.textContent = arep;
+          arepSelect.appendChild(option);
+        });
+      });
+
+    const installArepSelect = document.getElementById('install_arep');
+    const installNodeSelect = document.getElementById('install_node');
+
+    installArepSelect.addEventListener('change', function() {
+      const selectedArep = this.value;
+      installNodeSelect.innerHTML = '<option value="">Pilih Node Sentral...</option>';
+      
+      if (selectedArep && nodeData[selectedArep]) {
+        installNodeSelect.disabled = false;
+        nodeData[selectedArep].forEach(node => {
+          const option = document.createElement('option');
+          option.value = node;
+          option.textContent = node;
+          installNodeSelect.appendChild(option);
+        });
+      } else {
+        installNodeSelect.disabled = true;
+        installNodeSelect.innerHTML = '<option value="">Pilih Arep dahulu...</option>';
+      }
+    });
+
+    tsInstallUser.on('change', function(userId) {
+      if (!userId) {
+        document.getElementById('install_devices_list').innerHTML = `
+          <tr>
+            <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+              Pilih user untuk melihat perangkat.
+            </td>
+          </tr>
+        `;
+        document.getElementById('btn_submit_install').disabled = true;
+        document.getElementById('total_install_count').innerText = '0';
+        document.getElementById('selected_install_count').innerText = '0';
+        return;
+      }
+
+      document.getElementById('install_devices_list').innerHTML = `
+        <tr>
+          <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+            <i class="fa-solid fa-spinner fa-spin"></i> Memuat perangkat...
+          </td>
+        </tr>
+      `;
+
+      // Reusing the same endpoint, but we should ideally filter out already pending installations. 
+      // For now we use the same endpoint as return requests.
+      fetch(`<?= base_url('form/devices') ?>/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById('install_devices_list');
+          tbody.innerHTML = '';
+          
+          if (data.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">
+                  Tidak ada perangkat yang dibawa oleh user ini.
+                </td>
+              </tr>
+            `;
+            document.getElementById('btn_submit_install').disabled = true;
+            document.getElementById('total_install_count').innerText = '0';
+            document.getElementById('selected_install_count').innerText = '0';
+            return;
+          }
+
+          document.getElementById('total_install_count').innerText = data.length;
+          document.getElementById('selected_install_count').innerText = '0';
+
+          data.forEach(device => {
+            const isPending = device.is_pending == 1; // From return_requests check (could be expanded)
+            const statusHtml = isPending 
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span> <span class="px-2 py-1 bg-[#1C4D8D] text-white rounded-full text-[10px] font-semibold ml-1">Pengajuan</span>'
+                : '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold">Dibawa</span>';
+            const cbHtml = isPending 
+                ? `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-not-allowed opacity-50" disabled value="${device.mutasi_id}" title="Sedang dalam pengajuan">`
+                : `<input type="checkbox" class="install-device-cb w-3 h-3 cursor-pointer accent-[#1C4D8D]" value="${device.mutasi_id}">`;
+
+            tbody.innerHTML += `
+              <tr class="install-device-row hover:bg-gray-50 transition-colors ${isPending ? 'opacity-75' : ''}">
+                <td class="px-2 py-2 text-center border-b">
+                  ${cbHtml}
+                </td>
+                <td class="px-2 py-2 border-b text-gray-700">${device.noreg}</td>
+                <td class="px-2 py-2 border-b text-gray-700 max-w-[200px] truncate" title="${device.nama}">${device.nama}</td>
+                <td class="px-2 py-2 border-b text-center">${statusHtml}</td>
+              </tr>
+            `;
+          });
+
+           document.getElementById('btn_submit_install').disabled = false;
+
+          var selectAll = document.getElementById('selectAllInstall');
+          if (selectAll) selectAll.checked = false;
+        });
+    });
+
+    function updateInstallSelectedCount() {
+      var selectedCount = document.querySelectorAll('.install-device-cb:checked').length;
+      document.getElementById('selected_install_count').innerText = selectedCount;
+    }
+
+    window.resetInstallForm = function() {
+      if (typeof tsInstallUser !== 'undefined') {
+        tsInstallUser.clear();
+      }
+      installArepSelect.value = '';
+      installNodeSelect.innerHTML = '<option value="">Pilih Arep dahulu...</option>';
+      installNodeSelect.disabled = true;
+    };
+
+    var installList = document.getElementById('install_devices_list');
+    if (installList) {
+      installList.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('install-device-cb')) {
+          updateInstallSelectedCount();
+          
+          var allCbs = document.querySelectorAll('.install-device-cb:not(:disabled)');
+          var checkedCbs = document.querySelectorAll('.install-device-cb:checked');
+          var selectAll = document.getElementById('selectAllInstall');
+          if (selectAll) {
+            selectAll.checked = (allCbs.length > 0 && allCbs.length === checkedCbs.length);
+          }
+        }
+      });
+    }
+
+    var selectAllInstallEl = document.getElementById('selectAllInstall');
+    if (selectAllInstallEl) {
+      selectAllInstallEl.addEventListener('change', function() {
+        var isChecked = this.checked;
+        var checkboxes = document.querySelectorAll('.install-device-cb:not(:disabled)');
+        checkboxes.forEach(function(cb) { cb.checked = isChecked; });
+        updateInstallSelectedCount();
+      });
+    }
+
+    window.submitInstallRequest = function() {
+      const checkboxes = document.querySelectorAll('.install-device-cb:checked');
+      if (checkboxes.length === 0) {
+        showToast('Pilih setidaknya satu perangkat untuk dipasang', 'warning');
+        return;
+      }
+      
+      const arep = installArepSelect.value;
+      const nodeSentral = installNodeSelect.value;
+      
+      if (!arep || !nodeSentral) {
+        showToast('Pilih Arep dan Node Sentral', 'warning');
+        return;
+      }
+
+      const mutasiIds = Array.from(checkboxes).map(cb => cb.value);
+      const btn = document.getElementById('btn_submit_install');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+      var params = new URLSearchParams();
+      mutasiIds.forEach(function(id) {
+        params.append('mutasi_ids[]', id);
+      });
+      params.append('arep', arep);
+      params.append('node_sentral', nodeSentral);
+
+      fetch(`<?= base_url('form/installation') ?>`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: params
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'success');
+          switchTab('request');
+          resetInstallForm();
         } else {
           showToast(res.message, 'error');
         }

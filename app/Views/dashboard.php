@@ -1788,4 +1788,35 @@
 
 </script>
 
+<script>
+  // Auto-refresh: poll for data changes and reload the page when updates are detected
+  (function() {
+    let lastKnownTimestamp = null;
+    let lastKnownTotal = null;
+
+    function checkForUpdates() {
+      fetch('<?= base_url("dashboard/checkUpdates") ?>')
+        .then(res => res.json())
+        .then(data => {
+          if (lastKnownTimestamp === null) {
+            // First run, just store the current state
+            lastKnownTimestamp = data.latest;
+            lastKnownTotal = data.total;
+            return;
+          }
+
+          if (data.latest !== lastKnownTimestamp || data.total !== lastKnownTotal) {
+            // Data has changed, reload the page preserving current filters
+            window.location.reload();
+          }
+        })
+        .catch(err => console.error('Auto-refresh check failed:', err));
+    }
+
+    // Check every 20 seconds
+    checkForUpdates();
+    setInterval(checkForUpdates, 20000);
+  })();
+</script>
+
 <?= $this->endSection() ?>

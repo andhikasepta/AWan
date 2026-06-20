@@ -409,7 +409,7 @@ class DashboardController extends BaseController
             ->getCompiledSelect();
 
         $builder = $db->table('mutasi m');
-        $builder->select('p.noreg, u.nama as nama_user, m.status, m.is_checked, m.updated_at');
+        $builder->select('p.noreg, p.nama as nama_perangkat, u.nama as nama_user, m.status, m.is_checked, m.updated_at');
         $builder->join("($subQuery) latest_data", 'm.id_perangkat = latest_data.id_perangkat AND m.updated_at = latest_data.latest');
         $builder->join('perangkat p', 'p.id = m.id_perangkat');
         $builder->join('users u', 'u.id = m.id_users', 'left');
@@ -444,6 +444,7 @@ class DashboardController extends BaseController
             
             $result[] = [
                 'noreg' => $item['noreg'],
+                'nama_perangkat' => $item['nama_perangkat'] ?? '-',
                 'user' => $item['nama_user'] ?? '-',
                 'status' => $displayStatus,
                 'days_ago' => $days
@@ -451,5 +452,185 @@ class DashboardController extends BaseController
         }
         
         return $this->response->setJSON($result);
+    }
+
+    // ── Installation Requests ───────────────────────────────────────────────
+
+    public function getPendingInstallations()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $installationModel = new \App\Models\InstallationRequestModel();
+        $requests = $installationModel->getPendingRequestsGrouped();
+
+        return $this->response->setJSON(['success' => true, 'data' => $requests]);
+    }
+
+    public function approveInstallationGroup()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $approvedIds = $this->request->getPost('approved_ids');
+        $rejectedIds = $this->request->getPost('rejected_ids');
+
+        if (empty($approvedIds) && empty($rejectedIds)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Tidak ada perangkat yang dipilih.']);
+        }
+
+        $approvedIds = is_array($approvedIds) ? $approvedIds : [];
+        $rejectedIds = is_array($rejectedIds) ? $rejectedIds : [];
+
+        $installationModel = new \App\Models\InstallationRequestModel();
+        $mutasiModel = new \App\Models\MutasiModel();
+        $perangkatModel = new \App\Models\PerangkatModel();
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // Process Approved Requests
+        foreach ($approvedIds as $requestId) {
+            $request = $installationModel->find($requestId);
+            if (!$request || $request['status'] !== 'Pending') {
+                continue;
+            }
+
+            // Update installation_requests status
+            $installationModel->update($requestId, ['status' => 'Approved']);
+
+            // Update the mutasi record
+            $mutasiId = $request['id_mutasi'];
+            $mutasi = $mutasiModel->find($mutasiId);
+
+            if ($mutasi) {
+                // Update existing mutasi with Terpasang status and keterangan
+                $mutasiModel->update($mutasiId, [
+                    'status'     => 'Terpasang',
+                    'keterangan' => 'Terpasang di ' . $request['node_sentral'],
+                    'updated_by' => $adminSession['username']
+                ]);
+
+                // Update perangkat status
+                $perangkatId = $mutasi['id_perangkat'];
+                $perangkatModel->update($perangkatId, ['status' => 'Tidak Tersedia']);
+            }
+        }
+
+        // Process Rejected Requests
+        foreach ($rejectedIds as $requestId) {
+            $request = $installationModel->find($requestId);
+            if (!$request || $request['status'] !== 'Pending') {
+                continue;
+            }
+            $installationModel->update($requestId, ['status' => 'Rejected']);
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Gagal memproses request pemasangan.']);
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Data pemasangan berhasil diproses.']);
+    }
+
+    public function markInstallationRead()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $requestIds = $this->request->getPost('request_ids');
+        if (empty($requestIds) || !is_array($requestIds)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Request ID tidak valid.']);
+        }
+
+        $installationModel = new \App\Models\InstallationRequestModel();
+
+        foreach ($requestIds as $id) {
+            $installationModel->update($id, ['is_read' => true]);
+        }
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    // ── Node Management (Admin) ──────────────────────────────────────────────
+
+    public function nodeList()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+        $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
+        return $this->response->setJSON($nodes);
+    }
+
+    public function addNode()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $arep = trim($this->request->getPost('arep'));
+        $nodeSentral = trim($this->request->getPost('node_sentral'));
+
+        if (!$arep || !$nodeSentral) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Arep dan Node Sentral wajib diisi.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+
+        // Check for duplicates
+        $existing = $nodeModel->where('arep', $arep)->where('node_sentral', $nodeSentral)->first();
+        if ($existing) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Node sudah terdaftar.']);
+        }
+
+        $nodeModel->insert([
+            'arep'         => $arep,
+            'node_sentral' => $nodeSentral
+        ]);
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Node berhasil ditambahkan.']);
+    }
+
+    public function deleteNode($id)
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $nodeModel = new \App\Models\NodeModel();
+        $nodeModel->delete($id);
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Node berhasil dihapus.']);
+    }
+
+    /**
+     * Lightweight endpoint to check for data changes.
+     * Returns the latest mutasi updated_at timestamp so the dashboard
+     * can detect when to auto-reload.
+     */
+    public function checkUpdates()
+    {
+        $db = \Config\Database::connect();
+        $row = $db->query("SELECT MAX(updated_at) as latest FROM mutasi")->getRowArray();
+        $countRow = $db->query("SELECT COUNT(*) as total FROM mutasi")->getRowArray();
+
+        return $this->response->setJSON([
+            'latest' => $row['latest'] ?? '',
+            'total'  => (int)($countRow['total'] ?? 0),
+        ]);
     }
 }

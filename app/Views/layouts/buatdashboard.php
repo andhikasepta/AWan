@@ -32,98 +32,192 @@
             color: #1e4b8f;
         }
 
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
 
 <body class="bg-[#F1F1F1] h-screen flex flex-col overflow-hidden">
     <?php $uri = service('uri'); ?>
 
-    <nav class="fixed w-full bg-[#1C4D8D] text-white px-6 pt-1 pb-1 flex justify-between items-center shadow-md z-[49]">
-        <img src="<?= base_url('images/awan.png') ?>" width="200px">
+    <nav
+        class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-6 py-3 flex justify-between items-center shadow-md z-[49]">
+        <img src="<?= base_url('images/awan.png') ?>" width="150px">
         <div class="flex items-center gap-6">
             <!-- Notification Bell -->
             <div x-data="notificationComponent()" x-init="init()" class="relative mt-1">
-                <button @click="open = !open; if(open) fetchPendingReturns()" class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center">
+                <button @click="open = !open; if(open) fetchPendingReturns()"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center">
                     <i class="fa-solid fa-bell text-xl"></i>
-                    <span x-show="count > 0" x-text="count" x-cloak class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                    <span x-show="count > 0" x-text="count" x-cloak
+                        class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
                 </button>
 
-                <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-6 w-80 bg-white text-black rounded-lg shadow-2xl overflow-hidden z-50 border border-gray-200">
-                    <div class="bg-[#1C4D8D] text-white px-4 py-3 font-bold text-sm flex justify-between items-center shadow-inner">
+                <div x-show="open" x-cloak @click.outside="open = false"
+                    class="absolute right-0 mt-6 w-80 bg-white text-black rounded-lg shadow-2xl overflow-hidden z-50 border border-gray-200">
+                    <div
+                        class="bg-[#1C4D8D] text-white px-4 py-3 font-bold text-sm flex justify-between items-center shadow-inner">
                         <span>Notifikasi</span>
-                        <span x-show="count > 0" x-text="count + ' Baru'" class="bg-red-500 px-2 py-0.5 rounded-full text-[10px]"></span>
+                        <span x-show="count > 0" x-text="count + ' Baru'"
+                            class="bg-red-500 px-2 py-0.5 rounded-full text-[10px]"></span>
                     </div>
-                    <div class="max-h-[330px] overflow-y-auto divide-y divide-gray-100">
-                        <template x-if="requests.length === 0">
-                            <div class="p-6 text-center text-gray-500 text-sm">
-                                <i class="fa-regular fa-bell-slash text-2xl mb-2 text-gray-300"></i>
-                                <p>Tidak ada request pengembalian.</p>
-                            </div>
-                        </template>
-                        <template x-for="req in requests" :key="req.group_id">
-                            <div @click="openReviewModal(req)" class="p-4 hover:bg-[#F9FBFF] cursor-pointer transition-colors border-l-4 border-transparent hover:border-[#1C4D8D]">
-                                <div class="flex justify-between items-start mb-1">
-                                    <div class="font-bold text-sm text-[#1C4D8D]">
-                                        <i class="fa-solid fa-user-circle mr-1 opacity-70"></i> <span x-text="req.nama_user || '-'"></span>
+
+                    <!-- Notification Tabs -->
+                    <div class="flex text-xs font-semibold text-center border-b border-gray-200 bg-gray-50">
+                        <button @click="activeTab = 'return'"
+                            :class="{'text-[#1C4D8D] border-b-2 border-[#1C4D8D]': activeTab === 'return', 'text-gray-500 hover:text-[#1C4D8D]': activeTab !== 'return'}"
+                            class="flex-1 py-2 transition-all">
+                            Pengembalian <span x-show="returnCount > 0" x-text="returnCount"
+                                class="ml-1 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[9px]"></span>
+                        </button>
+                        <button @click="activeTab = 'install'"
+                            :class="{'text-[#1C4D8D] border-b-2 border-[#1C4D8D]': activeTab === 'install', 'text-gray-500 hover:text-[#1C4D8D]': activeTab !== 'install'}"
+                            class="flex-1 py-2 transition-all">
+                            Pemasangan <span x-show="installCount > 0" x-text="installCount"
+                                class="ml-1 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[9px]"></span>
+                        </button>
+                    </div>
+
+                    <!-- Slider Container -->
+                    <div class="overflow-hidden w-full relative">
+                        <div class="flex transition-transform duration-300 ease-in-out w-[200%]"
+                            :style="activeTab === 'return' ? 'transform: translateX(0%)' : 'transform: translateX(-50%)'">
+
+                            <!-- Pengembalian List -->
+                            <div class="w-1/2 flex-shrink-0 max-h-[290px] overflow-y-auto divide-y divide-gray-100">
+                                <template x-if="returnRequests.length === 0">
+                                    <div class="p-6 text-center text-gray-500 text-sm">
+                                        <i class="fa-regular fa-bell-slash text-2xl mb-2 text-gray-300"></i>
+                                        <p>Tidak ada request pengembalian.</p>
                                     </div>
-                                    <span x-show="!req.is_read" class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">NEW</span>
-                                </div>
-                                <div class="text-[10px] text-gray-500 font-medium" x-text="req.created_at"></div>
+                                </template>
+                                <template x-for="req in returnRequests" :key="req.group_id">
+                                    <div @click="openReviewModal(req, 'return')"
+                                        class="p-4 hover:bg-[#F9FBFF] cursor-pointer transition-colors border-l-4 border-transparent hover:border-[#1C4D8D]">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div class="font-bold text-sm text-[#1C4D8D]">
+                                                <i class="fa-solid fa-user-circle mr-1 opacity-70"></i> <span
+                                                    x-text="req.nama_user || '-'"></span>
+                                            </div>
+                                            <span x-show="!req.is_read"
+                                                class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">NEW</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 font-medium" x-text="req.created_at">
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                        </template>
+
+                            <!-- Pemasangan List -->
+                            <div class="w-1/2 flex-shrink-0 max-h-[290px] overflow-y-auto divide-y divide-gray-100">
+                                <template x-if="installRequests.length === 0">
+                                    <div class="p-6 text-center text-gray-500 text-sm">
+                                        <i class="fa-regular fa-bell-slash text-2xl mb-2 text-gray-300"></i>
+                                        <p>Tidak ada request pemasangan.</p>
+                                    </div>
+                                </template>
+                                <template x-for="req in installRequests" :key="req.group_id">
+                                    <div @click="openReviewModal(req, 'install')"
+                                        class="p-4 hover:bg-[#F9FBFF] cursor-pointer transition-colors border-l-4 border-transparent hover:border-[#1C4D8D]">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div class="font-bold text-sm text-[#1C4D8D]">
+                                                <i class="fa-solid fa-user-circle mr-1 opacity-70"></i> <span
+                                                    x-text="req.nama_user || '-'"></span>
+                                            </div>
+                                            <span x-show="!req.is_read"
+                                                class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">NEW</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 font-medium mb-1" x-text="req.created_at">
+                                        </div>
+                                        <div class="text-[10px] text-[#1C4D8D] font-semibold bg-blue-50 inline-block px-1.5 py-0.5 rounded"
+                                            x-text="req.devices[0]?.node_sentral || '-'"></div>
+                                    </div>
+                                </template>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-
                 <!-- Review Modal -->
-                <div x-show="reviewOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-                    <div @click.outside="closeReviewModal()" class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden flex flex-col">
+                <div x-show="reviewOpen" x-cloak
+                    class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div @click.outside="closeReviewModal()"
+                        class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden flex flex-col">
                         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
-                            <h3 class="font-bold text-sm">Request Pengembalian</h3>
+                            <h3 class="font-bold text-sm"
+                                x-text="selectedType === 'return' ? 'Request Pengembalian' : 'Request Pemasangan'"></h3>
                             <button @click="closeReviewModal()" class="text-white hover:text-gray-300 transition">
                                 <i class="fa-solid fa-xmark fa-lg"></i>
                             </button>
                         </div>
                         <div class="p-6" x-show="selectedReq">
-                            <div class="mb-4">
-                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">User</label>
-                                <div class="font-semibold text-gray-800" x-text="selectedReq?.nama_user || '-'"></div>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label
+                                        class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">User</label>
+                                    <div class="font-semibold text-gray-800" x-text="selectedReq?.nama_user || '-'">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tanggal
+                                        Request</label>
+                                    <div class="font-semibold text-gray-700" x-text="selectedReq?.created_at"></div>
+                                </div>
                             </div>
-                            <div class="mb-6">
-                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tanggal Request</label>
-                                <div class="font-medium text-gray-700" x-text="selectedReq?.created_at"></div>
+                            <div class="grid grid-cols-2 gap-4 mb-6" x-show="selectedType === 'install'">
+                                <div>
+                                    <label
+                                        class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Arep</label>
+                                    <div class="font-semibold text-gray-800"
+                                        x-text="selectedReq?.devices[0]?.arep || '-'">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Node
+                                        Sentral</label>
+                                    <div class="font-semibold text-gray-800"
+                                        x-text="selectedReq?.devices[0]?.node_sentral || '-'"></div>
+                                </div>
                             </div>
-
                             <table class="w-full text-left text-sm mb-6 border-collapse">
                                 <thead>
                                     <tr>
-                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">Action</th>
-                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">No Registrasi</th>
-                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pl-4">Nama Perangkat</th>
+                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">
+                                            Action</th>
+                                        <th class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2">No
+                                            Registrasi</th>
+                                        <th
+                                            class="text-[10px] text-gray-400 font-bold uppercase tracking-wider pb-2 pl-4">
+                                            Nama Perangkat</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <template x-for="(dev, index) in selectedReq?.devices" :key="index">
                                         <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
                                             <td class="align-top py-2 px-2 border-b text-center">
-                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]" :value="dev.request_id" x-model="checkedDevices">
+                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
+                                                    :value="dev.request_id" x-model="checkedDevices">
                                             </td>
                                             <td class="align-top py-2 px-2 border-b">
                                                 <div class="font-medium text-gray-700" x-text="dev.noreg"></div>
                                             </td>
                                             <td class="align-top py-2 px-2 border-b pl-4">
-                                                <div class="font-medium text-gray-700 leading-tight" x-text="dev.nama_perangkat"></div>
+                                                <div class="font-medium text-gray-700 leading-tight"
+                                                    x-text="dev.nama_perangkat"></div>
                                             </td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
-                            
+
                             <div class="border-t border-gray-200 pt-4 flex justify-end gap-2 mt-2">
-                                <button @click="refuseAll()" class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
+                                <button @click="refuseAll()"
+                                    class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
                                     <i class="fa-solid fa-xmark mr-1"></i> Tolak
                                 </button>
-                                <button @click="approveSelected()" class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
+                                <button @click="approveSelected()"
+                                    class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
                                     <i class="fa-solid fa-check mr-1"></i> Approve
                                 </button>
                             </div>
@@ -136,34 +230,51 @@
                         return {
                             open: false,
                             reviewOpen: false,
+                            activeTab: 'return',
                             selectedReq: null,
+                            selectedType: null, // 'return' or 'install'
                             checkedDevices: [],
-                            requests: [],
+                            returnRequests: [],
+                            installRequests: [],
+                            returnCount: 0,
+                            installCount: 0,
                             count: 0,
                             init() {
                                 this.fetchPendingReturns();
-                                setInterval(() => this.fetchPendingReturns(), 15000);
+                                this.fetchPendingInstalls();
+                                setInterval(() => {
+                                    this.fetchPendingReturns();
+                                    this.fetchPendingInstalls();
+                                }, 15000);
                             },
-                            openReviewModal(req) {
+                            openReviewModal(req, type) {
                                 this.selectedReq = req;
+                                this.selectedType = type;
                                 this.checkedDevices = req.devices.map(d => d.request_id.toString());
                                 this.reviewOpen = true;
                                 this.open = false;
 
                                 if (!req.is_read) {
-                                    this.markAsRead(req);
+                                    this.markAsRead(req, type);
                                 }
                             },
-                            markAsRead(req) {
+                            markAsRead(req, type) {
                                 req.is_read = true;
-                                this.count = this.requests.filter(r => !r.is_read).length;
+                                if (type === 'return') {
+                                    this.returnCount = this.returnRequests.filter(r => !r.is_read).length;
+                                } else {
+                                    this.installCount = this.installRequests.filter(r => !r.is_read).length;
+                                }
+                                this.count = this.returnCount + this.installCount;
 
                                 let params = new URLSearchParams();
                                 req.devices.forEach(d => {
                                     params.append('request_ids[]', d.request_id);
                                 });
 
-                                fetch(`<?= base_url("dashboard/returns/mark-read") ?>`, {
+                                const url = type === 'return' ? 'dashboard/returns/mark-read' : 'dashboard/installations/mark-read';
+
+                                fetch(`<?= base_url() ?>${url}`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -176,6 +287,7 @@
                                 this.reviewOpen = false;
                                 this.selectedReq = null;
                                 this.checkedDevices = [];
+                                this.selectedType = null;
                             },
                             approveSelected() {
                                 if (this.selectedReq && this.selectedReq.devices) {
@@ -184,15 +296,15 @@
                                         .filter(d => !this.checkedDevices.includes(d.request_id.toString()))
                                         .map(d => d.request_id.toString());
 
-                                    this.approveReq(approvedIds, rejectedIds);
+                                    this.approveReq(approvedIds, rejectedIds, this.selectedType);
                                 }
                             },
                             refuseAll() {
                                 if (this.selectedReq && this.selectedReq.devices) {
                                     const approvedIds = [];
                                     const rejectedIds = this.selectedReq.devices.map(d => d.request_id.toString());
-                                    
-                                    this.approveReq(approvedIds, rejectedIds);
+
+                                    this.approveReq(approvedIds, rejectedIds, this.selectedType);
                                 }
                             },
                             fetchPendingReturns() {
@@ -200,12 +312,24 @@
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
-                                            this.requests = res.data;
-                                            this.count = res.data.filter(r => !r.is_read).length;
+                                            this.returnRequests = res.data;
+                                            this.returnCount = res.data.filter(r => !r.is_read).length;
+                                            this.count = this.returnCount + this.installCount;
                                         }
                                     }).catch(err => console.error(err));
                             },
-                            approveReq(approvedIds, rejectedIds) {
+                            fetchPendingInstalls() {
+                                fetch('<?= base_url("dashboard/installations") ?>')
+                                    .then(res => res.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            this.installRequests = res.data;
+                                            this.installCount = res.data.filter(r => !r.is_read).length;
+                                            this.count = this.returnCount + this.installCount;
+                                        }
+                                    }).catch(err => console.error(err));
+                            },
+                            approveReq(approvedIds, rejectedIds, type) {
                                 let params = new URLSearchParams();
                                 approvedIds.forEach(id => {
                                     params.append('approved_ids[]', id);
@@ -214,7 +338,9 @@
                                     params.append('rejected_ids[]', id);
                                 });
 
-                                fetch(`<?= base_url("dashboard/returns/approve") ?>`, {
+                                const url = type === 'return' ? 'dashboard/returns/approve' : 'dashboard/installations/approve';
+
+                                fetch(`<?= base_url() ?>${url}`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -222,18 +348,19 @@
                                     },
                                     body: params
                                 })
-                                .then(res => res.json())
-                                .then(res => {
-                                    if (res.success) {
-                                        if(typeof showToast === 'function') showToast(res.msg, 'success');
-                                        this.closeReviewModal();
-                                        this.fetchPendingReturns();
-                                        setTimeout(() => window.location.reload(), 1500);
-                                    } else {
-                                        if(typeof showToast === 'function') showToast(res.msg, 'error');
-                                        else alert(res.msg);
-                                    }
-                                });
+                                    .then(res => res.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            if (typeof showToast === 'function') showToast(res.msg, 'success');
+                                            this.closeReviewModal();
+                                            if (type === 'return') this.fetchPendingReturns();
+                                            else this.fetchPendingInstalls();
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        } else {
+                                            if (typeof showToast === 'function') showToast(res.msg, 'error');
+                                            else alert(res.msg);
+                                        }
+                                    });
                             }
                         }
                     }
@@ -242,14 +369,19 @@
 
             <!-- Follow Up Component -->
             <div x-data="followUpComponent()" x-init="init()" class="relative mt-1">
-                <button @click="openModal()" class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-2" title="Follow Up">
+                <button @click="openModal()"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    title="Follow Up">
                     <i class="fa-solid fa-clipboard-list text-xl"></i>
-                    <span x-show="count > 0" x-text="count" x-cloak class="absolute -top-1.5 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                    <span x-show="count > 0" x-text="count" x-cloak
+                        class="absolute -top-1.5 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
                 </button>
 
                 <!-- Follow Up Modal -->
-                <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-                    <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-xl w-[90%] md:w-[650px] overflow-hidden flex flex-col max-h-[80vh]">
+                <div x-show="modalOpen" x-cloak
+                    class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+                    <div
+                        class="bg-white rounded-lg shadow-xl w-[95%] md:w-[850px] overflow-hidden flex flex-col max-h-[80vh]">
                         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
                             <h3 class="font-bold text-sm">Follow Up Perangkat</h3>
                             <button @click="closeModal()" class="text-white hover:text-gray-300 transition">
@@ -266,43 +398,72 @@
                             <template x-if="items.length > 0">
                                 <div>
                                     <div class="mb-3">
-                                        <input type="text" x-model="searchQuery" placeholder="Cari User, Status, No Registrasi..." class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+                                        <input type="text" x-model="searchQuery"
+                                            placeholder="Cari Nama Perangkat, User, Status, No Registrasi..."
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-[#1C4D8D] focus:outline-none focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
                                     </div>
-                                    <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
-                                    <thead class="bg-gray-100 border-b border-gray-200">
-                                        <tr>
-                                            <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
-                                            <th class="p-2 font-semibold text-gray-700">User</th>
-                                            <th class="p-2 font-semibold text-gray-700">Status</th>
-                                            <th class="p-2 font-semibold text-gray-700">Log</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100">
-                                        <template x-for="item in filteredItems" :key="item.noreg">
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="p-2 text-gray-800 font-medium" x-text="item.noreg"></td>
-                                                <td class="p-2 text-gray-600" x-text="item.user"></td>
-                                                <td class="p-2">
-                                                    <span class="px-2 py-1 rounded-full text-[10px] font-semibold"
-                                                        :class="{
+                                    <table
+                                        class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                        <thead class="bg-gray-100 border-b border-gray-200">
+                                            <tr>
+                                                <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
+                                                <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
+                                                <th class="p-2 font-semibold text-gray-700">User</th>
+                                                <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status
+                                                </th>
+                                                <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Durasi
+                                                </th>
+                                                <th
+                                                    class="p-2 font-semibold text-gray-700 text-center whitespace-nowrap">
+                                                    Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            <template x-for="item in filteredItems" :key="item.noreg">
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="p-2 text-gray-800 font-medium" x-text="item.noreg"></td>
+                                                    <td class="p-2 text-gray-800 font-medium"
+                                                        x-text="item.nama_perangkat">
+                                                    </td>
+                                                    <td class="p-2 text-gray-600" x-text="item.user"></td>
+                                                    <td class="p-2 whitespace-nowrap">
+                                                        <span
+                                                            class="px-2 py-1 rounded-full text-[10px] font-semibold select-none"
+                                                            :class="{
                                                             'bg-yellow-100 text-yellow-800': item.status === 'Dibawa',
                                                             'bg-orange-100 text-orange-800': item.status === 'Crosscheck Intan'
                                                         }" x-text="item.status"></span>
-                                                </td>
-                                                <td class="p-2">
-                                                    <span class="font-semibold flex items-center gap-1"
-                                                        :class="{
-                                                            'text-yellow-600': item.days_ago >= 2 && item.days_ago <= 3,
-                                                            'text-red-600': item.days_ago > 3,
-                                                            'text-gray-600': item.days_ago < 2
-                                                        }">
-                                                        <i class="fa-regular fa-clock"></i> <span x-text="item.days_ago + ' days ago'"></span>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
+                                                    </td>
+                                                    <td class="p-2 whitespace-nowrap">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <span class="font-semibold flex items-center gap-1" :class="{
+                                                                'text-yellow-600': item.days_ago >= 2 && item.days_ago <= 3,
+                                                                'text-red-600': item.days_ago > 3,
+                                                                'text-gray-600': item.days_ago < 2
+                                                            }">
+                                                                <i class="fa-regular fa-clock"></i> <span
+                                                                    x-text="item.days_ago + ' days ago'"></span>
+                                                            </span>
+                                                            <span x-show="item.days_ago >= 2"
+                                                                class="relative flex h-2 w-2">
+                                                                <span
+                                                                    class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                                                    :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
+                                                                <span class="relative inline-flex rounded-full h-2 w-2"
+                                                                    :class="item.days_ago > 3 ? 'bg-red-500' : 'bg-yellow-500'"></span>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="p-2 text-center whitespace-nowrap">
+                                                        <button @click="showFollowUpAlert(item)"
+                                                            class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto shadow-sm">
+                                                            <i class="fa-solid fa-paper-plane"></i> Follow Up
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </template>
                         </div>
@@ -323,13 +484,17 @@
                                 const lowerCaseQuery = this.searchQuery.toLowerCase();
                                 return this.items.filter(item => {
                                     return (item.user && item.user.toLowerCase().includes(lowerCaseQuery)) ||
-                                           (item.status && item.status.toLowerCase().includes(lowerCaseQuery)) ||
-                                           (item.noreg && item.noreg.toLowerCase().includes(lowerCaseQuery)) ||
-                                           ((item.days_ago + ' days ago').includes(lowerCaseQuery));
+                                        (item.nama_perangkat && item.nama_perangkat.toLowerCase().includes(lowerCaseQuery)) ||
+                                        (item.status && item.status.toLowerCase().includes(lowerCaseQuery)) ||
+                                        (item.noreg && item.noreg.toLowerCase().includes(lowerCaseQuery)) ||
+                                        ((item.days_ago + ' days ago').includes(lowerCaseQuery));
                                 });
                             },
                             init() {
                                 this.fetchItems();
+                                setInterval(() => {
+                                    this.fetchItems();
+                                }, 15000);
                             },
                             fetchItems() {
                                 fetch('<?= base_url("dashboard/followUpItems") ?>')
@@ -346,6 +511,143 @@
                             },
                             closeModal() {
                                 this.modalOpen = false;
+                            },
+                            showFollowUpAlert(item) {
+                                // Find all pending items belonging to the same user
+                                const userItems = (item.user && item.user !== '-')
+                                    ? this.items.filter(i => i.user === item.user)
+                                    : [item];
+
+                                // Generate HTML with checkboxes
+                                let checkboxHtml = '';
+                                if (userItems.length > 1) {
+                                    checkboxHtml = `
+                                        <div class="mb-3">
+                                            <p class="text-xs font-semibold text-gray-500 mb-1">Pilih Perangkat untuk di-follow up:</p>
+                                            <div class="space-y-1.5 max-h-36 overflow-y-auto border border-gray-200 rounded p-2 bg-white text-left">
+                                                ${userItems.map(ui => `
+                                                    <label class="flex items-start gap-2 cursor-pointer p-1 text-xs hover:bg-gray-50 rounded">
+                                                        <input type="checkbox" class="mt-0.5 swal-device-checkbox accent-[#1C4D8D]" data-noreg="${ui.noreg}" data-nama="${ui.nama_perangkat}" value="${ui.noreg}" checked>
+                                                        <span class="text-gray-700 font-medium"><strong>${ui.noreg}</strong> - ${ui.nama_perangkat}</span>
+                                                    </label>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+
+                                Swal.fire({
+                                    title: 'Kirim Pengingat Follow Up',
+                                    html: `
+                                        <div class="text-left text-xs space-y-3">
+                                            ${checkboxHtml}
+                                            
+                                            <div id="swal-message-preview" class="bg-gray-50 border border-gray-200 rounded p-3 font-mono text-gray-700 select-all relative group break-words leading-relaxed whitespace-pre-wrap"></div>
+                                        </div>
+                                    `,
+                                    icon: 'info',
+                                    showCancelButton: true,
+                                    confirmButtonText: '<i class="fa-brands fa-whatsapp mr-1"></i> Hubungi via WA',
+                                    cancelButtonText: '<i class="fa-regular fa-copy mr-1"></i> Salin Pesan',
+                                    confirmButtonColor: '#25D366',
+                                    cancelButtonColor: '#4F46E5',
+                                    reverseButtons: true,
+                                    didOpen: () => {
+                                        const updatePreviewText = () => {
+                                            let selectedDevices = [];
+                                            if (userItems.length > 1) {
+                                                const checkedBoxes = document.querySelectorAll('.swal-device-checkbox:checked');
+                                                selectedDevices = Array.from(checkedBoxes).map(cb => ({
+                                                    noreg: cb.getAttribute('data-noreg'),
+                                                    nama: cb.getAttribute('data-nama')
+                                                }));
+                                            } else {
+                                                selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                            }
+
+                                            let message = '';
+                                            if (selectedDevices.length === 0) {
+                                                message = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
+                                            } else {
+                                                const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
+                                                message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                            }
+
+                                            const previewDiv = document.getElementById('swal-message-preview');
+                                            if (previewDiv) {
+                                                previewDiv.innerText = message;
+                                            }
+                                            return message;
+                                        };
+
+                                        // Initial call
+                                        updatePreviewText();
+
+                                        // Bind changes
+                                        const checkboxes = document.querySelectorAll('.swal-device-checkbox');
+                                        checkboxes.forEach(cb => {
+                                            cb.addEventListener('change', updatePreviewText);
+                                        });
+                                    },
+                                    preConfirm: () => {
+                                        let selectedDevices = [];
+                                        if (userItems.length > 1) {
+                                            const checkedBoxes = document.querySelectorAll('.swal-device-checkbox:checked');
+                                            selectedDevices = Array.from(checkedBoxes).map(cb => ({
+                                                noreg: cb.getAttribute('data-noreg'),
+                                                nama: cb.getAttribute('data-nama')
+                                            }));
+                                        } else {
+                                            selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                        }
+
+                                        let message = '';
+                                        if (selectedDevices.length === 0) {
+                                            message = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
+                                        } else {
+                                            const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
+                                            message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                        }
+                                        return message;
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        const finalMsg = result.value;
+                                        const finalWaUrl = `https://wa.me/?text=${encodeURIComponent(finalMsg)}`;
+                                        window.open(finalWaUrl, '_blank');
+                                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                        let selectedDevices = [];
+                                        if (userItems.length > 1) {
+                                            const checkedBoxes = document.querySelectorAll('.swal-device-checkbox:checked');
+                                            selectedDevices = Array.from(checkedBoxes).map(cb => ({
+                                                noreg: cb.getAttribute('data-noreg'),
+                                                nama: cb.getAttribute('data-nama')
+                                            }));
+                                        } else {
+                                            selectedDevices = [{ noreg: item.noreg, nama: item.nama_perangkat }];
+                                        }
+
+                                        let finalMsg = '';
+                                        if (selectedDevices.length === 0) {
+                                            finalMsg = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
+                                        } else {
+                                            const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
+                                            finalMsg = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                        }
+
+                                        navigator.clipboard.writeText(finalMsg).then(() => {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Disalin!',
+                                                text: 'Pesan pengingat berhasil disalin ke clipboard.',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            });
+                                        }).catch(err => {
+                                            console.error('Gagal menyalin text: ', err);
+                                        });
+                                    }
+                                });
                             }
                         }
                     }
@@ -353,54 +655,59 @@
             </div>
 
             <div x-data="{open:false}" class="relative">
-            <button @click="open = !open"
-                class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
-                <i class="fa-regular fa-circle-user text-xl mb-1"></i>
-                <span class="text-sm font-medium">
-                    <?= session('admin')['username'] ?? 'admin' ?>
-                </span>
-                <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="{'rotate-180' : open}"></i>
-            </button>
+                <button @click="open = !open"
+                    class="flex items-center gap-2 cursor-pointer transition group text-white hover:text-[#B3B3B3]">
+                    <i class="fa-regular fa-circle-user text-xl"></i>
+                    <span class="text-sm font-medium">
+                        <?= session('admin')['username'] ?? 'admin' ?>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform" :class="{'rotate-180' : open}"></i>
+                </button>
 
-            <div x-show="open" x-cloak x-transition @click.outside="open = false"
-                class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-2xl text-sm">
+                <div x-show="open" x-cloak x-transition @click.outside="open = false"
+                    class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-2xl text-sm">
 
-                <button onclick="bukaModalPassword()" @click="open = false"
-                    class="w-full rounded-t-md text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
-                    <i class="fa-solid fa-key mr-2" style="color: #1C4D8D;"></i>
-                    Ganti Password
-                </button>
-                <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
-                <?php 
-                $adminSess = session()->get('admin');
-                $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
-                if ($isSuperAdmin): 
-                ?>
-                <button onclick="openUserManage()" @click="open = false"
-                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
-                    <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
-                    User Manage
-                </button>
-                <button onclick="openAdminManage()" @click="open = false"
-                    class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
-                    <i class="fa-solid fa-user-shield mr-2" style="color: #1C4D8D;"></i>
-                    Admin Manage
-                </button>
-                <?php endif; ?>
-                <a href="<?= base_url('logout') ?>"
-                    class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
-                    <i class="fa-solid fa-right-from-bracket mr-2" style="color: #1C4D8D;"></i>
-                    Logout
-                </a>
-                <!-- <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
+                    <button onclick="bukaModalPassword()" @click="open = false"
+                        class="w-full rounded-t-md text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                        <i class="fa-solid fa-key mr-2" style="color: #1C4D8D;"></i>
+                        Ganti Password
+                    </button>
+                    <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
+                    <?php
+                    $adminSess = session()->get('admin');
+                    $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
+                    if ($isSuperAdmin):
+                        ?>
+                        <button onclick="openUserManage()" @click="open = false"
+                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                            <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
+                            User Manage
+                        </button>
+                        <button onclick="openAdminManage()" @click="open = false"
+                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                            <i class="fa-solid fa-user-shield mr-2" style="color: #1C4D8D;"></i>
+                            Admin Manage
+                        </button>
+                        <button onclick="openNodeManage()" @click="open = false"
+                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                            <i class="fa-solid fa-network-wired mr-2" style="color: #1C4D8D;"></i>
+                            Input Node
+                        </button>
+                    <?php endif; ?>
+                    <a href="<?= base_url('logout') ?>"
+                        class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
+                        <i class="fa-solid fa-right-from-bracket mr-2" style="color: #1C4D8D;"></i>
+                        Logout
+                    </a>
+                    <!-- <a href="<?= base_url('admin-manage') ?>" @click="open = false" class="block px-4 py-2 hover:bg-gray-100">
                     Admin Manage
                 </a> -->
-            </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 pt-24 pl-6 pr-6">
+    <main class="flex-1 pt-28 pl-6 pr-6">
         <?= $this->renderSection('content') ?>
     </main>
 
@@ -479,12 +786,13 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <?= $this->renderSection('scripts') ?>
-    <?php 
+    <?php
     $adminSess = session()->get('admin');
     $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
-    if ($isSuperAdmin): 
-    ?>
-    <?= view('components/adminmanage') ?>
+    if ($isSuperAdmin):
+        ?>
+        <?= view('components/adminmanage') ?>
+        <?= view('components/nodemanage') ?>
     <?php endif; ?>
 
     <script>
