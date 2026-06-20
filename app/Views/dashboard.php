@@ -14,6 +14,54 @@
       Selamat Datang, <?= session('admin')['nama'] ?? '' ?>!
     </h2>
 
+  </div>
+
+  <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px] z-[20]">
+    <?php $isBulk = strpos($_GET['keyword'] ?? '', ';') !== false; ?>
+    <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
+      <input type="text" id="searchInput" name="keyword" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
+        class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
+      <button type="button" onclick="toggleBulkSearch()" class="absolute right-2 text-[#1C4D8D] hover:text-[#3E679E] transition" title="Toggle Bulk Search">
+        <i class="fa-solid fa-layer-group"></i>
+      </button>
+    </div>
+
+    <div class="w-48">
+      <select id="filter_status" name="status" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
+        <option value="">Semua Status</option>
+        <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
+        <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
+        <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
+        <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman</option>
+        <option value="Terkirim" <?= (($_GET['status'] ?? '') == 'Terkirim') ? 'selected' : '' ?>>Terkirim</option>
+      </select>
+    </div>
+
+    <div class="w-48">
+      <select id="filter_mutasi" name="filter_mutasi" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
+        <option value="">Semua Mutasi</option>
+        <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi</option>
+        <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>Crosscheck
+          INTAN</option>
+        <option value="check" <?= (($_GET['filter_mutasi'] ?? '') == 'check') ? 'selected' : '' ?>>Checked</option>
+      </select>
+    </div>
+
+    <div class="w-48">
+      <select id="isiUser" name="user" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
+        <option value="">Semua User</option>
+        <?php foreach ($users as $u): ?>
+          <option value="<?= $u['id'] ?>" <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
+            <?= esc($u['nama']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
+    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+      Reset Filter
+    </a>
+
     <?php
     // Build export query string from active filters
     $exportParams = [];
@@ -27,69 +75,18 @@
       $exportParams['user'] = $_GET['user'];
     $exportQuery = !empty($exportParams) ? '?' . http_build_query($exportParams) : '';
     ?>
-    <div class="flex gap-2 mb-4">
-      <a href="<?= base_url('export/pdf') . $exportQuery ?>" target="_blank"
-        class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
-        <i class="fa-solid fa-file-pdf"></i>
-        Export PDF
-      </a>
-
-      <a href="<?= base_url('export/excel') . $exportQuery ?>"
-        class="bg-[#1C4D8D] text-white px-2 py-2 rounded text-xs font-medium flex items-center gap-2 hover:bg-[#7AAACE] transition">
-        <i class="fa-solid fa-file-excel"></i>
-        Export Excel
-      </a>
-    </div>
-  </div>
-
-  <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center sticky top-[70px]">
-    <?php $isBulk = strpos($_GET['keyword'] ?? '', ';') !== false; ?>
-    <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
-      <input type="text" id="searchInput" name="keyword" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
-        class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
-      <button type="button" onclick="toggleBulkSearch()" class="absolute right-2 text-[#1C4D8D] hover:text-[#3E679E] transition" title="Toggle Bulk Search">
-        <i class="fa-solid fa-layer-group"></i>
-      </button>
-    </div>
-
-    <div>
-      <select name="status" onchange="this.form.submit()"
-        class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
-        <option value="">Semua Status</option>
-        <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
-        <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang</option>
-        <option value="Kembali" <?= (($_GET['status'] ?? '') == 'Kembali') ? 'selected' : '' ?>>Kembali</option>
-        <option value="Pengiriman" <?= (($_GET['status'] ?? '') == 'Pengiriman') ? 'selected' : '' ?>>Pengiriman</option>
-        <option value="Terkirim" <?= (($_GET['status'] ?? '') == 'Terkirim') ? 'selected' : '' ?>>Terkirim</option>
-      </select>
-    </div>
-
-    <div>
-      <select name="filter_mutasi" onchange="this.form.submit()"
-        class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
-        <option value="">Semua Mutasi</option>
-        <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi</option>
-        <option value="crosscheck" <?= (($_GET['filter_mutasi'] ?? '') == 'crosscheck') ? 'selected' : '' ?>>Crosscheck
-          INTAN</option>
-        <option value="check" <?= (($_GET['filter_mutasi'] ?? '') == 'check') ? 'selected' : '' ?>>Checked</option>
-      </select>
-    </div>
-
-    <div>
-      <select id="isiUser" name="user" onchange="this.form.submit()"
-        class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
-        <option value="">Semua User</option>
-        <?php foreach ($users as $u): ?>
-          <option value="<?= $u['id'] ?>" <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
-            <?= esc($u['nama']) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-
-    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
-      Reset Filter
+    <a href="<?= base_url('export/pdf') . $exportQuery ?>" target="_blank"
+      class="bg-[#1C4D8D] text-white px-4 py-2 text-xs rounded-lg flex items-center gap-2 hover:bg-[#7AAACE] transition">
+      <i class="fa-solid fa-file-pdf"></i>
+      Export PDF
     </a>
+
+    <a href="<?= base_url('export/excel') . $exportQuery ?>"
+      class="bg-[#1C4D8D] text-white px-4 py-2 text-xs rounded-lg flex items-center gap-2 hover:bg-[#7AAACE] transition">
+      <i class="fa-solid fa-file-excel"></i>
+      Export Excel
+    </a>
+
   </form>
 
   <div class="flex-1 bg-white rounded-md shadow flex flex-col overflow-hidden">
@@ -172,11 +169,11 @@
 
               <td class="px-4 py-3 text-center text-xs border border-gray-300"><?= $no++ ?></td>
               <td class="px-4 py-3 text-left text-xs border border-gray-300"><?= esc($p['noreg']) ?></td>
-              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
+              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal min-w-[250px]">
                 <?= esc($p['nama']) ?>
               </td>
               <td class="px-4 py-3 text-center text-xs border border-gray-300 text-wrap"><?= $p['nama_user'] ?? '-' ?></td>
-              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]">
+              <td class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal min-w-[250px]">
                 <?= esc($p['keterangan_mutasi']) ?: '-' ?>
               </td>
 
@@ -366,11 +363,6 @@
   }
 </script>
 <script>
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      loadUsers();
-    }
-  });
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {

@@ -1,5 +1,5 @@
 <div id="nodeManageModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[600px] overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[560px] overflow-hidden flex flex-col max-h-[90vh]">
 
         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3 shrink-0">
             <h3 class="font-bold">Input Node</h3>

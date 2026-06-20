@@ -4,7 +4,7 @@
 
 <div class="max-w-[1450px] mx-auto w-full flex-1 flex flex-col">
     <?php $isBulk = strpos($_GET['search'] ?? '', ';') !== false; ?>
-    <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center">
+    <form method="get" class="bg-white p-2 rounded-md shadow mb-4 flex flex-wrap gap-3 items-center relative z-[20]">
         <div class="relative flex items-center transition-all duration-500 ease-in-out" id="searchContainer" style="width: <?= $isBulk ? '350px' : '200px' ?>;">
             <input type="text" id="searchInput" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="<?= $isBulk ? 'Bulk search (pisahkan dengan ;)' : 'Search...' ?>"
                 class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
@@ -13,9 +13,8 @@
             </button>
         </div>
 
-        <div>
-            <select name="status" onchange="this.form.submit()"
-                class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+        <div class="w-48">
+            <select id="filter_status" name="status" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
                 <option value="">Semua Status</option>
                 <option value="Dibawa" <?= (($_GET['status'] ?? '') == 'Dibawa') ? 'selected' : '' ?>>Dibawa</option>
                 <option value="Terpasang" <?= (($_GET['status'] ?? '') == 'Terpasang') ? 'selected' : '' ?>>Terpasang
@@ -27,9 +26,8 @@
             </select>
         </div>
 
-        <div>
-            <select name="filter_mutasi" onchange="this.form.submit()"
-                class="border px-4 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
+        <div class="w-48">
+            <select id="filter_mutasi" name="filter_mutasi" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
                 <option value="">Semua Mutasi</option>
                 <option value="belum" <?= (($_GET['filter_mutasi'] ?? '') == 'belum') ? 'selected' : '' ?>>Belum Mutasi
                 </option>
@@ -39,9 +37,8 @@
             </select>
         </div>
 
-        <div>
-            <select name="user" onchange="this.form.submit()"
-                class="border px-4 py-2 text-xs rounded-lg w-48 focus:outline-none focus:ring-[#1C4D8D]">
+        <div class="w-48">
+            <select id="filter_user" name="user" onchange="this.form.submit()" class="w-full border border-gray-300 px-3 py-2 text-xs rounded-md focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white cursor-pointer">
                 <option value="">Semua User</option>
                 <?php foreach ($users as $u): ?>
                     <option value="<?= $u['id'] ?>" <?= (($_GET['user'] ?? '') == $u['id']) ? 'selected' : '' ?>>
@@ -114,14 +111,14 @@
                             <td class="px-4 py-3 text-xs text-center border border-gray-300"><?= $no++ ?></td>
                             <td class="px-4 py-3 text-xs text-left border border-gray-300"><?= esc($h['noreg']) ?></td>
                             <td
-                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[250px]">
+                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal min-w-[250px]">
                                 <?= esc($h['nm_perangkat']) ?>
                             </td>
                             <td class="px-4 py-3 text-xs text-center border border-gray-300 text-nowrap">
                                 <?= $h['nm_user'] ?? '-' ?>
                             </td>
                             <td
-                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal max-w-[225px]">
+                                class="px-4 py-3 text-left text-xs border border-gray-300 break-words whitespace-normal min-w-[250px]">
                                 <?= esc($h['keterangan']) ?: '-' ?>
                             </td>
 
@@ -359,5 +356,7 @@
             input.focus();
         }
     }
+
+
 </script>
 <?= $this->endSection() ?>

@@ -88,7 +88,7 @@
     </div>
 
     <!-- SLIDER CONTAINER -->
-    <div class="overflow-hidden w-full relative">
+    <div class="overflow-x-hidden overflow-y-visible w-full relative">
       <div id="slider_container" class="flex transition-transform duration-500 ease-in-out w-[300%]">
         
         <!-- TAB 1: PEMINJAMAN -->
@@ -200,14 +200,14 @@
 
         <!-- TAB 2: PENGEMBALIAN -->
         <div class="w-1/3 flex-shrink-0 px-4 flex flex-col">
-          <div class="flex flex-col mb-4">
+          <div class="flex flex-col mb-4 relative z-30">
             <div class="flex items-center gap-2 mb-2">
               <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
               <a href="javascript:void(0)" onclick="resetReturnForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
                 <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
               </a>
             </div>
-            <select id="return_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+            <select id="return_user" class="text-sm w-full">
               <option value="">Pilih User...</option>
               <?php foreach ($users as $u): ?>
                 <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
@@ -222,7 +222,7 @@
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[40vh]">
               <table class="w-full text-xs text-left">
-                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0">
+                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                   <tr>
                     <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">
                       <input type="checkbox" id="selectAllReturn" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]">
@@ -255,14 +255,14 @@
 
         <!-- TAB 3: PEMASANGAN -->
         <div class="w-1/3 flex-shrink-0 pl-4 pr-1 flex flex-col">
-          <div class="flex flex-col mb-4">
+          <div class="flex flex-col mb-4 relative z-30">
             <div class="flex items-center gap-2 mb-2">
               <label class="font-semibold text-[#1C4D8D] text-sm">Pilih User</label>
               <a href="javascript:void(0)" onclick="resetInstallForm()" class="text-gray-500 hover:text-[#1C4D8D] hover:border-[#1C4D8D] transition text-[11px] flex items-center gap-1 border border-gray-300 rounded-full px-2 py-0.5" title="Reset">
                 <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
               </a>
             </div>
-            <select id="install_user" class="border rounded-md px-3 py-2 text-sm focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+            <select id="install_user" class="text-sm w-full">
               <option value="">Pilih User...</option>
               <?php foreach ($users as $u): ?>
                 <option value="<?= $u['id'] ?>"><?= $u['nama'] ?></option>
@@ -276,7 +276,7 @@
             </div>
             <div class="overflow-auto rounded-lg border border-gray-200 shadow-sm max-h-[25vh]">
               <table class="w-full text-xs text-left">
-                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0">
+                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                   <tr>
                     <th class="px-2 py-2 font-semibold text-gray-600 text-center w-12">
                       <input type="checkbox" id="selectAllInstall" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]">
@@ -298,17 +298,17 @@
           </div>
 
           <!-- Arep & Node Sentral Dropdowns -->
-          <div class="grid grid-cols-2 gap-3 mt-3 mb-3">
+          <div class="grid grid-cols-2 gap-3 mt-3 mb-3 relative z-20">
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Arep</label>
-              <select id="install_arep" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]">
+              <select id="install_arep" class="">
                 <option value="">Pilih Arep</option>
               </select>
             </div>
             <div class="flex flex-col">
               <label class="font-semibold text-[#1C4D8D] text-xs mb-1">Node Sentral</label>
-              <select id="install_node" class="border rounded-md px-3 py-2 text-xs focus:ring-[#1C4D8D] focus:border-[#1C4D8D]" disabled>
-                <option value="">Pilih Arep dahulu</option>
+              <select id="install_node" class="" disabled>
+                <option value="">Pilih Node</option>
               </select>
             </div>
           </div>
@@ -908,6 +908,9 @@
     let nodeData = {};
 
     // Fetch Arep and Node Data
+    let tsInstallArep;
+    let tsInstallNode;
+
     fetch(`<?= base_url('form/nodes') ?>`)
       .then(res => res.json())
       .then(data => {
@@ -919,28 +922,34 @@
           option.textContent = arep;
           arepSelect.appendChild(option);
         });
+
+        tsInstallArep = new TomSelect("#install_arep", {
+          create: false,
+        });
+
+        tsInstallNode = new TomSelect("#install_node", {
+          create: false,
+        });
+
+        tsInstallArep.on('change', function(selectedArep) {
+          tsInstallNode.clearOptions();
+          tsInstallNode.clear();
+          
+          if (selectedArep && nodeData[selectedArep]) {
+            tsInstallNode.enable();
+            const sortedNodes = [...nodeData[selectedArep]].sort((a, b) => a.toString().localeCompare(b.toString(), undefined, {numeric: true, sensitivity: 'base'}));
+            sortedNodes.forEach(node => {
+              tsInstallNode.addOption({value: node, text: node});
+            });
+          } else {
+            tsInstallNode.disable();
+            tsInstallNode.addOption({value: "", text: "Pilih Node"});
+          }
+        });
       });
 
     const installArepSelect = document.getElementById('install_arep');
     const installNodeSelect = document.getElementById('install_node');
-
-    installArepSelect.addEventListener('change', function() {
-      const selectedArep = this.value;
-      installNodeSelect.innerHTML = '<option value="">Pilih Node Sentral</option>';
-      
-      if (selectedArep && nodeData[selectedArep]) {
-        installNodeSelect.disabled = false;
-        nodeData[selectedArep].forEach(node => {
-          const option = document.createElement('option');
-          option.value = node;
-          option.textContent = node;
-          installNodeSelect.appendChild(option);
-        });
-      } else {
-        installNodeSelect.disabled = true;
-        installNodeSelect.innerHTML = '<option value="">Pilih Arep dahulu...</option>';
-      }
-    });
 
     tsInstallUser.on('change', function(userId) {
       if (!userId) {
@@ -1027,9 +1036,9 @@
       if (typeof tsInstallUser !== 'undefined') {
         tsInstallUser.clear();
       }
-      installArepSelect.value = '';
-      installNodeSelect.innerHTML = '<option value="">Pilih Arep dahulu...</option>';
-      installNodeSelect.disabled = true;
+      if (typeof tsInstallArep !== 'undefined') {
+        tsInstallArep.clear();
+      }
     };
 
     var installList = document.getElementById('install_devices_list');
