@@ -570,7 +570,7 @@
                                                 message = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
                                             } else {
                                                 const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
-                                                message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                                message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTotal Perangkat: ${selectedDevices.length} Unit\n\nTerima kasih.`;
                                             }
 
                                             const previewDiv = document.getElementById('swal-message-preview');
@@ -606,7 +606,7 @@
                                             message = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
                                         } else {
                                             const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
-                                            message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                            message = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTotal Perangkat: ${selectedDevices.length} Unit\n\nTerima kasih.`;
                                         }
                                         return message;
                                     }
@@ -632,7 +632,7 @@
                                             finalMsg = `Halo ${item.user}, silakan pilih perangkat yang ingin di-follow up.`;
                                         } else {
                                             const listStr = selectedDevices.map(d => `• ${d.noreg} - ${d.nama}`).join('\n');
-                                            finalMsg = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTerima kasih.`;
+                                            finalMsg = `Rekan ${item.user}, mohon update untuk status perangkat berikut:\n\n${listStr}\n\nTotal Perangkat: ${selectedDevices.length} Unit\n\nTerima kasih.`;
                                         }
 
                                         navigator.clipboard.writeText(finalMsg).then(() => {
