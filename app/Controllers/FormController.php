@@ -32,7 +32,7 @@ class FormController extends BaseController
     public function cekNoreg()
     {
         $noreg = $this->request->getGet('noreg');
-        
+
         $perangkat = $this->perangkatModel
             ->where('noreg', $noreg)
             ->first();
@@ -48,9 +48,9 @@ class FormController extends BaseController
         if (strtolower($perangkat['status']) !== 'tersedia') {
             $mutasiModel = new MutasiModel();
             $latestMutasi = $mutasiModel->where('id_perangkat', $perangkat['id'])
-                                        ->orderBy('id', 'DESC')
-                                        ->first();
-            
+                ->orderBy('id', 'DESC')
+                ->first();
+
             $userName = 'User';
             $statusStr = $perangkat['status'];
 
@@ -60,12 +60,12 @@ class FormController extends BaseController
                 if ($user) {
                     $userName = $user['nama'];
                 }
-                
+
                 $message = "Status masih {$statusStr} oleh {$userName}";
             } else {
                 $message = "Status masih {$statusStr}";
             }
-            
+
             return $this->response->setJSON([
                 'exists' => false,
                 'toast_type' => 'warning',
@@ -412,7 +412,7 @@ class FormController extends BaseController
                 <table class="signature-section">
                 <tr>
                     <td class="text-center">
-            <div class="signature-label">Admin Warehouse</div>
+            <div class="signature-label">Warehouse Regional</div>
             <div class="signature-box">
                 ' . ($ttdBase64 ? '<img src="' . $ttdBase64 . '" class="signature-img">' : '<br><br><br>') . '
             </div>
@@ -469,7 +469,7 @@ class FormController extends BaseController
     public function getDevicesDibawa($userId)
     {
         $db = \Config\Database::connect();
-        
+
         // Subquery to get the latest mutasi ID for each perangkat
         $subQuery = $db->table('mutasi')
             ->select('MAX(id) as max_id')
@@ -482,43 +482,43 @@ class FormController extends BaseController
         // Join to ensure we are only looking at the LATEST mutasi for the device
         $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
         $builder->join('perangkat p', 'p.id = m.id_perangkat');
-        
+
         $builder->where('m.id_users', $userId);
         $builder->where('m.status', 'Dibawa');
-        
+
         // Return all Dibawa devices regardless of pending status, frontend will handle UI
-        
+
         $devices = $builder->get()->getResultArray();
-        
+
         return $this->response->setJSON($devices);
     }
 
     public function submitReturnRequest()
     {
         $mutasiIds = $this->request->getPost('mutasi_ids');
-        
+
         if (empty($mutasiIds)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
         }
-        
+
         $returnRequestModel = new \App\Models\ReturnRequestModel();
-        
+
         $db = \Config\Database::connect();
         $db->transStart();
-        
+
         foreach ($mutasiIds as $mutasiId) {
             $returnRequestModel->insert([
                 'id_mutasi' => $mutasiId,
-                'status'    => 'Pending'
+                'status' => 'Pending'
             ]);
         }
-        
+
         $db->transComplete();
-        
+
         if ($db->transStatus() === false) {
             return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengirim request pengembalian.']);
         }
-        
+
         return $this->response->setJSON(['success' => true, 'message' => 'Request pengembalian berhasil dikirim.']);
     }
 
@@ -526,13 +526,13 @@ class FormController extends BaseController
     {
         $nodeModel = new \App\Models\NodeModel();
         $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
-        
+
         // Group by arep
         $grouped = [];
         foreach ($nodes as $n) {
             $grouped[$n['arep']][] = $n['node_sentral'];
         }
-        
+
         return $this->response->setJSON($grouped);
     }
 
@@ -541,35 +541,35 @@ class FormController extends BaseController
         $mutasiIds = $this->request->getPost('mutasi_ids');
         $arep = $this->request->getPost('arep');
         $nodeSentral = $this->request->getPost('node_sentral');
-        
+
         if (empty($mutasiIds)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Belum ada perangkat yang dipilih.']);
         }
-        
+
         if (empty($arep) || empty($nodeSentral)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Arep dan Node Sentral wajib dipilih.']);
         }
-        
+
         $installationModel = new \App\Models\InstallationRequestModel();
-        
+
         $db = \Config\Database::connect();
         $db->transStart();
-        
+
         foreach ($mutasiIds as $mutasiId) {
             $installationModel->insert([
-                'id_mutasi'    => $mutasiId,
-                'arep'         => $arep,
+                'id_mutasi' => $mutasiId,
+                'arep' => $arep,
                 'node_sentral' => $nodeSentral,
-                'status'       => 'Pending'
+                'status' => 'Pending'
             ]);
         }
-        
+
         $db->transComplete();
-        
+
         if ($db->transStatus() === false) {
             return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengirim request pemasangan.']);
         }
-        
+
         return $this->response->setJSON(['success' => true, 'message' => 'Request pemasangan berhasil dikirim.']);
     }
 }

@@ -124,12 +124,12 @@ class PerangkatModel extends Model
         m.updated_by as mutasi_updated_by,
         u.nama as nama_user
         FROM perangkat p
-        LEFT JOIN mutasi m ON m.id = (
-        SELECT id FROM mutasi
-        WHERE id_perangkat = p.id
-        ORDER BY created_at DESC
-        LIMIT 1
-        )
+        LEFT JOIN (
+            SELECT MAX(id) as max_id, id_perangkat
+            FROM mutasi
+            GROUP BY id_perangkat
+        ) latest_mutasi ON latest_mutasi.id_perangkat = p.id
+        LEFT JOIN mutasi m ON m.id = latest_mutasi.max_id
         LEFT JOIN users u ON u.id = m.id_users
         $whereSql
         ORDER BY $orderSql
@@ -139,11 +139,12 @@ class PerangkatModel extends Model
         $total = $this->db->query("
         SELECT COUNT(*) as total
         FROM perangkat p
-        LEFT JOIN mutasi m ON m.id = (
-        SELECT id FROM mutasi
-        WHERE id_perangkat = p.id
-        ORDER BY created_at DESC
-        LIMIT 1)
+        LEFT JOIN (
+            SELECT MAX(id) as max_id, id_perangkat
+            FROM mutasi
+            GROUP BY id_perangkat
+        ) latest_mutasi ON latest_mutasi.id_perangkat = p.id
+        LEFT JOIN mutasi m ON m.id = latest_mutasi.max_id
         LEFT JOIN users u ON u.id = m.id_users
         $whereSql")->getRow()->total;
 
@@ -204,12 +205,12 @@ class PerangkatModel extends Model
         m.updated_by as mutasi_updated_by,
         u.nama as nama_user
         FROM perangkat p
-        LEFT JOIN mutasi m ON m.id = (
-        SELECT id FROM mutasi
-        WHERE id_perangkat = p.id
-        ORDER BY created_at DESC
-        LIMIT 1
-        )
+        LEFT JOIN (
+            SELECT MAX(id) as max_id, id_perangkat
+            FROM mutasi
+            GROUP BY id_perangkat
+        ) latest_mutasi ON latest_mutasi.id_perangkat = p.id
+        LEFT JOIN mutasi m ON m.id = latest_mutasi.max_id
         LEFT JOIN users u ON u.id = m.id_users
         $whereSql
         ORDER BY p.id ASC
@@ -230,11 +231,12 @@ class PerangkatModel extends Model
         m.updated_by,
         u.nama as nama_user
         FROM perangkat p
-        LEFT JOIN mutasi m ON m.id = (
-        SELECT id FROM mutasi
-        WHERE id_perangkat = p.id
-        ORDER BY created_at DESC
-        LIMIT 1)
+        LEFT JOIN (
+            SELECT MAX(id) as max_id, id_perangkat
+            FROM mutasi
+            GROUP BY id_perangkat
+        ) latest_mutasi ON latest_mutasi.id_perangkat = p.id
+        LEFT JOIN mutasi m ON m.id = latest_mutasi.max_id
         LEFT JOIN users u on u.id = m.id_users
         WHERE p.id =?",
             [$id]
