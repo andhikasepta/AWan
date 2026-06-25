@@ -540,11 +540,11 @@
 
       const config = getScanConfig();
 
-      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        showToast("Error: Kamera membutuhkan koneksi HTTPS (Secure Context)", "error");
-        scannerModal.classList.add('hidden');
-        return;
-      }
+      // if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      //   showToast("Error: Kamera membutuhkan koneksi HTTPS (Secure Context)", "error");
+      //   scannerModal.classList.add('hidden');
+      //   return;
+      // }
 
       try {
         await html5QrCode.start(

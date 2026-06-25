@@ -276,6 +276,10 @@
       tr.selected-row {
         background-color: #DBEAFE !important;
       }
+      
+      .ts-control.no-arrow::after {
+        display: none !important;
+      }
     </style>
 
   </div>
@@ -989,6 +993,7 @@
         labelField: "text",
         searchField: ["kode_spec", "nama_perangkat"],
         create: true,
+        controlClass: 'ts-control no-arrow',
         load: function (query, callback) {
           if (!query.length) return callback();
           fetch(`/perangkat/getSpec?search=${query}`)
