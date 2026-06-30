@@ -23,7 +23,7 @@ A robust and secure Asset Management System built with CodeIgniter 4. This appli
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/M3PH1569/Awann
+   git clone https://github.com/M3PH1569/Awann.git
    cd Awann
    ```
 
