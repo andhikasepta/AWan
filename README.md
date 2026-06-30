@@ -11,20 +11,20 @@ A robust and secure Asset Management System built with CodeIgniter 4. This appli
 
 ## System Requirements
 
-- PHP version 8.2 or higher
+- PHP version 8.3 or higher
 - Required PHP Extensions:
   - `intl`
   - `mbstring`
   - `json`
-  - `mysqlnd` (for MySQL database connections)
+  - `pgsql` (for PostgreSQL database connections)
   - `libcurl` (for HTTP requests)
 
 ## Installation Guide
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
-   cd AssetManagement
+   git clone https://github.com/M3PH1569/Awann
+   cd Awann
    ```
 
 2. **Install dependencies:**
