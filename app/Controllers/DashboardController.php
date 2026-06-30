@@ -477,7 +477,7 @@ class DashboardController extends BaseController
         $returnRequestModel = new \App\Models\ReturnRequestModel();
         
         foreach ($requestIds as $id) {
-            $returnRequestModel->update($id, ['is_read' => true]);
+            $returnRequestModel->update($id, ['is_read' => 1]);
         }
 
         return $this->response->setJSON(['success' => true]);
@@ -661,7 +661,7 @@ class DashboardController extends BaseController
         $installationModel = new \App\Models\InstallationRequestModel();
 
         foreach ($requestIds as $id) {
-            $installationModel->update($id, ['is_read' => true]);
+            $installationModel->update($id, ['is_read' => 1]);
         }
 
         return $this->response->setJSON(['success' => true]);
