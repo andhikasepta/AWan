@@ -253,6 +253,12 @@
                 </div>
 
                 <script>
+                    function getCookie(name) {
+                        let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                        if (match) return match[2];
+                        return '';
+                    }
+
                     function notificationComponent() {
                         return {
                             open: false,
@@ -305,7 +311,7 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
                                     },
                                     body: params
                                 }).catch(err => console.error(err));
@@ -371,7 +377,7 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
                                     },
                                     body: params
                                 })
