@@ -2,6 +2,7 @@
 # Operating Specific Junk Files
 #-------------------------
 k3s/
+docker-compose.yml
 
 # OS X
 .DS_Store
@@ -58,7 +59,7 @@ writable/logs/*
 writable/session/*
 !writable/session/index.html
 
-writable/brp/*
+writable/brp/*.pdf
 !writable/brp/index.html
 
 writable/uploads/*
@@ -71,6 +72,7 @@ php_errors.log
 *.sql
 *.bak
 *.tmp
+*.pdf
 
 #-------------------------
 # User Guide Temp Files

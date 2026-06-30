@@ -56,7 +56,7 @@ writable/logs/*
 !writable/logs/index.html
 writable/session/*
 !writable/session/index.html
-writable/brp/*
+writable/brp/*.pdf
 !writable/brp/index.html
 writable/uploads/*
 !writable/uploads/index.html
@@ -66,7 +66,7 @@ php_errors.log
 *.sql
 *.bak
 *.tmp
-
+*.pdf
 #-------------------------
 # Composer
 #-------------------------
