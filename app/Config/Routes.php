@@ -39,6 +39,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     // Users with Dibawa Devices
     $routes->get('dashboard/usersDibawa', 'DashboardController::getUsersWithDibawa');
     $routes->post('dashboard/usersDibawa/markRead', 'DashboardController::markDibawaAsRead');
+    $routes->post('dashboard/peminjaman/approve', 'DashboardController::approvePeminjaman');
 
     // Return Requests Routes (Admin)
     $routes->get('dashboard/returns', 'DashboardController::getPendingReturns');

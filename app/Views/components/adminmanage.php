@@ -18,6 +18,12 @@
                         class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
                     <input type="text" id="newAdminUsername" placeholder="Username"
                         class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+                    <select id="newAdminRegion" class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="region">
+                        <option value="">-- Pilih Region --</option>
+                    </select>
+                    <select id="newAdminArea" class="border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="area">
+                        <option value="">-- Pilih Area --</option>
+                    </select>
                     <button onclick="saveNewAdmin()"
                         class="bg-[#1C4D8D] hover:bg-[#3E679E] text-white px-4 py-2 rounded-md text-xs font-semibold transition">
                         <i class="fa-solid fa-plus mr-1"></i> Simpan Admin
@@ -42,10 +48,52 @@
                             <th class="px-4 py-3 text-center w-[50px] border border-gray-300">No</th>
                             <th class="px-4 py-3 text-left border border-gray-300">Nama</th>
                             <th class="px-4 py-3 text-left border border-gray-300">Username</th>
+                            <th class="px-4 py-3 text-left border border-gray-300">Region</th>
+                            <th class="px-4 py-3 text-left border border-gray-300">Area</th>
                         </tr>
                     </thead>
                     <tbody id="adminManageBody"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editAdminModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[400px] overflow-hidden">
+        <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+            <h3 class="font-bold">Edit Admin</h3>
+            <button onclick="closeEditAdmin()" class="text-white hover:text-gray-400 transition">
+                <i class="fa-solid fa-xmark fa-xl"></i>
+            </button>
+        </div>
+        <div class="p-4 flex flex-col">
+            <input type="hidden" id="editAdminId">
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap</label>
+                <input type="text" id="editAdminNama" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+            </div>
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Username</label>
+                <input type="text" id="editAdminUsername" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
+            </div>
+            <div class="mb-3 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Region</label>
+                    <select id="editAdminRegion" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="region">
+                        <option value="">-- Pilih --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
+                    <select id="editAdminArea" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="area">
+                        <option value="">-- Pilih --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <button onclick="closeEditAdmin()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md text-xs font-semibold transition">Batal</button>
+                <button onclick="updateAdminAction()" class="px-4 py-2 bg-[#1C4D8D] hover:bg-[#3E679E] text-white rounded-md text-xs font-semibold transition">Update</button>
             </div>
         </div>
     </div>
@@ -63,6 +111,8 @@
         document.getElementById('adminManageModal').classList.remove('flex');
         document.getElementById('newAdminNama').value = '';
         document.getElementById('newAdminUsername').value = '';
+        document.getElementById('newAdminRegion').value = '';
+        document.getElementById('newAdminArea').value = '';
         document.getElementById('searchAdmin').value = '';
     }
 
@@ -104,7 +154,7 @@
                         ${isSelf
                             ? `<span class="text-xs text-gray-400 italic">Anda</span>`
                             : `<div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="editAdmin(${a.id}, '${a.nama.replace(/'/g, "\\'")}', '${a.username.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
+                                <button type="button" onclick="editAdmin(${a.id}, '${a.nama.replace(/'/g, "\\'")}', '${a.username.replace(/'/g, "\\'")}', '${(a.region||'').replace(/'/g, "\\'")}', '${(a.area||'').replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-400 transition" title="Edit">
                                     <i class="fa-solid fa-pen-to-square text-xs"></i>
                                 </button>
                                 <button type="button" onclick="resetAdminPassword(${a.id}, '${a.username.replace(/'/g, "\\'")}')" class="text-yellow-500 hover:text-yellow-400 transition" title="Reset Password">
@@ -119,6 +169,8 @@
                     <td class="px-4 py-3 text-center text-xs border border-gray-300">${no++}</td>
                     <td class="px-4 py-3 text-left text-xs border border-gray-300">${a.nama}</td>
                     <td class="px-4 py-3 text-left text-xs border border-gray-300">${a.username}</td>
+                    <td class="px-4 py-3 text-left text-xs border border-gray-300">${a.region || '-'}</td>
+                    <td class="px-4 py-3 text-left text-xs border border-gray-300">${a.area || '-'}</td>
                 </tr>`;
         });
     }
@@ -126,6 +178,8 @@
     function saveNewAdmin() {
         const nama     = document.getElementById('newAdminNama').value.trim();
         const username = document.getElementById('newAdminUsername').value.trim();
+        const region   = document.getElementById('newAdminRegion').value.trim();
+        const area     = document.getElementById('newAdminArea').value.trim();
 
         if (!nama || !username) {
             showToast('Semua field wajib diisi', 'warning');
@@ -141,7 +195,7 @@
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': csrfToken
             },
-            body: new URLSearchParams({ nama, username, csrf_test_name: csrfToken })
+            body: new URLSearchParams({ nama, username, region, area, csrf_test_name: csrfToken })
         })
         .then(res => res.json())
         .then(res => {
@@ -149,6 +203,8 @@
                 showToast('Admin berhasil ditambahkan', 'success');
                 document.getElementById('newAdminNama').value = '';
                 document.getElementById('newAdminUsername').value = '';
+                document.getElementById('newAdminRegion').value = '';
+                document.getElementById('newAdminArea').value = '';
                 loadAdmins();
             } else {
                 showToast(res.msg ?? 'Gagal menambahkan admin', 'error');
@@ -220,51 +276,56 @@
         });
     }
 
-    function editAdmin(id, oldNama, oldUsername) {
-        Swal.fire({
-            title: 'Edit Admin',
-            html: `
-                <input id="swal-nama" class="swal2-input" placeholder="Nama" value="${oldNama}">
-                <input id="swal-username" class="swal2-input" placeholder="Username" value="${oldUsername}">
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Update',
-            cancelButtonText: 'Batal',
-            preConfirm: () => {
-                const nama = document.getElementById('swal-nama').value.trim();
-                const username = document.getElementById('swal-username').value.trim();
-                if (!nama || !username) {
-                    Swal.showValidationMessage('Semua field wajib diisi');
-                }
-                return { nama, username };
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
-                const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+    function editAdmin(id, oldNama, oldUsername, oldRegion, oldArea) {
+        document.getElementById('editAdminId').value = id;
+        document.getElementById('editAdminNama').value = oldNama;
+        document.getElementById('editAdminUsername').value = oldUsername;
+        document.getElementById('editAdminRegion').value = oldRegion;
+        document.getElementById('editAdminArea').value = oldArea;
+        document.getElementById('editAdminModal').classList.remove('hidden');
+        document.getElementById('editAdminModal').classList.add('flex');
+    }
 
-                fetch('<?= base_url('dashboard/updateAdmin') ?>/' + id, {
-                    method: 'POST',
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: new URLSearchParams({
-                        ...result.value,
-                        csrf_test_name: csrfToken
-                    })
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success) {
-                        showToast('Admin berhasil diupdate', 'success');
-                        loadAdmins();
-                    } else {
-                        showToast(res.msg ?? 'Gagal update admin', 'error');
-                    }
-                });
+    function closeEditAdmin() {
+        document.getElementById('editAdminModal').classList.add('hidden');
+        document.getElementById('editAdminModal').classList.remove('flex');
+    }
+
+    function updateAdminAction() {
+        const id = document.getElementById('editAdminId').value;
+        const nama = document.getElementById('editAdminNama').value.trim();
+        const username = document.getElementById('editAdminUsername').value.trim();
+        const region = document.getElementById('editAdminRegion').value.trim();
+        const area = document.getElementById('editAdminArea').value.trim();
+
+        if (!nama || !username) {
+            showToast('Nama dan Username wajib diisi', 'warning');
+            return;
+        }
+
+        const csrfTokenElement = document.querySelector('input[name="csrf_test_name"]');
+        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '<?= csrf_hash() ?>';
+
+        fetch('<?= base_url('dashboard/updateAdmin') ?>/' + id, {
+            method: 'POST',
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: new URLSearchParams({
+                nama, username, region, area,
+                csrf_test_name: csrfToken
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                showToast('Admin berhasil diupdate', 'success');
+                closeEditAdmin();
+                loadAdmins();
+            } else {
+                showToast(res.msg ?? 'Gagal update admin', 'error');
             }
         });
     }

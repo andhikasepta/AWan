@@ -31,6 +31,9 @@ class DashboardController extends BaseController
         $page = $this->request->getGet('page') ?? 1;
         $limit = 50;
         $offset = ($page - 1) * $limit;
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+
         $filters = [
             'keyword' => $this->request->getGet('keyword'),
             'status' => $this->request->getGet('status'),
@@ -38,6 +41,8 @@ class DashboardController extends BaseController
             'user' => $this->request->getGet('user'),
             'sort_by' => $this->request->getGet('sort_by'),
             'sort_dir' => $this->request->getGet('sort_dir'),
+            'admin_region' => $isSuper ? null : ($adminSession['region'] ?? null),
+            'admin_area' => $isSuper ? null : ($adminSession['area'] ?? null),
         ];
 
         $result = $this->perangkatModel->getDataDash($filters, $limit, $offset);
@@ -52,6 +57,10 @@ class DashboardController extends BaseController
         $data['statuses'] = $configMutasi->status;
 
         $userModel = new \App\Models\UserModel();
+        if (!$isSuper && !empty($adminSession['region']) && !empty($adminSession['area'])) {
+            $userModel->where('region', $adminSession['region'])
+                      ->where('area', $adminSession['area']);
+        }
         $data['users'] = $userModel->orderBy('nama', 'ASC')->findAll();
 
         return view('dashboard', $data);
@@ -143,6 +152,8 @@ class DashboardController extends BaseController
 
         try {
             $nama = trim($this->request->getPost('nama'));
+            $region = trim($this->request->getPost('region'));
+            $area = trim($this->request->getPost('area'));
 
             if (!$nama) {
                 return $this->response->setJSON([
@@ -154,7 +165,9 @@ class DashboardController extends BaseController
             $db = \Config\Database::connect();
 
             $insert = $db->table('users')->insert([
-                'nama' => $nama
+                'nama' => $nama,
+                'region' => $region,
+                'area' => $area
             ]);
 
             if (!$insert) {
@@ -207,6 +220,8 @@ class DashboardController extends BaseController
         }
 
         $nama = trim($this->request->getPost('nama'));
+        $region = trim($this->request->getPost('region'));
+        $area = trim($this->request->getPost('area'));
 
         if (!$nama) {
             return $this->response->setJSON([
@@ -218,10 +233,60 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
 
         $db->table('users')->where('id', $id)->update([
-            'nama' => $nama
+            'nama' => $nama,
+            'region' => $region,
+            'area' => $area
         ]);
 
         return $this->response->setJSON(['success' => true]);
+    }
+
+    // ── Regional Manage ────────────────────────────────────────────────────────
+
+    public function regionalList()
+    {
+        $db = \Config\Database::connect();
+        $data = $db->table('regional')->orderBy('region', 'ASC')->orderBy('area', 'ASC')->get()->getResultArray();
+        return $this->response->setJSON($data);
+    }
+
+    public function addRegional()
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $region = trim($this->request->getPost('region'));
+        $area = trim($this->request->getPost('area'));
+
+        if (!$region || !$area) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Region dan Area tidak boleh kosong']);
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('regional')->insert([
+            'region' => $region,
+            'area' => $area,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function deleteRegional($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db = \Config\Database::connect();
+        $deleted = $db->table('regional')->delete(['id' => $id]);
+        return $this->response->setJSON(['success' => $deleted ? true : false]);
     }
 
     // ── Admin Manage ────────────────────────────────────────────────────────
@@ -235,7 +300,7 @@ class DashboardController extends BaseController
         }
 
         $db = \Config\Database::connect();
-        $admins = $db->table('admin')->select('id, nama, username')->get()->getResultArray();
+        $admins = $db->table('admin')->select('id, nama, username, region, area')->get()->getResultArray();
         return $this->response->setJSON($admins);
     }
 
@@ -250,6 +315,8 @@ class DashboardController extends BaseController
         $db   = \Config\Database::connect();
         $nama     = trim($this->request->getPost('nama'));
         $username = trim($this->request->getPost('username'));
+        $region   = trim($this->request->getPost('region'));
+        $area     = trim($this->request->getPost('area'));
 
         if (!$nama || !$username) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
@@ -264,6 +331,8 @@ class DashboardController extends BaseController
         $db->table('admin')->insert([
             'nama'       => $nama,
             'username'   => $username,
+            'region'     => $region,
+            'area'       => $area,
             // [SECURITY] Argon2ID hash untuk password kosong (akan di-setup oleh admin baru)
             'password'   => hash_password(''),
             'is_super'   => 0,
@@ -303,6 +372,8 @@ class DashboardController extends BaseController
 
         $nama = trim($this->request->getPost('nama'));
         $username = trim($this->request->getPost('username'));
+        $region = trim($this->request->getPost('region'));
+        $area = trim($this->request->getPost('area'));
 
         if (!$nama || !$username) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
@@ -319,6 +390,8 @@ class DashboardController extends BaseController
         $db->table('admin')->where('id', $id)->update([
             'nama' => $nama,
             'username' => $username,
+            'region' => $region,
+            'area' => $area,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 
@@ -1178,6 +1251,84 @@ class DashboardController extends BaseController
             return $this->response->setJSON(['success' => false, 'msg' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Approve or reject peminjaman (borrowing) requests.
+     * Approved: status stays 'Dibawa', mark is_read_admin = true.
+     * Rejected: delete mutasi record, restore perangkat to 'Tersedia' and non-reg stock.
+     */
+    public function approvePeminjaman()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $approvedIds = $this->request->getPost('approved_ids');
+        $rejectedIds = $this->request->getPost('rejected_ids');
+
+        if (empty($approvedIds) && empty($rejectedIds)) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Tidak ada perangkat yang dipilih.']);
+        }
+
+        $approvedIds = is_array($approvedIds) ? $approvedIds : [];
+        $rejectedIds = is_array($rejectedIds) ? $rejectedIds : [];
+
+        $mutasiModel = new \App\Models\MutasiModel();
+        $perangkatModel = new \App\Models\PerangkatModel();
+        $nonRegModel = new \App\Models\NonRegistrationModel();
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // Approve: mark as read (confirmed), status stays Dibawa
+        foreach ($approvedIds as $mutasiId) {
+            $mutasi = $mutasiModel->find((int) $mutasiId);
+            if (!$mutasi || $mutasi['status'] !== 'Dibawa') {
+                continue;
+            }
+            $mutasiModel->update($mutasiId, ['is_read_admin' => 'true']);
+        }
+
+        // Reject: reverse the peminjaman
+        foreach ($rejectedIds as $mutasiId) {
+            $mutasi = $mutasiModel->find((int) $mutasiId);
+            if (!$mutasi || $mutasi['status'] !== 'Dibawa') {
+                continue;
+            }
+
+            // Restore perangkat status to Tersedia
+            if (!empty($mutasi['id_perangkat'])) {
+                $perangkatModel->update($mutasi['id_perangkat'], ['status' => 'Tersedia']);
+            }
+
+            // Restore non-reg stock
+            if (!empty($mutasi['id_non_reg'])) {
+                $nr = $nonRegModel->find($mutasi['id_non_reg']);
+                if ($nr) {
+                    $restoredQty = $nr['quantity'] + ($mutasi['qty'] ?? 1);
+                    $nonRegModel->update($nr['id'], ['quantity' => $restoredQty]);
+                }
+            }
+
+            // Delete the mutasi record
+            $mutasiModel->delete($mutasiId);
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Gagal memproses peminjaman.']);
+        }
+
+        $msg = 'Peminjaman berhasil diproses.';
+        if (empty($approvedIds) && !empty($rejectedIds)) {
+            $msg = 'Peminjaman ditolak.';
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => $msg]);
+    }
+
     public function getUsersWithDibawa()
     {
         $db = \Config\Database::connect();
@@ -1234,6 +1385,7 @@ class DashboardController extends BaseController
             
             $users[$userName]['total_dibawa']++;
             $users[$userName]['devices'][] = [
+                'mutasi_id' => $row['mutasi_id'],
                 'noreg' => $noreg,
                 'nama' => $nama,
                 'created_at' => $row['created_at'],

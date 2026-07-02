@@ -23,7 +23,7 @@
         class="border text-xs rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#1C4D8D] pr-8 transition-all duration-500 ease-in-out">
     </div>
 
-    <a href="/dashboard/nonreg" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+    <a href="<?= base_url('dashboard/nonreg') ?>" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
     <button type="button" onclick="openNonRegManage()" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white ml-auto">
@@ -85,7 +85,7 @@
                   <input type="checkbox" class="row-checkbox w-4 h-4 cursor-pointer accent-[#1C4D8D]" value="<?= $m['id'] ?>">
                 </td>
                 <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
-                  <button type="button" onclick="openNonRegEdit(<?= $m['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
+                  <button type="button" onclick="openNonRegEdit(<?= $m['id'] ?>, '<?= addslashes(htmlspecialchars($m['kode_spec'], ENT_QUOTES)) ?>', '<?= addslashes(htmlspecialchars($m['nama_material'], ENT_QUOTES)) ?>', <?= (int)$m['quantity'] ?>)" class="hover:text-blue-400 mr-1 transition">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
                   <button type="button" onclick="openNonRegHistory(<?= $m['id'] ?>, '<?= htmlspecialchars($m['nama_material'], ENT_QUOTES) ?>')" class="hover:text-blue-400 mr-1 transition">
@@ -218,6 +218,12 @@
     </div>
   </div>
 </div>
+
+<!-- Floating Add Material Button -->
+<button onclick="openNonRegManage()"
+  class="fixed bottom-10 right-10 w-14 h-14 bg-[#1C4D8D] text-white rounded-full flex items-center justify-center text-xl shadow-lg hover:bg-[#7AAACE] hover:scale-110 transition z-[49]">
+  <i class="fa-solid fa-plus"></i>
+</button>
 
 <?= $this->endSection() ?>
 

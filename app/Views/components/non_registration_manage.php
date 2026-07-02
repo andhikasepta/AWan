@@ -91,6 +91,38 @@
         document.getElementById('nonRegManageModal').classList.add('flex');
         resetNonRegForm();
         switchNonRegTab('manual');
+        document.querySelector('#nonRegManageContent h3').innerText = 'Tambah Material';
+        if (tsNonReg) {
+            tsNonReg.enable();
+        }
+        document.getElementById('nonRegNama').readOnly = false;
+    }
+
+    function openNonRegEdit(id, kode_spec, nama_material, qty) {
+        document.getElementById('nonRegManageModal').classList.remove('hidden');
+        document.getElementById('nonRegManageModal').classList.add('flex');
+        resetNonRegForm();
+        switchNonRegTab('manual');
+        document.querySelector('#nonRegManageContent h3').innerText = 'Edit Material';
+        
+        if (tsNonReg) {
+            tsNonReg.addOption({
+                id: id,
+                text: kode_spec + " - " + nama_material,
+                kode_spec: kode_spec,
+                nama: nama_material
+            });
+            tsNonReg.setValue(id);
+            tsNonReg.disable();
+        }
+        
+        document.getElementById('nonRegId').value = id;
+        document.getElementById('nonRegQty').value = qty;
+        
+        const namaInput = document.getElementById("nonRegNama");
+        namaInput.value = nama_material;
+        namaInput.readOnly = true;
+        document.getElementById("nonRegNamaWrapper").classList.add("hidden");
     }
 
     function closeNonRegManage() {
@@ -312,6 +344,38 @@
         .catch(err => {
             Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
             fileInput.value = '';
+        });
+    }
+
+    function confirmNonRegDelete(id) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data material akan dihapus secara permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('<?= base_url('dashboard/deleteNonReg') ?>/' + id, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        Swal.fire('Terhapus!', data.msg, 'success').then(() => window.location.reload());
+                    } else {
+                        Swal.fire('Error', data.msg, 'error');
+                    }
+                })
+                .catch(err => Swal.fire('Error', 'Terjadi kesalahan sistem', 'error'));
+            }
         });
     }
 </script>

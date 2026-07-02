@@ -59,7 +59,7 @@
       </select>
     </div>
 
-    <a href="/dashboard" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+    <a href="<?= base_url('dashboard') ?>" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
 
@@ -509,7 +509,7 @@
       tbody.innerHTML += `
         <tr class="text-[#656565] odd:bg-white even:bg-[#EFEFEF] hover:text-black">
           <td class="px-4 py-3 text-center text-xs text-blue-700 border border-gray-300">
-            <button type="button" onclick="editUser(this)" data-id="${user.id}" data-nama="${user.nama}" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
+            <button type="button" onclick="editUser(this)" data-id="${user.id}" data-nama="${user.nama.replace(/'/g, "\\'")}" data-region="${(user.region||'').replace(/'/g, "\\'")}" data-area="${(user.area||'').replace(/'/g, "\\'")}" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
             <button type="button" onclick="deleteUser(${user.id})" class="text-[#1C4D8D] hover:text-blue-400 mr-1 transition">
@@ -518,6 +518,8 @@
           </td>
           <td class="px-4 py-3 text-center border border-gray-300">${no++}</td>
           <td class="px-4 py-3 text-left border border-gray-300">${highlightText(user.nama, keyword)}</td>
+          <td class="px-4 py-3 text-left border border-gray-300">${user.region || '-'}</td>
+          <td class="px-4 py-3 text-left border border-gray-300">${user.area || '-'}</td>
         </tr>`;
     });
   }
@@ -531,121 +533,53 @@
 
   function editUser(el) {
     const userId = el.dataset.id;
-    const namaLama = el.dataset.nama;
+    const nama = el.dataset.nama;
+    const region = el.dataset.region;
+    const area = el.dataset.area;
 
-    const row = el.closest("tr");
-    row.classList.add("bg-[#F9FBFF]", "ring-1", "ring-[#1C4D8D]/10");
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editUserNama').value = nama;
+    document.getElementById('editUserRegion').value = region;
+    document.getElementById('editUserArea').value = area;
 
-    const tdNama = row.children[2];
-
-    tdNama.innerHTML = `
-      <div class="relative group">
-        <input type="text" id="edit_nama_${userId}" value="${namaLama}" class="w-full bg-white border border-gray-300 px-3 py-2 rounded-md text-xs shadow-sm focus:ring-1 focus:ring-[#1C4D8D] outline-none transition-all duration-200">
-      </div>`;
-
-    tdNama.style.opacity = "0";
-    tdNama.style.transform = "translateY(4px)";
-
-    setTimeout(() => {
-      tdNama.style.opacity = "1";
-      tdNama.style.transform = "translateY(0)";
-    }, 120);
-
-    const tdAction = row.children[0];
-    tdAction.innerHTML = `
-    <div class="flex justify-center items-center gap-2">
-
-      <button onclick="saveUser(${userId})"
-        class="w-6 h-6 flex items-center justify-center rounded-full 
-              bg-green-100 text-green-600 hover:bg-green-200 active:scale-95 transition"
-        title="Simpan">
-        <i class="fa-solid fa-check text-xs"></i>
-      </button>
-
-      <button onclick="cancelEdit(${userId})"
-        class="w-6 h-6 flex items-center justify-center rounded-full 
-              bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition"
-        title="Batal">
-        <i class="fa-solid fa-xmark text-xs"></i>
-      </button>
-
-    </div>`;
-
-    setTimeout(() => {
-      const input = document.getElementById(`edit_nama_${userId}`);
-      input.focus();
-
-      input.select();
-    }, 100);
+    document.getElementById('editUserModal').classList.remove('hidden');
+    document.getElementById('editUserModal').classList.add('flex');
   }
 
-  function saveUser(id) {
-    const nama = document.getElementById(`edit_nama_${id}`).value;
+  function closeEditUser() {
+    document.getElementById('editUserModal').classList.add('hidden');
+    document.getElementById('editUserModal').classList.remove('flex');
+  }
+
+  function saveUserAction() {
+    const id = document.getElementById('editUserId').value;
+    const nama = document.getElementById('editUserNama').value.trim();
+    const region = document.getElementById('editUserRegion').value.trim();
+    const area = document.getElementById('editUserArea').value.trim();
+
+    if (!nama) {
+        showToast("Nama User Kosong", "warning");
+        return;
+    }
 
     fetch("<?= base_url('dashboard/updateUser') ?>/" + id, {
       method: "POST",
       headers: {
         "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
       },
-      body: new URLSearchParams({ nama })
+      body: new URLSearchParams({ nama, region, area })
     })
       .then(res => res.json())
       .then(res => {
         if (res.success) {
           showToast("User berhasil diubah", "success");
+          closeEditUser();
           loadUsers();
+          refreshUserDropdown();
         } else {
           showToast("Gagal mengubah user", "error");
         }
       });
-  }
-
-  function cancelEdit(el, id, namaLama) {
-    loadUsers();
-    const row = el.closest("tr");
-    row.classList.remove("bg-[#F9FBFF]", "ring-1", "ring-[#1C4D8D]/10");
-  }
-
-  function addUser() {
-    const tbody = document.getElementById("userManageBody");
-
-    if (document.getElementById("newUserRow")) return;
-
-    const row = document.createElement("tr");
-    row.id = "newUserRow";
-    row.className = "bg-[#F9FBFF] animate-fadein";
-
-    row.innerHTML = `
-    <td class="px-4 py-3 text-center border">
-      <div class="flex justify-center gap-2">
-
-        <button onclick="saveNewUser()"
-          class="w-6 h-6 flex items-center justify-center rounded-full 
-                bg-green-100 text-green-600 hover:bg-green-200 active:scale-95 transition"
-          title="Simpan">
-          <i class="fa-solid fa-check text-xs"></i>
-        </button>
-
-        <button onclick="cancelNewUser()"
-          class="w-6 h-6 flex items-center justify-center rounded-full 
-                bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition"
-          title="Batal">
-          <i class="fa-solid fa-xmark text-xs"></i>
-        </button>
-      </div>
-    </td>
-
-    <td class="px-4 py-3 text-center border text-xs">-</td>
-    <td class="px-4 py-3 border">
-      <input type="text" id="newUserInput" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none" placeholder="Masukkan Nama User">
-    </td>
-    `;
-
-    tbody.prepend(row);
-
-    setTimeout(() => {
-      document.getElementById("newUserInput").focus();
-    }, 100);
   }
 
   //  let nama = prompt("Masukkan nama user : "); 
@@ -674,6 +608,8 @@
   function saveNewUser() {
     const input = document.getElementById("newUserInput");
     const nama = input.value;
+    const region = document.getElementById("newUserRegion").value;
+    const area = document.getElementById("newUserArea").value;
 
     if (!nama.trim()) {
       showToast("Nama User Kosong", "warning");
@@ -685,12 +621,15 @@
       headers: {
         "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "<?= csrf_hash() ?>"
       },
-      body: new URLSearchParams({ nama })
+      body: new URLSearchParams({ nama, region, area })
     })
       .then(res => res.json())
       .then(res => {
         if (res.success) {
           showToast("Berhasil Menambahkan User", "success");
+          document.getElementById("newUserInput").value = "";
+          document.getElementById("newUserRegion").value = "";
+          document.getElementById("newUserArea").value = "";
           loadUsers();
           refreshUserDropdown();
         } else {
@@ -998,11 +937,11 @@
         valueField: "id",
         labelField: "text",
         searchField: ["kode_spec", "nama_perangkat"],
-        create: true,
+        create: false,
         controlClass: 'ts-control no-arrow',
         load: function (query, callback) {
           if (!query.length) return callback();
-          fetch(`/perangkat/getSpec?search=${query}`)
+          fetch(`<?= base_url('perangkat/getSpec') ?>?search=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
               callback(data.map(item => ({
@@ -1017,7 +956,7 @@
           const namaInput = document.getElementById("nama");
           const namaWrapper = document.getElementById("namaWrapper");
           if (/^\d+$/.test(value)) {
-            fetch(`/perangkat/getSpecById?id=${value}`)
+            fetch(`<?= base_url('perangkat/getSpecById') ?>?id=${value}`)
               .then(res => res.json())
               .then(data => {
                 namaInput.value = data.nama_perangkat;
@@ -1111,7 +1050,7 @@
 
       let noreg = kode_spec + kode_id;
 
-      fetch(`/perangkat/cek-noreg?noreg=${noreg}`)
+      fetch(`<?= base_url('perangkat/cek-noreg') ?>?noreg=${noreg}`)
         .then(res => res.json())
         .then(data => {
           if (data.exists) {
@@ -1827,6 +1766,57 @@
         if (file) handleCsvFile(file);
       });
     }
+  });
+
+  // Global reference for regional tomselect instances
+  window.regionalTomSelects = [];
+  
+  window.refreshRegionalTomSelects = function() {
+      fetch("<?= base_url('dashboard/regionalList') ?>")
+        .then(res => res.json())
+        .then(data => {
+            // Destroy existing instances
+            window.regionalTomSelects.forEach(ts => {
+                if(ts) ts.destroy();
+            });
+            window.regionalTomSelects = [];
+
+            // Group by region and area uniquely
+            let regions = [...new Set(data.map(item => item.region))].map(r => ({value: r, text: r}));
+            let areas = [...new Set(data.map(item => item.area))].map(a => ({value: a, text: a}));
+
+            document.querySelectorAll('.regional-tomselect').forEach(el => {
+                let isRegion = el.dataset.type === 'region';
+                let options = isRegion ? regions : areas;
+                
+                // Preserve the currently selected value if any
+                let currentValue = el.value;
+
+                // Clear and recreate options
+                el.innerHTML = '<option value="">-- Pilih --</option>';
+                options.forEach(opt => {
+                    if(opt.value) {
+                        el.innerHTML += `<option value="${opt.value}">${opt.text}</option>`;
+                    }
+                });
+                
+                // Restore value
+                if(currentValue) {
+                    el.value = currentValue;
+                }
+
+                let ts = new TomSelect(el, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
+                window.regionalTomSelects.push(ts);
+            });
+        });
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', function () {
+      refreshRegionalTomSelects();
   });
 
 </script>

@@ -123,8 +123,8 @@
       </div>
 
       <!-- Non-Registration Input -->
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_100px_auto] gap-4 mb-5 border-t border-gray-200 pt-4">
-        <div class="w-full flex flex-col relative">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_100px_auto] gap-4 mb-5 border-t border-gray-200 pt-4 relative z-20">
+        <div class="w-full flex flex-col relative z-20">
           <label class="font-semibold text-[#1C4D8D] text-sm mb-2">Material Non-Registrasi</label>
           <select id="nonreg_select" class="">
             <option value="">Pilih Material...</option>

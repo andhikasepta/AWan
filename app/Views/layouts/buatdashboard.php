@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <title>Dashboard</title>
 
     <script>
@@ -48,17 +49,25 @@
 <body class="bg-[#F1F1F1] min-h-screen flex flex-col">
     <?php $uri = service('uri'); ?>
 
-    <nav
-        class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-6 py-3 flex justify-between items-center shadow-md z-[49]">
-        <img src="<?= base_url('images/awan.webp') ?>" class="w-[160px] md:w-[200px] -my-3">
-        <div class="flex items-center gap-6">
+    <nav id="dashNav"
+        class="fixed top-0 left-0 w-full bg-[#1C4D8D] text-white px-4 md:px-6 py-2 flex justify-between items-center shadow-md z-[49]">
+        <img src="<?= base_url('images/awan.webp') ?>" class="w-[150px] md:w-[200px] -my-4">
+
+        <!-- Hamburger button (mobile only) -->
+        <button id="dashHamburgerBtn" onclick="toggleDashMobileMenu()" class="md:hidden text-white focus:outline-none p-2">
+            <i id="dashHamburgerIcon" class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+        <!-- Desktop nav -->
+        <div class="hidden md:flex items-center gap-6">
             <!-- Notification Bell -->
-            <div x-data="notificationComponent()" x-init="init()" class="relative mt-1">
+            <div x-data="notificationComponent()" x-init="init()" class="relative">
                 <button @click="open = !open; if(open) fetchPendingReturns()"
-                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center">
-                    <i class="fa-solid fa-bell text-xl"></i>
+                    class="text-white hover:text-[#B3B3B3] transition relative flex flex-col items-center justify-center py-1">
+                    <i class="fa-solid fa-bell text-lg mb-1"></i>
+                    <span class="text-[11px] leading-tight">Notifikasi</span>
                     <span x-show="count > 0" x-text="count" x-cloak
-                        class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                        class="absolute -top-1 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
                 </button>
 
                 <div x-show="open" x-cloak @click.outside="open = false"
@@ -255,8 +264,12 @@
                 <script>
                     function getCookie(name) {
                         let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                        if (match) return match[2];
+                        if (match) return decodeURIComponent(match[2]);
                         return '';
+                    }
+
+                    window.csrfToken = function () {
+                        return getCookie('am_csrf') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                     }
 
                     function notificationComponent() {
@@ -311,7 +324,8 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken()
                                     },
                                     body: params
                                 }).catch(err => console.error(err));
@@ -377,7 +391,8 @@
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': getCookie('am_csrf') || '<?= csrf_hash() ?>'
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken()
                                     },
                                     body: params
                                 })
@@ -405,13 +420,14 @@
             </div>
 
             <!-- Follow Up Component -->
-            <div x-data="followUpComponent()" x-init="init()" class="relative mt-1">
+            <div x-data="followUpComponent()" x-init="init()" class="relative">
                 <button @click="openModal()"
-                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex flex-col items-center justify-center py-1"
                     title="Follow Up">
-                    <i class="fa-solid fa-clipboard-list text-xl"></i>
+                    <i class="fa-solid fa-clipboard-list text-lg mb-1"></i>
+                    <span class="text-[11px] leading-tight">Follow Up</span>
                     <span x-show="count > 0" x-text="count" x-cloak
-                        class="absolute -top-1.5 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
+                        class="absolute -top-1 -right-3 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"></span>
                 </button>
 
                 <!-- Follow Up Modal -->
@@ -775,13 +791,14 @@
             </div>
 
             <!-- Users with Dibawa Component -->
-            <div x-data="dibawaComponent()" class="relative mt-1">
+            <div x-data="dibawaComponent()" class="relative">
                 <button @click="openModal()"
-                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex flex-col items-center justify-center py-1"
                     title="User dengan Perangkat Dibawa">
-                    <i class="fa-solid fa-users text-xl"></i>
+                    <i class="fa-solid fa-users text-lg mb-1"></i>
+                    <span class="text-[11px] leading-tight">Peminjaman</span>
                     <template x-if="users.length > 0">
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow"
+                        <span class="absolute -top-1 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow"
                             x-text="users.length">
                         </span>
                     </template>
@@ -848,34 +865,55 @@
                                             </div>
                                         </div>
 
-                                        <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
-                                            <thead class="bg-gray-100 border-b border-gray-200">
-                                                <tr>
-                                                    <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
-                                                    <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
-                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status</th>
-                                                    <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Tanggal</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-gray-100">
-                                                <template x-for="dev in selectedUserDevices" :key="dev.noreg">
-                                                    <tr class="hover:bg-gray-50">
-                                                        <td class="p-2 text-gray-800 font-medium" x-text="dev.noreg"></td>
-                                                        <td class="p-2 text-gray-800 font-medium" x-text="dev.nama"></td>
-                                                        <td class="p-2 whitespace-nowrap">
-                                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold select-none">Dibawa</span>
-                                                        </td>
-                                                        <td class="p-2 whitespace-nowrap">
-                                                            <div class="flex items-center gap-1.5">
-                                                                <span class="font-semibold flex items-center gap-1 text-gray-600">
-                                                                    <i class="fa-regular fa-clock"></i> <span x-text="dev.created_at"></span>
-                                                                </span>
-                                                            </div>
-                                                        </td>
+                                        <div class="max-h-64 overflow-y-auto mb-4 border border-gray-100 rounded shadow-inner">
+                                            <table class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+                                                <thead class="sticky top-0 bg-gray-100 border-b border-gray-200 z-10">
+                                                    <tr>
+                                                        <th class="p-2 font-semibold text-gray-700 text-center w-8">
+                                                            <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
+                                                                @change="toggleAllDevices($event)" :checked="checkedDevices.length === selectedUserDevices.length">
+                                                        </th>
+                                                        <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
+                                                        <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
+                                                        <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Status</th>
+                                                        <th class="p-2 font-semibold text-gray-700 whitespace-nowrap">Tanggal</th>
                                                     </tr>
-                                                </template>
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-100">
+                                                    <template x-for="(dev, index) in selectedUserDevices" :key="dev.mutasi_id">
+                                                        <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="hover:bg-blue-50 transition">
+                                                            <td class="p-2 text-center">
+                                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
+                                                                    :value="dev.mutasi_id.toString()" x-model="checkedDevices">
+                                                            </td>
+                                                            <td class="p-2 text-gray-800 font-medium" x-text="dev.noreg"></td>
+                                                            <td class="p-2 text-gray-800 font-medium" x-text="dev.nama"></td>
+                                                            <td class="p-2 whitespace-nowrap">
+                                                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-semibold select-none">Dibawa</span>
+                                                            </td>
+                                                            <td class="p-2 whitespace-nowrap">
+                                                                <div class="flex items-center gap-1.5">
+                                                                    <span class="font-semibold flex items-center gap-1 text-gray-600">
+                                                                        <i class="fa-regular fa-clock"></i> <span x-text="dev.created_at"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="border-t border-gray-200 pt-4 flex justify-end gap-2">
+                                            <button @click="rejectAllPeminjaman()"
+                                                class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
+                                                <i class="fa-solid fa-xmark mr-1"></i> Tolak
+                                            </button>
+                                            <button @click="approveSelectedPeminjaman()"
+                                                class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
+                                                <i class="fa-solid fa-check mr-1"></i> Approve
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -892,15 +930,76 @@
                             selectedUserView: false,
                             selectedUser: {},
                             selectedUserDevices: [],
+                            checkedDevices: [],
+                            processing: false,
                             openUserDetail(user) {
                                 this.selectedUser = user;
                                 this.selectedUserDevices = user.devices;
+                                this.checkedDevices = user.devices.map(d => d.mutasi_id.toString());
                                 this.selectedUserView = true;
                             },
                             closeUserDetail() {
                                 this.selectedUserView = false;
                                 this.selectedUser = {};
                                 this.selectedUserDevices = [];
+                                this.checkedDevices = [];
+                            },
+                            toggleAllDevices(event) {
+                                if (event.target.checked) {
+                                    this.checkedDevices = this.selectedUserDevices.map(d => d.mutasi_id.toString());
+                                } else {
+                                    this.checkedDevices = [];
+                                }
+                            },
+                            approveSelectedPeminjaman() {
+                                if (this.selectedUserDevices.length === 0) return;
+                                const approvedIds = this.checkedDevices;
+                                const rejectedIds = this.selectedUserDevices
+                                    .filter(d => !this.checkedDevices.includes(d.mutasi_id.toString()))
+                                    .map(d => d.mutasi_id.toString());
+                                this.submitPeminjaman(approvedIds, rejectedIds);
+                            },
+                            rejectAllPeminjaman() {
+                                if (this.selectedUserDevices.length === 0) return;
+                                const approvedIds = [];
+                                const rejectedIds = this.selectedUserDevices.map(d => d.mutasi_id.toString());
+                                this.submitPeminjaman(approvedIds, rejectedIds);
+                            },
+                            submitPeminjaman(approvedIds, rejectedIds) {
+                                if (this.processing) return;
+                                this.processing = true;
+
+                                let params = new URLSearchParams();
+                                approvedIds.forEach(id => params.append('approved_ids[]', id));
+                                rejectedIds.forEach(id => params.append('rejected_ids[]', id));
+
+                                fetch('<?= base_url('dashboard/peminjaman/approve') ?>', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': csrfToken()
+                                    },
+                                    body: params
+                                })
+                                .then(res => res.json())
+                                .then(res => {
+                                    this.processing = false;
+                                    if (res.success) {
+                                        if (typeof showToast === 'function') showToast(res.msg, 'success');
+                                        this.closeUserDetail();
+                                        this.fetchUsers();
+                                        setTimeout(() => window.location.reload(), 1500);
+                                    } else {
+                                        if (typeof showToast === 'function') showToast(res.msg, 'error');
+                                        else alert(res.msg);
+                                    }
+                                })
+                                .catch(err => {
+                                    this.processing = false;
+                                    console.error('Error:', err);
+                                    if (typeof showToast === 'function') showToast('Terjadi kesalahan sistem', 'error');
+                                });
                             },
                             init() {
                                 this.fetchUsers();
@@ -937,11 +1036,12 @@
             </div>
 
             <!-- BRP (Bukti Request Perangkat) Component -->
-            <div x-data="brpComponent()" class="relative mt-1">
+            <div x-data="brpComponent()" class="relative">
                 <button @click="openModal()"
-                    class="text-white hover:text-[#B3B3B3] transition relative flex items-center justify-center mr-1"
+                    class="text-white hover:text-[#B3B3B3] transition relative flex flex-col items-center justify-center py-1"
                     title="BRP - Bukti Request Perangkat">
-                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                    <i class="fa-solid fa-file-pdf text-lg mb-1"></i>
+                    <span class="text-[11px] leading-tight">BRP</span>
                 </button>
 
                 <!-- BRP Modal -->
@@ -1149,6 +1249,11 @@
                     $isSuperAdmin = $adminSess && ((isset($adminSess['is_super']) && $adminSess['is_super'] == 1) || $adminSess['username'] === 'admin');
                     if ($isSuperAdmin):
                         ?>
+                        <button onclick="openRegionalManage()" @click="open = false"
+                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                            <i class="fa-solid fa-map-location-dot mr-2" style="color: #1C4D8D;"></i>
+                            Regional Manage
+                        </button>
                         <button onclick="openUserManage()" @click="open = false"
                             class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
                             <i class="fa-solid fa-user-gear mr-2" style="color: #1C4D8D;"></i>
@@ -1164,11 +1269,7 @@
                             <i class="fa-solid fa-network-wired mr-2" style="color: #1C4D8D;"></i>
                             Input Node
                         </button>
-                        <button onclick="openNonRegManage()" @click="open = false"
-                            class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
-                            <i class="fa-solid fa-boxes-stacked mr-2" style="color: #1C4D8D;"></i>
-                            Material Non-Reg
-                        </button>
+
                     <?php endif; ?>
                     <a href="<?= base_url('logout') ?>"
                         class="rounded-b-md block px-4 py-3 text-[#1C4D8D] hover:bg-gray-200">
@@ -1182,6 +1283,77 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mobile menu (hidden by default) -->
+    <div id="dashMobileMenu" class="fixed left-0 w-full bg-[#1C4D8D] text-white z-[48] shadow-lg hidden md:hidden">
+        <div class="flex flex-col divide-y divide-[#2a5fa0]">
+            <button type="button" onclick="document.querySelector('[x-data=&quot;notificationComponent()&quot;] button').click(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition text-left">
+                <i class="fa-solid fa-bell"></i>
+                <span class="text-sm">Notifikasi</span>
+            </button>
+            <button type="button" onclick="document.querySelector('[x-data=&quot;followUpComponent()&quot;] button').click(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition text-left">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span class="text-sm">Follow Up</span>
+            </button>
+            <button type="button" onclick="document.querySelector('[x-data=&quot;dibawaComponent()&quot;] button').click(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition text-left">
+                <i class="fa-solid fa-users"></i>
+                <span class="text-sm">Peminjaman</span>
+            </button>
+            <button type="button" onclick="document.querySelector('[x-data=&quot;brpComponent()&quot;] button').click(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition text-left">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span class="text-sm">BRP</span>
+            </button>
+            <div class="border-t border-[#2a5fa0]">
+                <button type="button" onclick="bukaModalPassword(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-key"></i>
+                    <span class="text-sm">Ganti Password</span>
+                </button>
+                <?php
+                $adminSessMobile = session()->get('admin');
+                $isSuperAdminMobile = $adminSessMobile && ((isset($adminSessMobile['is_super']) && $adminSessMobile['is_super'] == 1) || $adminSessMobile['username'] === 'admin');
+                if ($isSuperAdminMobile):
+                ?>
+                <button type="button" onclick="openRegionalManage(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span class="text-sm">Regional Manage</span>
+                </button>
+                <button type="button" onclick="openUserManage(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span class="text-sm">User Manage</span>
+                </button>
+                <button type="button" onclick="openAdminManage(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span class="text-sm">Admin Manage</span>
+                </button>
+                <button type="button" onclick="openNodeManage(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span class="text-sm">Input Node</span>
+                </button>
+                <?php endif; ?>
+                <a href="<?= base_url('logout') ?>" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="text-sm">Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDashMobileMenu() {
+            const menu = document.getElementById('dashMobileMenu');
+            const icon = document.getElementById('dashHamburgerIcon');
+            const nav = document.getElementById('dashNav');
+            menu.style.top = nav.offsetHeight + 'px';
+            menu.classList.toggle('hidden');
+            if (menu.classList.contains('hidden')) {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            } else {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            }
+        }
+    </script>
 
     <main class="flex-1 flex flex-col pt-28 pl-6 pr-6">
         <?= $this->renderSection('content') ?>
@@ -1269,9 +1441,10 @@
         ?>
         <?= view('components/usermanage') ?>
         <?= view('components/adminmanage') ?>
+        <?= view('components/regionalmanage') ?>
         <?= view('components/nodemanage') ?>
-        <?= view('components/non_registration_manage') ?>
     <?php endif; ?>
+    <?= view('components/non_registration_manage') ?>
 
     <script>
         const overlay = document.getElementById('overlayPassword');

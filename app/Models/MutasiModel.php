@@ -125,6 +125,16 @@ class MutasiModel extends Model
         break;
     }
 
+    if (!empty($filters['admin_region']) && !empty($filters['admin_area'])) {
+        $builder->groupStart()
+                ->where('u.id IS NULL', null, false)
+                ->orGroupStart()
+                    ->where('u.region', $filters['admin_region'])
+                    ->where('u.area', $filters['admin_area'])
+                ->groupEnd()
+                ->groupEnd();
+    }
+
     $countBuilder = clone $builder;
     $total = $countBuilder->countAllResults();
 

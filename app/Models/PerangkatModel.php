@@ -88,6 +88,12 @@ class PerangkatModel extends Model
             }
         }
 
+        if (!empty($filters['admin_region']) && !empty($filters['admin_area'])) {
+            $adminRegion = $this->db->escape($filters['admin_region']);
+            $adminArea = $this->db->escape($filters['admin_area']);
+            $where[] = "(u.id IS NULL OR (u.region = $adminRegion AND u.area = $adminArea))";
+        }
+
         $whereSql = '';
         if (!empty($where)) {
             $whereSql = 'WHERE ' . implode(' AND ', $where);

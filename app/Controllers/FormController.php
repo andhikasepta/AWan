@@ -164,7 +164,7 @@ class FormController extends BaseController
 
         session()->set('brp_download_filename', $filename);
 
-        return redirect()->to('/')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin')->with('brp_ready', true);
+        return redirect()->to('/assets')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin')->with('brp_ready', true);
     }
 
     private function generateAndSavePdf($mutasiIds)
@@ -544,7 +544,11 @@ class FormController extends BaseController
 
         // Save PDF to disk
         $pdfContent = $dompdf->output();
-        $savePath   = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $filename;
+        $brpDir     = WRITEPATH . 'brp';
+        if (!is_dir($brpDir)) {
+            mkdir($brpDir, 0755, true);
+        }
+        $savePath   = $brpDir . DIRECTORY_SEPARATOR . $filename;
         file_put_contents($savePath, $pdfContent);
 
         // Save BRP document record

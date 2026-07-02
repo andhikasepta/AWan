@@ -49,7 +49,7 @@
             </select>
         </div>
 
-        <a href="/history" class="bg-[#1C4D8D] px-3 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
+        <a href="<?= base_url('history') ?>" class="bg-[#1C4D8D] px-3 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
             <span>Refresh
                 <i class="fa-solid fa-redo"></i>
             </span>
