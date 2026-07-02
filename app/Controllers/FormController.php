@@ -164,7 +164,7 @@ class FormController extends BaseController
 
         session()->set('brp_download_filename', $filename);
 
-        return redirect()->to('/assets')->with('success', 'Data berhasil disimpan, Silakan konfirmasi ke Admin')->with('brp_ready', true);
+        return redirect()->to('/')->with('success', 'Data berhasil di submit')->with('brp_ready', true);
     }
 
     private function generateAndSavePdf($mutasiIds)

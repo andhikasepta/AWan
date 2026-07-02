@@ -1290,16 +1290,26 @@ class DashboardController extends BaseController
             $mutasiModel->update($mutasiId, ['is_read_admin' => 'true']);
         }
 
-        // Reject: reverse the peminjaman
+        // Reject: reverse the peminjaman, restore to previous status
         foreach ($rejectedIds as $mutasiId) {
             $mutasi = $mutasiModel->find((int) $mutasiId);
             if (!$mutasi || $mutasi['status'] !== 'Dibawa') {
                 continue;
             }
 
-            // Restore perangkat status to Tersedia
+            // For perangkat: find previous mutasi record to get the status before peminjaman
             if (!empty($mutasi['id_perangkat'])) {
-                $perangkatModel->update($mutasi['id_perangkat'], ['status' => 'Tersedia']);
+                // Find the latest mutasi BEFORE this one for the same perangkat
+                $previousMutasi = $db->table('mutasi')
+                    ->where('id_perangkat', $mutasi['id_perangkat'])
+                    ->where('id <', $mutasiId)
+                    ->orderBy('id', 'DESC')
+                    ->limit(1)
+                    ->get()
+                    ->getRowArray();
+
+                $previousStatus = $previousMutasi ? $previousMutasi['status'] : 'Tersedia';
+                $perangkatModel->update($mutasi['id_perangkat'], ['status' => $previousStatus]);
             }
 
             // Restore non-reg stock
@@ -1311,7 +1321,7 @@ class DashboardController extends BaseController
                 }
             }
 
-            // Delete the mutasi record
+            // Delete the rejected mutasi record
             $mutasiModel->delete($mutasiId);
         }
 

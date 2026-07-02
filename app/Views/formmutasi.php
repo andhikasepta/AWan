@@ -436,7 +436,13 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     <?php if (session()->getFlashData('success')): ?>
-      showToast("<?= session()->getFlashdata('success') ?>", "success");
+      Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: '<?= esc(session()->getFlashdata('success')) ?>',
+          timer: 3000,
+          showConfirmButton: false
+      });
 
       <?php if (session()->getFlashData('brp_ready')): ?>
         // Show BRP Modal

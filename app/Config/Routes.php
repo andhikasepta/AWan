@@ -62,6 +62,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard/followUpItems', 'DashboardController::followUpItems');
     $routes->get('dashboard/checkUpdates', 'DashboardController::checkUpdates');
 
+    // Regional Manage Routes
+    $routes->get('dashboard/regionalList', 'DashboardController::regionalList');
+    $routes->post('dashboard/addRegional', 'DashboardController::addRegional');
+    $routes->post('dashboard/deleteRegional/(:num)', 'DashboardController::deleteRegional/$1');
+
     // BRP (Bukti Request Perangkat) Routes
     $routes->get('dashboard/brpMonths', 'DashboardController::brpAvailableMonths');
     $routes->get('dashboard/brpList', 'DashboardController::brpList');
