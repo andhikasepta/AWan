@@ -19,8 +19,8 @@ class CreateReturnRequestsTable extends Migration
                 'unsigned' => true,
             ],
             'status' => [
-                'type' => 'ENUM',
-                'constraint' => ['Pending', 'Approved', 'Rejected'],
+                'type' => 'VARCHAR',
+                'constraint' => 20,
                 'default' => 'Pending',
             ],
             'created_at' => [

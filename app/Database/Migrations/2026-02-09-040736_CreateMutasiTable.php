@@ -27,8 +27,8 @@ class CreateMutasiTable extends Migration
                 'null'=>true,
             ],
             'status'=>[
-                'type'=>'ENUM',
-                'constraint'=>$mutasi->status,
+                'type'=>'VARCHAR',
+                'constraint'=>20,
                 'null'=>true,
             ],
             'keterangan'=>[

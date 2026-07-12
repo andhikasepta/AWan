@@ -123,7 +123,7 @@
                     </label>
                     <div class="relative">
                         <input name="new_password" id="new_password" type="password" required
-                            placeholder="Minimal 5 karakter"
+                            placeholder="Minimal 12 karakter"
                             class="w-full text-sm border border-gray-200 rounded-lg p-3 pr-10 focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white shadow-sm placeholder-gray-400">
                         <button type="button" onclick="showHide('new_password', 'eye_new')"
                             class="absolute inset-y-0 right-3 flex items-center text-gray-400">

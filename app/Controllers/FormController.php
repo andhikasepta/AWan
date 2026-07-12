@@ -111,7 +111,6 @@ class FormController extends BaseController
         $userId = $this->request->getPost('user');
         $keterangan = sanitize_utf8($this->request->getPost('keterangan'));
 
-        // Handle regular perangkat
         if (!empty($perangkatList)) {
             foreach ($perangkatList as $pl) {
                 $mutasiModel->insert([
@@ -131,7 +130,6 @@ class FormController extends BaseController
             }
         }
 
-        // Handle non_reg materials
         if (!empty($nonRegList)) {
             foreach ($nonRegList as $nr) {
                 $mutasiModel->insert([
@@ -147,7 +145,6 @@ class FormController extends BaseController
 
                 $mutasiIds[] = $mutasiModel->getInsertID();
 
-                // Decrease stock
                 $item = $nonRegModel->find($nr['id']);
                 if ($item) {
                     $newQty = max(0, $item['quantity'] - $nr['qty']);
@@ -176,7 +173,6 @@ class FormController extends BaseController
         $nonRegModel = new \App\Models\NonRegistrationModel();
         $userModel = new UserModel();
 
-        // Fetch all mutasi records with related data
         $mutasiData = [];
         $mutasiDataNonReg = [];
         $userName = '';
@@ -220,7 +216,6 @@ class FormController extends BaseController
             }
         }
 
-        // Sort data by NOMOR REGISTRASI ascending
         usort($mutasiData, function ($a, $b) {
             return strnatcasecmp($a['noreg'], $b['noreg']);
         });
@@ -233,17 +228,92 @@ class FormController extends BaseController
             return redirect()->to('/')->with('error', 'Data mutasi tidak ditemukan.');
         }
 
-        // Encode logo to base64 for embedding in PDF
         $logoPath = FCPATH . 'images/Lintasarta.png';
         $logoBase64 = '';
         if (file_exists($logoPath)) {
             $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
-
-        $ttdPath = FCPATH . 'images/TTD.png';
+        
+        $signerName = 'Andhika Septa Prawira';
         $ttdBase64 = '';
-        if (file_exists($ttdPath)) {
-            $ttdBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($ttdPath));
+
+        $db = \Config\Database::connect();
+        $userArea   = $user['area'] ?? '';
+        $userRegion = $user['region'] ?? '';
+
+        if (!empty($userArea) || !empty($userRegion)) {
+            // Auto-add ttd_path column if it doesn't exist yet
+            try {
+                $db->query("ALTER TABLE admin ADD COLUMN IF NOT EXISTS ttd_path VARCHAR(255) NULL");
+            } catch (\Exception $e) {
+                // Column may already exist, ignore
+            }
+
+            $matchedAdmin = null;
+
+            // 1) Primary match: find admin whose area matches the user's area
+            if (!empty($userArea)) {
+                $areaBuilder = $db->table('admin');
+                $areaBuilder->where('ttd_path IS NOT NULL', null, false);
+                $areaBuilder->where("ttd_path != ''", null, false);
+
+                $userAreas = array_map('trim', explode(',', $userArea));
+                $areaBuilder->groupStart();
+                foreach ($userAreas as $ua) {
+                    $areaBuilder->orLike('area', $ua, 'both');
+                }
+                $areaBuilder->groupEnd();
+
+                $matchedAdmin = $areaBuilder->get()->getRowArray();
+            }
+
+            // 2) Fallback: find admin whose area or region matches the user's region
+            if (!$matchedAdmin && !empty($userRegion)) {
+                $regionBuilder = $db->table('admin');
+                $regionBuilder->where('ttd_path IS NOT NULL', null, false);
+                $regionBuilder->where("ttd_path != ''", null, false);
+
+                $userRegions = array_map('trim', explode(',', $userRegion));
+                $regionBuilder->groupStart();
+                foreach ($userRegions as $ur) {
+                    $regionBuilder->orLike('region', $ur, 'both');
+                    $regionBuilder->orLike('area', $ur, 'both');
+                }
+                $regionBuilder->groupEnd();
+
+                $matchedAdmin = $regionBuilder->get()->getRowArray();
+            }
+
+            // 3) Last resort: find any admin with area matching user's area (even without TTD uploaded)
+            //    so at least the name is correct on the PDF
+            if (!$matchedAdmin && !empty($userArea)) {
+                $nameBuilder = $db->table('admin');
+                $userAreas = array_map('trim', explode(',', $userArea));
+                $nameBuilder->groupStart();
+                foreach ($userAreas as $ua) {
+                    $nameBuilder->orLike('area', $ua, 'both');
+                }
+                $nameBuilder->groupEnd();
+
+                $matchedAdmin = $nameBuilder->get()->getRowArray();
+            }
+
+            if ($matchedAdmin) {
+                $signerName = $matchedAdmin['nama'];
+                if (!empty($matchedAdmin['ttd_path'])) {
+                    $ttdFilePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd' . DIRECTORY_SEPARATOR . $matchedAdmin['ttd_path'];
+                    if (file_exists($ttdFilePath)) {
+                        $ttdBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($ttdFilePath));
+                    }
+                }
+            }
+        }
+
+        if (empty($ttdBase64)) {
+            $ttdPath = FCPATH . 'images/TTD.png';
+            if (file_exists($ttdPath)) {
+                $ttdBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($ttdPath));
+            }
         }
         $html = '
         <!DOCTYPE html>
@@ -511,7 +581,7 @@ class FormController extends BaseController
             <div class="signature-box">
                 ' . ($ttdBase64 ? '<img src="' . $ttdBase64 . '" class="signature-img">' : '<br><br><br>') . '
             </div>
-            <div class="signature-line">Andhika Septa Prawira</div>
+            <div class="signature-line">' . esc($signerName) . '</div>
         </td>
         <td class="text-center">
             <div class="signature-label">Penerima</div>
@@ -535,14 +605,12 @@ class FormController extends BaseController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        // Generate sequential BRP number and filename
         $brpModel = new BrpModel();
         $currentMonth = (int) date('m');
         $currentYear  = (int) date('Y');
         $nextNumber   = $brpModel->getNextNumber($currentMonth, $currentYear);
         $filename     = BrpModel::generateFilename($userName, $nextNumber);
 
-        // Save PDF to disk
         $pdfContent = $dompdf->output();
         $brpDir     = WRITEPATH . 'brp';
         if (!is_dir($brpDir)) {
@@ -551,7 +619,6 @@ class FormController extends BaseController
         $savePath   = $brpDir . DIRECTORY_SEPARATOR . $filename;
         file_put_contents($savePath, $pdfContent);
 
-        // Save BRP document record
         $brpModel->saveDocument([
             'filename'         => $filename,
             'user_name'        => $userName,
@@ -610,21 +677,18 @@ class FormController extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // Subquery to get the latest mutasi ID for each perangkat
         $subQuery = $db->table('mutasi')
             ->select('MAX(id) as max_id')
             ->where('id_perangkat IS NOT NULL')
             ->groupBy('id_perangkat')
             ->getCompiledSelect();
 
-        // 1. Get Perangkat devices
         $builder = $db->table('mutasi m');
         $builder->select('m.id as mutasi_id, p.noreg, COALESCE(sp.nama_perangkat, p.nama) as nama, 1 as qty, 0 as is_nonreg');
         $builder->select('CASE 
             WHEN EXISTS (SELECT 1 FROM return_requests rr WHERE rr.id_mutasi = m.id AND rr.status = \'Pending\') THEN \'return\' 
             WHEN EXISTS (SELECT 1 FROM installation_requests ir WHERE ir.id_mutasi = m.id AND ir.status = \'Pending\') THEN \'install\' 
             ELSE \'\' END as pending_type', false);
-        // Join to ensure we are only looking at the LATEST mutasi for the device
         $builder->join("($subQuery) latest", 'latest.max_id = m.id', 'inner');
         $builder->join('perangkat p', 'p.id = m.id_perangkat', 'inner');
         $builder->join('spec_perangkat sp', 'sp.id = p.id_spec', 'left');
@@ -632,7 +696,6 @@ class FormController extends BaseController
         $builder->where('m.status', 'Dibawa');
         $perangkatDevices = $builder->get()->getResultArray();
 
-        // 2. Get Non-Registration devices
         $builderNr = $db->table('mutasi m');
         $builderNr->select('m.id as mutasi_id, nr.kode_spec as noreg, nr.nama_material as nama, m.qty, 1 as is_nonreg');
         $builderNr->select('CASE 
@@ -644,7 +707,6 @@ class FormController extends BaseController
         $builderNr->where('m.status', 'Dibawa');
         $nonRegDevices = $builderNr->get()->getResultArray();
 
-        // Combine results
         $devices = array_merge($perangkatDevices, $nonRegDevices);
 
         return $this->response->setJSON($devices);
@@ -687,7 +749,6 @@ class FormController extends BaseController
         $nodeModel = new \App\Models\NodeModel();
         $nodes = $nodeModel->orderBy('arep', 'ASC')->orderBy('site_sentral', 'ASC')->orderBy('node_sentral', 'ASC')->findAll();
 
-        // Group by arep -> site_sentral -> node_sentral
         $grouped = [];
         foreach ($nodes as $n) {
             $arep = $n['arep'];

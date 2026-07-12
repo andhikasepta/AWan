@@ -23,8 +23,8 @@ class CreatePerangkatTable extends Migration
                 'constraint' => 50,
             ],
             'status' => [
-                'type' => 'ENUM',
-                'constraint' => ['Tersedia', 'Tidak Tersedia'],
+                'type' => 'VARCHAR',
+                'constraint' => 20,
                 'default' => 'Tersedia',
             ],
             'created_at' => [

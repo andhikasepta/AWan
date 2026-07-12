@@ -41,7 +41,6 @@
                 <div>
                     <label class="block text-sm font-medium text-[#1C4D8D]">Status</label>
                     <select id="edit_status" name="status_mutasi"
-                        class="w-full border rounded-sm p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1C4D8D]"
                         required>
                         <option value="">Pilih Status</option>
                         <?php foreach ($statuses as $s): ?>

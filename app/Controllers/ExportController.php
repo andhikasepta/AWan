@@ -9,10 +9,7 @@ use Dompdf\Dompdf;
 
 class ExportController extends BaseController
 {
-    /**
-     * Build the filter array from GET query parameters.
-     * These are the same filters used in the dashboard.
-     */
+
     private function getFilters(): array
     {
         return [
@@ -42,7 +39,6 @@ class ExportController extends BaseController
         $sheet->setCellValue('H1', 'Updated At');
         $sheet->setCellValue('I1', 'Mutasi');
 
-        // Style header row
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '0F2854']],
@@ -61,7 +57,6 @@ class ExportController extends BaseController
             $sheet->setCellValue('G' . $row, isset($perangkat['created_at']) ? date('Y-m-d', strtotime($perangkat['created_at'])) : '-');
             $sheet->setCellValue('H' . $row, isset($perangkat['mutasi_updated']) ? date('Y-m-d', strtotime($perangkat['mutasi_updated'])) : '-');
 
-            // Mutasi check column
             $mutasiLabel = '-';
             if (in_array($perangkat['status_mutasi'] ?? '', ['Terpasang', 'Terkirim'])) {
                 $mutasiLabel = ($perangkat['mutasi_check'] ?? 0) == 1 ? 'Checked' : 'Crosscheck INTAN';
@@ -73,12 +68,9 @@ class ExportController extends BaseController
             $row++;
         }
 
-        // Auto-size columns
         foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-
-        // Build filename with active filter info
         $filename = 'report_perangkat';
         if (!empty($filters['status'])) $filename .= '_' . $filters['status'];
         if (!empty($filters['user'])) $filename .= '_user' . $filters['user'];
@@ -97,7 +89,6 @@ class ExportController extends BaseController
         $filters = $this->getFilters();
         $dataPerangkat = $perangkatModel->getFilteredAll($filters);
 
-        // Build active filter description for the PDF header
         $filterLabels = [];
         if (!empty($filters['keyword'])) $filterLabels[] = 'Keyword: ' . htmlspecialchars($filters['keyword']);
         if (!empty($filters['status'])) $filterLabels[] = 'Status: ' . htmlspecialchars($filters['status']);
@@ -151,7 +142,6 @@ class ExportController extends BaseController
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        // Build filename
         $filename = 'report_perangkat';
         if (!empty($filters['status'])) $filename .= '_' . $filters['status'];
         $filename .= '_' . date('Ymd') . '.pdf';

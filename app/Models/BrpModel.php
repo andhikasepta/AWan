@@ -39,7 +39,6 @@ class BrpModel extends Model
     {
         $db = \Config\Database::connect();
 
-        // Use PostgreSQL upsert to atomically get-and-increment
         $sql = "INSERT INTO brp_counter (period_month, period_year, last_number)
                 VALUES (?, ?, 1)
                 ON CONFLICT (period_month, period_year)
@@ -116,9 +115,9 @@ class BrpModel extends Model
      */
     public static function generateFilename(string $userName, int $number): string
     {
-        $dateStr = date('dmY'); // DayMonthYear e.g. "24062026"
+        $dateStr = date('dmY');
         $numStr  = self::formatNumber($number);
-        $nameStr = str_replace(' ', '', $userName); // Remove spaces
+        $nameStr = str_replace(' ', '', $userName);
 
         return "BRP_{$dateStr}_{$numStr}_{$nameStr}.pdf";
     }

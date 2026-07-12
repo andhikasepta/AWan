@@ -19,7 +19,7 @@ class InstallationRequestModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    public function getPendingRequests()
+    public function getPendingRequests($adminRegion = null, $adminArea = null)
     {
         $builder = $this->db->table($this->table . ' ir');
         $builder->select('ir.id as request_id, m.id as mutasi_id, u.nama as nama_user, p.noreg, p.nama as nama_perangkat, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, ir.arep, ir.site_sentral, ir.node_sentral, ir.created_at, ir.is_read, ir.qty');
@@ -28,18 +28,34 @@ class InstallationRequestModel extends Model
         $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
         $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
         $builder->where('ir.status', 'Pending');
+
+        if ($adminRegion && $adminArea) {
+            $builder->groupStart();
+            $adminRegions = explode(',', $adminRegion);
+            foreach ($adminRegions as $r) {
+                $builder->orLike('u.region', trim($r), 'both');
+            }
+            $builder->groupEnd();
+
+            $builder->groupStart();
+            $adminAreas = explode(',', $adminArea);
+            foreach ($adminAreas as $a) {
+                $builder->orLike('u.area', trim($a), 'both');
+            }
+            $builder->groupEnd();
+        }
+
         $builder->orderBy('ir.created_at', 'DESC');
         
         return $builder->get()->getResultArray();
     }
 
-    public function getPendingRequestsGrouped()
+    public function getPendingRequestsGrouped($adminRegion = null, $adminArea = null)
     {
-        $raw = $this->getPendingRequests();
+        $raw = $this->getPendingRequests($adminRegion, $adminArea);
         $grouped = [];
         
         foreach ($raw as $r) {
-            // Group by user and minute (to avoid separation if insert crosses a second)
             $minuteTimestamp = substr($r['created_at'], 0, 16);
             $key = md5($r['nama_user'] . '_' . $minuteTimestamp);
             
@@ -53,7 +69,6 @@ class InstallationRequestModel extends Model
                 ];
             }
             
-            // If any device in the group is unread, the whole group is unread
             if ($r['is_read'] == 0 || $r['is_read'] === 'f' || $r['is_read'] === false) {
                 $grouped[$key]['is_read'] = false;
             }
@@ -72,7 +87,6 @@ class InstallationRequestModel extends Model
         
         $result = array_values($grouped);
         
-        // Sort: is_read ASC (false/new first), then created_at DESC
         usort($result, function($a, $b) {
             if ($a['is_read'] === $b['is_read']) {
                 return strtotime($b['created_at']) - strtotime($a['created_at']);

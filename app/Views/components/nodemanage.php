@@ -284,22 +284,48 @@
 
     function editNode(id, oldArep, oldSite, oldNode) {
         Swal.fire({
-            title: 'Edit Node',
+            title: '',
             html: `
-                <select id="swal-arep" class="swal2-input">
-                    <option value="Semarang" ${oldArep === 'Semarang' ? 'selected' : ''}>Semarang</option>
-                    <option value="Tegal" ${oldArep === 'Tegal' ? 'selected' : ''}>Tegal</option>
-                    <option value="Solo" ${oldArep === 'Solo' ? 'selected' : ''}>Solo</option>
-                    <option value="Yogyakarta" ${oldArep === 'Yogyakarta' ? 'selected' : ''}>Yogyakarta</option>
-                    <option value="Purwokerto" ${oldArep === 'Purwokerto' ? 'selected' : ''}>Purwokerto</option>
-                </select>
-                <input id="swal-site" class="swal2-input uppercase" placeholder="Site Sentral" value="${oldSite}">
-                <input id="swal-node" class="swal2-input uppercase" placeholder="Node Sentral (Opsional)" value="${oldNode !== '-' ? oldNode : ''}" oninput="if(this.value.length >= 6) document.getElementById('swal-site').value = this.value.substring(0, 6).toUpperCase();">
+                <div style="margin: -20px -20px 0 -20px;">
+                    <div style="background: #1C4D8D; color: white; padding: 14px 20px; display: flex; align-items: center; gap: 8px; border-radius: 8px 8px 0 0;">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span style="font-weight: 700; font-size: 15px;">Edit Node</span>
+                    </div>
+                    <div style="padding: 20px 20px 4px 20px;">
+                        <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; text-align: left;">Arep</label>
+                            <select id="swal-arep" style="width: 100%; border: 1px solid #D1D5DB; border-radius: 6px; padding: 9px 12px; font-size: 12px; outline: none; background: #fff; color: #374151; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1C4D8D'; this.style.boxShadow='0 0 0 2px rgba(28,77,141,0.12)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'">
+                                <option value="Semarang" ${oldArep === 'Semarang' ? 'selected' : ''}>Semarang</option>
+                                <option value="Tegal" ${oldArep === 'Tegal' ? 'selected' : ''}>Tegal</option>
+                                <option value="Solo" ${oldArep === 'Solo' ? 'selected' : ''}>Solo</option>
+                                <option value="Yogyakarta" ${oldArep === 'Yogyakarta' ? 'selected' : ''}>Yogyakarta</option>
+                                <option value="Purwokerto" ${oldArep === 'Purwokerto' ? 'selected' : ''}>Purwokerto</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; text-align: left;">Site Sentral</label>
+                            <input id="swal-site" value="${oldSite}" placeholder="Site Sentral" style="width: 100%; border: 1px solid #D1D5DB; border-radius: 6px; padding: 9px 12px; font-size: 12px; outline: none; text-transform: uppercase; font-family: 'Courier New', monospace; letter-spacing: 0.5px; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1C4D8D'; this.style.boxShadow='0 0 0 2px rgba(28,77,141,0.12)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'">
+                        </div>
+                        <div style="margin-bottom: 6px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; text-align: left;">Node Sentral <span style="font-weight: 400; color: #9CA3AF;">(Opsional)</span></label>
+                            <input id="swal-node" value="${oldNode !== '-' ? oldNode : ''}" placeholder="Node Sentral" style="width: 100%; border: 1px solid #D1D5DB; border-radius: 6px; padding: 9px 12px; font-size: 12px; outline: none; text-transform: uppercase; font-family: 'Courier New', monospace; letter-spacing: 0.5px; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1C4D8D'; this.style.boxShadow='0 0 0 2px rgba(28,77,141,0.12)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'" oninput="if(this.value.length >= 6) document.getElementById('swal-site').value = this.value.substring(0, 6).toUpperCase();">
+                        </div>
+                    </div>
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Update',
-            cancelButtonText: 'Batal',
+            confirmButtonText: '<i class="fa-solid fa-check mr-1"></i> Update',
+            cancelButtonText: '<i class="fa-solid fa-xmark mr-1"></i> Batal',
+            confirmButtonColor: '#1C4D8D',
+            cancelButtonColor: '#6B7280',
+            customClass: {
+                popup: 'swal2-edit-node-popup',
+                confirmButton: 'swal2-edit-node-confirm',
+                cancelButton: 'swal2-edit-node-cancel',
+            },
+            width: '420px',
+            padding: '0 0 20px 0',
             preConfirm: () => {
                 const arep = document.getElementById('swal-arep').value;
                 const site_sentral = document.getElementById('swal-site').value.trim().toUpperCase();

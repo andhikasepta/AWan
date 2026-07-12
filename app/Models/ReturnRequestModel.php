@@ -19,7 +19,7 @@ class ReturnRequestModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    public function getPendingRequests()
+    public function getPendingRequests($adminRegion = null, $adminArea = null)
     {
         $builder = $this->db->table($this->table . ' rr');
         $builder->select('rr.id as request_id, m.id as mutasi_id, u.nama as nama_user, p.noreg, p.nama as nama_perangkat, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, rr.created_at, rr.is_read, rr.qty');
@@ -28,14 +28,32 @@ class ReturnRequestModel extends Model
         $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
         $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
         $builder->where('rr.status', 'Pending');
+
+        // RBAC: filter by admin's region/area
+        if ($adminRegion && $adminArea) {
+            $builder->groupStart();
+            $adminRegions = explode(',', $adminRegion);
+            foreach ($adminRegions as $r) {
+                $builder->orLike('u.region', trim($r), 'both');
+            }
+            $builder->groupEnd();
+
+            $builder->groupStart();
+            $adminAreas = explode(',', $adminArea);
+            foreach ($adminAreas as $a) {
+                $builder->orLike('u.area', trim($a), 'both');
+            }
+            $builder->groupEnd();
+        }
+
         $builder->orderBy('rr.created_at', 'DESC');
         
         return $builder->get()->getResultArray();
     }
 
-    public function getPendingRequestsGrouped()
+    public function getPendingRequestsGrouped($adminRegion = null, $adminArea = null)
     {
-        $raw = $this->getPendingRequests();
+        $raw = $this->getPendingRequests($adminRegion, $adminArea);
         $grouped = [];
         
         foreach ($raw as $r) {

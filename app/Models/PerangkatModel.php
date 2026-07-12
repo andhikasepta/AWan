@@ -89,9 +89,23 @@ class PerangkatModel extends Model
         }
 
         if (!empty($filters['admin_region']) && !empty($filters['admin_area'])) {
-            $adminRegion = $this->db->escape($filters['admin_region']);
-            $adminArea = $this->db->escape($filters['admin_area']);
-            $where[] = "(u.id IS NULL OR (u.region = $adminRegion AND u.area = $adminArea))";
+            $adminRegions = array_map('trim', explode(',', $filters['admin_region']));
+            $adminAreas = array_map('trim', explode(',', $filters['admin_area']));
+            
+            $regionConds = [];
+            foreach ($adminRegions as $r) {
+                $regionConds[] = "u.region LIKE " . $this->db->escape('%' . $r . '%');
+            }
+            
+            $areaConds = [];
+            foreach ($adminAreas as $a) {
+                $areaConds[] = "u.area LIKE " . $this->db->escape('%' . $a . '%');
+            }
+            
+            $regionSql = '(' . implode(' OR ', $regionConds) . ')';
+            $areaSql = '(' . implode(' OR ', $areaConds) . ')';
+            
+            $where[] = "(u.id IS NULL OR ($regionSql AND $areaSql))";
         }
 
         $whereSql = '';
@@ -192,6 +206,26 @@ class PerangkatModel extends Model
             } elseif ($filters['filter_mutasi'] == 'check') {
                 $where[] = "(m.status IN ('Terpasang', 'Terkirim') AND m.is_checked = 1)";
             }
+        }
+
+        if (!empty($filters['admin_region']) && !empty($filters['admin_area'])) {
+            $adminRegions = array_map('trim', explode(',', $filters['admin_region']));
+            $adminAreas = array_map('trim', explode(',', $filters['admin_area']));
+            
+            $regionConds = [];
+            foreach ($adminRegions as $r) {
+                $regionConds[] = "u.region LIKE " . $this->db->escape('%' . $r . '%');
+            }
+            
+            $areaConds = [];
+            foreach ($adminAreas as $a) {
+                $areaConds[] = "u.area LIKE " . $this->db->escape('%' . $a . '%');
+            }
+            
+            $regionSql = '(' . implode(' OR ', $regionConds) . ')';
+            $areaSql = '(' . implode(' OR ', $areaConds) . ')';
+            
+            $where[] = "(u.id IS NULL OR ($regionSql AND $areaSql))";
         }
 
         $whereSql = '';

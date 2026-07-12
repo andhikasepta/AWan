@@ -176,7 +176,7 @@ class MutasiModel extends Model
     $builder->where('m.id_perangkat', $id);
 
     if (!empty($filters['searchHistory'])) {
-      $keyword = sanitize_utf8($filters['searchHistory']);
+      $keyword = $this->db->escapeLikeString(sanitize_utf8($filters['searchHistory']));
       $fields = ['u.nama', 'm.status', 'm.keterangan'];
 
       $builder->groupStart();
@@ -208,7 +208,7 @@ class MutasiModel extends Model
     $builder->where('m.id_non_reg', $id);
 
     if (!empty($filters['searchHistory'])) {
-      $keyword = sanitize_utf8($filters['searchHistory']);
+      $keyword = $this->db->escapeLikeString(sanitize_utf8($filters['searchHistory']));
       $fields = ['u.nama', 'm.status', 'm.keterangan'];
 
       $builder->groupStart();

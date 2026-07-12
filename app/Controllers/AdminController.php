@@ -38,19 +38,15 @@ class AdminController extends BaseController
         $password = $this->request->getPost('password');
         $safeUsername = sanitizeLog((string) $username);
 
-        $admin = $this->db->table('admin')->where('username', $safeUsername)->get()->getRowArray();
+        $admin = $this->db->table('admin')->where('username', $username)->get()->getRowArray();
         if ($admin && verify_password($password, $admin['password'])) {
             $this->session->set('admin', $admin);
             log_message('info', 'Login berhasil username: ' . $safeUsername);
 
-            // If password is blank, redirect to setup page before dashboard
             if (verify_password('', $admin['password'])) {
                 return redirect()->to('/setup-password');
             }
 
-            // [SECURITY] Transparent rehash: upgrade bcrypt → Argon2ID saat login
-            // password_needs_upgrade() cek apakah hash masih bcrypt atau Argon2ID lama
-            // Proses ini transparan — user tidak perlu ganti password
             if (password_needs_upgrade($admin['password'])) {
                 $newHash = hash_password($password);
                 $this->db->table('admin')->where('id', $admin['id'])->update([
@@ -81,7 +77,6 @@ class AdminController extends BaseController
             return redirect()->to('/login');
         }
 
-        // If password is already set, go straight to dashboard
         $adminDb = $this->db->table('admin')->where('id', $adminSession['id'])->get()->getRowArray();
         if (!verify_password('', $adminDb['password'])) {
             return redirect()->to('/dashboard');
@@ -94,7 +89,7 @@ class AdminController extends BaseController
             if (empty($newPass)) {
                 return redirect()->back()->with('error', 'Password baru harus diisi.');
             }
-            // [SECURITY FIX] Password policy diperkuat untuk production
+
             if (strlen($newPass) < 12) {
                 return redirect()->back()->with('error', 'Password baru harus minimal 12 karakter.');
             }
@@ -111,13 +106,10 @@ class AdminController extends BaseController
                 return redirect()->back()->with('error', 'Konfirmasi password tidak cocok.');
             }
 
-            // [SECURITY] Gunakan hash_password() — Argon2ID
             $this->db->table('admin')->where('id', $adminSession['id'])->update([
                 'password'   => hash_password($newPass),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
-
-            // Destroy the session and force fresh login
             $this->session->destroy();
             return redirect()->to('/login')->with('success', 'Password berhasil diatur. Silakan login dengan password baru.');
         }
@@ -145,12 +137,10 @@ class AdminController extends BaseController
 
         $adminDb = $this->db->table('admin')->where('id', $adminId)->get()->getRowArray();
 
-        // [SECURITY] verify_password() backward compatible — bcrypt atau Argon2ID
         if (!verify_password($oldPass, $adminDb['password'])) {
             return redirect()->back()->with('error', 'Password lama tidak sesuai. Silakan cek kembali.')->with('openModal', true);
         }
 
-        // [SECURITY FIX] Password policy diperkuat untuk production
         if (strlen($newPass) < 12) {
             return redirect()->back()->with('error', 'Password baru harus minimal 12 karakter.')->with('openModal', true);
         }
@@ -175,7 +165,6 @@ class AdminController extends BaseController
             return redirect()->back()->with('error', 'Konfirmasi password baru tidak cocok.')->with('openModal', true);
         }
 
-        // [SECURITY] Gunakan hash_password() — Argon2ID
         $hashedPassword = hash_password($newPass);
 
         $update = $this->db->table('admin')->where('id', $adminId)->update([
@@ -183,7 +172,6 @@ class AdminController extends BaseController
         ]);
 
         if ($update) {
-            // Destroy session and force fresh login
             $this->session->destroy();
             return redirect()->to('/login')->with('success', 'Password berhasil diubah. Silakan login dengan password baru.');
         }

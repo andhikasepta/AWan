@@ -27,8 +27,8 @@ class CreateInstallationRequestsTable extends Migration
                 'constraint' => 100,
             ],
             'status' => [
-                'type'       => 'ENUM',
-                'constraint' => ['Pending', 'Approved', 'Rejected'],
+                'type'       => 'VARCHAR',
+                'constraint' => 20,
                 'default'    => 'Pending',
             ],
             'is_read' => [

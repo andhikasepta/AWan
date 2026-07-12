@@ -1,3 +1,16 @@
+<style>
+/* Native regional dropdown styling - match input fields */
+.regional-dropdown {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    cursor: pointer;
+}
+.regional-dropdown::-ms-expand {
+    display: none;
+}
+</style>
 <div id="userManageModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
 
@@ -18,11 +31,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                     <input type="text" id="newUserInput" placeholder="Nama User"
                         class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none md:col-span-2">
-                    <select id="newUserRegion" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="region">
-                        <option value="">-- Pilih Region --</option>
+                    <select id="newUserRegion" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-dropdown" data-type="region">
+                        <option value="">Pilih Region</option>
                     </select>
-                    <select id="newUserArea" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="area">
-                        <option value="">-- Pilih Area --</option>
+                    <select id="newUserArea" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-dropdown" data-type="area" multiple placeholder="Pilih Area">
                     </select>
                 </div>
                 <button onclick="saveNewUser()"
@@ -69,25 +81,22 @@
                 <i class="fa-solid fa-xmark fa-xl"></i>
             </button>
         </div>
-        <div class="p-4 flex flex-col">
+        <div class="p-4 flex flex-col overflow-y-auto max-h-[80vh]">
             <input type="hidden" id="editUserId">
             <div class="mb-3">
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Nama User</label>
                 <input type="text" id="editUserNama" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none">
             </div>
-            <div class="mb-3 grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Region</label>
-                    <select id="editUserRegion" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="region">
-                        <option value="">-- Pilih --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
-                    <select id="editUserArea" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-tomselect" data-type="area">
-                        <option value="">-- Pilih --</option>
-                    </select>
-                </div>
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Region</label>
+                <select id="editUserRegion" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-dropdown" data-type="region">
+                    <option value="">-- Pilih --</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Area</label>
+                <select id="editUserArea" class="w-full border border-gray-300 px-3 py-2 rounded-md text-xs focus:ring-1 focus:ring-[#1C4D8D] outline-none regional-dropdown" data-type="area" multiple placeholder="Pilih Area">
+                </select>
             </div>
             <div class="mt-4 flex justify-end gap-2">
                 <button onclick="closeEditUser()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md text-xs font-semibold transition">Batal</button>

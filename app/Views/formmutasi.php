@@ -436,13 +436,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     <?php if (session()->getFlashData('success')): ?>
-      Swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: '<?= esc(session()->getFlashdata('success')) ?>',
-          timer: 3000,
-          showConfirmButton: false
-      });
+      showToast('<?= esc(session()->getFlashdata('success')) ?>', 'success');
 
       <?php if (session()->getFlashData('brp_ready')): ?>
         // Show BRP Modal
@@ -1377,23 +1371,5 @@
     }
   });
 </script>
-
-<!-- BRP Download Modal -->
-<div id="brpDownloadModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-xl w-[90%] max-w-sm p-6 text-center transform transition-all">
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-            <i class="fa-solid fa-check-circle text-3xl text-green-500"></i>
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-2">Peminjaman Berhasil!</h3>
-        <p class="text-sm text-gray-500 mb-6">Silakan download Bukti Request Perangkat (BRP) Anda di bawah ini</p>
-        
-        <div class="flex flex-col gap-3">
-            <a href="<?= base_url('submit/pdf') ?>" target="_blank" onclick="document.getElementById('brpDownloadModal').classList.add('hidden'); document.getElementById('brpDownloadModal').classList.remove('flex');"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#1C4D8D] text-base font-medium text-white hover:bg-[#2A62AA] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1C4D8D] sm:text-sm">
-                <i class="fa-solid fa-download mr-2 mt-1"></i> Download PDF
-            </a>
-        </div>
-    </div>
-</div>
 
 <?= $this->endSection() ?>

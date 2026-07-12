@@ -147,7 +147,8 @@ class PerangkatController extends BaseController
     public function delete($id)
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession || $adminSession['username'] !== 'admin') {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
         $perangkat = $this->perangkatModel->find($id);
@@ -163,7 +164,8 @@ class PerangkatController extends BaseController
     public function bulkDelete()
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession || $adminSession['username'] !== 'admin') {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
 
@@ -202,7 +204,6 @@ class PerangkatController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data yang dipilih']);
         }
 
-        // At least one field must be provided
         if (empty($id_users) && empty($status_mutasi) && empty($keterangan)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada perubahan yang diisi']);
         }
@@ -213,10 +214,8 @@ class PerangkatController extends BaseController
             $perangkat = $this->perangkatModel->find($id_perangkat);
             if (!$perangkat) continue;
 
-            // Get current latest mutasi for this perangkat to use as defaults
             $currentMutasi = $this->perangkatModel->getDetailMutasi($id_perangkat);
 
-            // Determine final values: use new value if provided, otherwise keep current
             $finalUser = !empty($id_users) ? $id_users : ($currentMutasi['id_users'] ?? null);
             $finalStatus = !empty($status_mutasi) ? $status_mutasi : ($currentMutasi['status'] ?? null);
             $finalKet = !empty($keterangan) ? $keterangan : ($currentMutasi['keterangan'] ?? '');
@@ -233,7 +232,6 @@ class PerangkatController extends BaseController
                 'updated_by'   => $updatedBy
             ]);
 
-            // Update perangkat status
             $statusPerangkat = $this->mapStatusPerangkat($finalStatus);
             $this->perangkatModel->update($id_perangkat, [
                 'user_id'     => $finalUser,
@@ -256,7 +254,6 @@ class PerangkatController extends BaseController
         $noregList = $json->noreg_list ?? [];
 
         $results = [];
-        // Count occurrences in CSV to detect internal duplicates
         $csvCounts = array_count_values(array_map('trim', $noregList));
 
         foreach ($noregList as $index => $noreg) {
@@ -267,13 +264,10 @@ class PerangkatController extends BaseController
                 continue;
             }
 
-            // Check CSV internal duplicates
             if ($csvCounts[$noreg] > 1) {
                 $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'csv_duplicate', 'message' => 'Duplikat dalam CSV'];
                 continue;
             }
-
-            // Check database
             $exist = $this->perangkatModel->where('noreg', $noreg)->first();
             if ($exist) {
                 $results[] = ['index' => $index, 'noreg' => $noreg, 'status' => 'db_duplicate', 'message' => 'Sudah terdaftar di database'];
@@ -306,7 +300,6 @@ class PerangkatController extends BaseController
                 continue;
             }
 
-            // Double-check duplicate before insert
             $exist = $this->perangkatModel->where('noreg', $noreg)->first();
             if ($exist) {
                 $skipped++;

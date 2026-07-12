@@ -24,6 +24,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/deleteAdmin/(:num)', 'DashboardController::deleteAdmin/$1');
     $routes->post('dashboard/updateAdmin/(:num)', 'DashboardController::updateAdmin/$1');
     $routes->post('dashboard/resetAdminPassword/(:num)', 'DashboardController::resetAdminPassword/$1');
+    $routes->post('dashboard/uploadAdminTtd/(:num)', 'DashboardController::uploadAdminTtd/$1');
+    $routes->post('dashboard/deleteAdminTtd/(:num)', 'DashboardController::deleteAdminTtd/$1');
+    $routes->get('dashboard/getAdminTtd/(:num)', 'DashboardController::getAdminTtd/$1');
     $routes->get('dashboard/edit/(:num)', 'PerangkatController::editPerangkat/$1');
     $routes->post('dashboard/update', 'PerangkatController::updatePerangkat');
     $routes->post('dashboard/bulkUpdate', 'PerangkatController::bulkUpdatePerangkat');
@@ -61,6 +64,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/deleteAllNodes', 'DashboardController::deleteAllNodes');
     $routes->get('dashboard/followUpItems', 'DashboardController::followUpItems');
     $routes->get('dashboard/checkUpdates', 'DashboardController::checkUpdates');
+    $routes->get('dashboard/runMigration', 'DashboardController::runMigration');
 
     // Regional Manage Routes
     $routes->get('dashboard/regionalList', 'DashboardController::regionalList');
@@ -71,6 +75,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard/brpMonths', 'DashboardController::brpAvailableMonths');
     $routes->get('dashboard/brpList', 'DashboardController::brpList');
     $routes->get('dashboard/brpDownload/(:num)', 'DashboardController::brpDownload/$1');
+    $routes->post('dashboard/brpDelete/(:num)', 'DashboardController::brpDelete/$1');
+
+    // Self-service Signature Routes
+    $routes->post('dashboard/uploadMySignature', 'DashboardController::uploadMySignature');
+    $routes->get('dashboard/getMySignature', 'DashboardController::getMySignature');
+    $routes->post('dashboard/deleteMySignature', 'DashboardController::deleteMySignature');
     
     // Non-Registration Material Routes (Admin)
     $routes->get('dashboard/nonreg', 'DashboardController::nonRegDashboard');

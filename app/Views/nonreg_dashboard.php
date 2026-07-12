@@ -26,9 +26,6 @@
     <a href="<?= base_url('dashboard/nonreg') ?>" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white">
       Reset Filter
     </a>
-    <button type="button" onclick="openNonRegManage()" class="bg-[#1C4D8D] px-4 py-2 text-xs rounded-lg hover:bg-[#7AAACE] transition text-white ml-auto">
-      <i class="fa-solid fa-plus mr-1"></i> Tambah Material
-    </button>
   </form>
 
   <div class="flex border-b border-gray-300 gap-4 mb-3">
@@ -91,7 +88,7 @@
                   <button type="button" onclick="openNonRegHistory(<?= $m['id'] ?>, '<?= htmlspecialchars($m['nama_material'], ENT_QUOTES) ?>')" class="hover:text-blue-400 mr-1 transition">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                   </button>
-                  <?php if (session('admin')['username'] === 'admin'): ?>
+                  <?php if ((isset(session('admin')['is_super']) && session('admin')['is_super'] == 1) || session('admin')['username'] === 'admin'): ?>
                   <button type="button" onclick="confirmNonRegDelete(<?= $m['id'] ?>)" class="hover:text-blue-400 mr-1 transition">
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
@@ -122,25 +119,25 @@
     </div>
 
     <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50">
+    <div id="nonRegHistoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg shadow-xl w-[95%] md:w-[850px] overflow-hidden flex flex-col max-h-[90vh]">
         <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
-          <h3 class="font-bold text-sm">History: <span id="historyItemName"></span></h3>
-          <button onclick="closeHistory()" class="text-white hover:text-gray-300 transition">
+          <h3 class="font-bold text-sm">History: <span id="nonRegHistoryItemName"></span></h3>
+          <button onclick="closeNonRegHistory()" class="text-white hover:text-gray-300 transition">
             <i class="fa-solid fa-xmark fa-lg"></i>
           </button>
         </div>
         <div class="p-4 flex-1 overflow-y-auto bg-[#F9FBFF]">
           <!-- Search History -->
           <div class="mb-3">
-            <input type="text" id="searchHistoryInput" placeholder="Cari keterangan, user, atau status..."
+            <input type="text" id="nonRegSearchHistoryInput" placeholder="Cari keterangan, user, atau status..."
               class="border text-xs rounded-md p-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-[#1C4D8D]">
           </div>
-          <div id="historyLoading" class="text-center py-8 hidden">
+          <div id="nonRegHistoryLoading" class="text-center py-8 hidden">
             <i class="fa-solid fa-spinner fa-spin text-3xl text-[#1C4D8D]"></i>
             <p class="text-sm mt-2 text-gray-500">Memuat history...</p>
           </div>
-          <table id="historyTable" class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
+          <table id="nonRegHistoryTable" class="w-full text-left text-xs border-collapse bg-white shadow-sm rounded-md overflow-hidden border border-gray-200">
             <thead class="bg-gray-100 border-b border-gray-200">
               <tr>
                 <th class="p-2 font-semibold text-gray-700 w-12 text-center">No</th>
@@ -151,12 +148,12 @@
                 <th class="p-2 font-semibold text-gray-700 text-center">Status</th>
               </tr>
             </thead>
-            <tbody id="historyBody" class="divide-y divide-gray-100">
+            <tbody id="nonRegHistoryBody" class="divide-y divide-gray-100">
               <!-- Content injected by JS -->
             </tbody>
           </table>
           <!-- History Pagination -->
-          <div id="historyPagination" class="mt-4 flex justify-center gap-1 hidden">
+          <div id="nonRegHistoryPagination" class="mt-4 flex justify-center gap-1 hidden">
           </div>
         </div>
       </div>
@@ -229,99 +226,56 @@
 
 <?= $this->section('scripts') ?>
 <script>
-  // SERVER-SIDE TABLE SORTING
-  function sortTable(column) {
-    const params = new URLSearchParams(window.location.search);
-    const currentSort = params.get('sort_by');
-    const currentDir = params.get('sort_dir');
 
-    let newDir = 'asc';
-    if (currentSort === column) {
-      newDir = currentDir === 'asc' ? 'desc' : 'asc';
-    }
-
-    params.set('sort_by', column);
-    params.set('sort_dir', newDir);
-    params.set('page', '1');
-
-    window.location.search = params.toString();
-  }
-</script>
-<script>
-  function showToast(message, type = "error") {
-    const toast = document.getElementById("toast");
-    const box = document.getElementById("toastBox");
-    const msg = document.getElementById("toastMsg");
-    const icon = document.getElementById("toastIcon");
-
-    if (!toast || !box || !msg || !icon) return;
-
-    msg.innerText = message;
-    box.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm";
-
-    if (type === "error") {
-      box.classList.add("bg-red-500");
-      icon.className = "fa-solid fa-circle-xmark";
-    } else if (type === "success") {
-      box.classList.add("bg-green-500");
-      icon.className = "fa-solid fa-circle-check";
-    } else {
-      box.classList.add("bg-yellow-500");
-      icon.className = "fa-solid fa-triangle-exclamation";
-    }
-
-    toast.classList.remove("hidden", "translate-x-full");
-    toast.classList.add("translate-x-0");
-
-    setTimeout(() => {
-      toast.classList.remove("translate-x-0");
-      toast.classList.add("translate-x-full");
-      setTimeout(() => { toast.classList.add("hidden"); }, 300);
-    }, 3000);
-  }
-
-  let currentHistoryId = null;
+  let currentNonRegHistoryId = null;
 
   function openNonRegHistory(id, name) {
-    currentHistoryId = id;
-    document.getElementById('historyModal').classList.remove('hidden');
-    document.getElementById('historyModal').classList.add('flex');
-    document.getElementById('historyItemName').innerText = name;
-    document.getElementById('searchHistoryInput').value = '';
+    currentNonRegHistoryId = id;
+    document.getElementById('nonRegHistoryModal').classList.remove('hidden');
+    document.getElementById('nonRegHistoryModal').classList.add('flex');
+    document.getElementById('nonRegHistoryItemName').innerText = name;
+    document.getElementById('nonRegSearchHistoryInput').value = '';
     
-    loadHistory(1);
+    loadNonRegHistory(1);
   }
 
-  function closeHistory() {
-    document.getElementById('historyModal').classList.add('hidden');
-    document.getElementById('historyModal').classList.remove('flex');
-    currentHistoryId = null;
+  function closeNonRegHistory() {
+    document.getElementById('nonRegHistoryModal').classList.add('hidden');
+    document.getElementById('nonRegHistoryModal').classList.remove('flex');
+    currentNonRegHistoryId = null;
   }
 
-  const searchInput = document.getElementById('searchHistoryInput');
-  if (searchInput) {
-    searchInput.addEventListener('keyup', function(e) {
+  // Close on overlay click
+  document.getElementById('nonRegHistoryModal').addEventListener('click', function(e) {
+    if (e.target.id === 'nonRegHistoryModal') {
+      closeNonRegHistory();
+    }
+  });
+
+  const nonRegHistorySearchInput = document.getElementById('nonRegSearchHistoryInput');
+  if (nonRegHistorySearchInput) {
+    nonRegHistorySearchInput.addEventListener('keyup', function(e) {
       if (e.key === 'Enter') {
-        loadHistory(1);
+        loadNonRegHistory(1);
       }
     });
   }
 
-  function loadHistory(page) {
-    if (!currentHistoryId) return;
+  function loadNonRegHistory(page) {
+    if (!currentNonRegHistoryId) return;
 
-    const tbody = document.getElementById('historyBody');
-    const loading = document.getElementById('historyLoading');
-    const table = document.getElementById('historyTable');
-    const pagination = document.getElementById('historyPagination');
-    const search = document.getElementById('searchHistoryInput').value;
+    const tbody = document.getElementById('nonRegHistoryBody');
+    const loading = document.getElementById('nonRegHistoryLoading');
+    const table = document.getElementById('nonRegHistoryTable');
+    const pagination = document.getElementById('nonRegHistoryPagination');
+    const search = document.getElementById('nonRegSearchHistoryInput').value;
 
     tbody.innerHTML = '';
     table.classList.add('hidden');
     pagination.classList.add('hidden');
     loading.classList.remove('hidden');
 
-    fetch(`<?= base_url('dashboard/nonreg/history') ?>/${currentHistoryId}?page=${page}&searchHistory=${encodeURIComponent(search)}`)
+    fetch(`<?= base_url('dashboard/nonreg/history') ?>/${currentNonRegHistoryId}?page=${page}&searchHistory=${encodeURIComponent(search)}`)
       .then(res => res.json())
       .then(res => {
         loading.classList.add('hidden');
@@ -360,7 +314,7 @@
             `;
           });
           tbody.innerHTML = html;
-          renderHistoryPagination(res.currentPage, res.totalPage);
+          renderNonRegHistoryPagination(res.currentPage, res.totalPage);
         } else {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-gray-500">Tidak ada history mutasi</td></tr>';
         }
@@ -373,30 +327,32 @@
       });
   }
 
-  function renderHistoryPagination(current, total) {
-    const container = document.getElementById('historyPagination');
+  function renderNonRegHistoryPagination(current, total) {
+    const container = document.getElementById('nonRegHistoryPagination');
     if (total <= 1) return;
     
     container.classList.remove('hidden');
     let html = '';
     
     if (current > 1) {
-      html += `<button onclick="loadHistory(${current - 1})" class="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition">&laquo;</button>`;
+      html += `<button onclick="loadNonRegHistory(${current - 1})" class="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition">&laquo;</button>`;
     }
     
     let start = Math.max(1, current - 2);
     let end = Math.min(total, current + 2);
     
     for (let i = start; i <= end; i++) {
-      html += `<button onclick="loadHistory(${i})" class="px-3 py-1 text-xs rounded transition ${i === current ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}">${i}</button>`;
+      html += `<button onclick="loadNonRegHistory(${i})" class="px-3 py-1 text-xs rounded transition ${i === current ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}">${i}</button>`;
     }
     
     if (current < total) {
-      html += `<button onclick="loadHistory(${current + 1})" class="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition">&raquo;</button>`;
+      html += `<button onclick="loadNonRegHistory(${current + 1})" class="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded transition">&raquo;</button>`;
     }
     
     container.innerHTML = html;
   }
+
+
 </script>
 
 

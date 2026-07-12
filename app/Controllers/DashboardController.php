@@ -22,7 +22,6 @@ class DashboardController extends BaseController
         $this->perangkatModel = new PerangkatModel();
         $this->mutasiModel = new MutasiModel();
         $this->userModel = new UserModel();
-        // Load password helper untuk Argon2ID hashing
         helper('password');
     }
 
@@ -58,8 +57,19 @@ class DashboardController extends BaseController
 
         $userModel = new \App\Models\UserModel();
         if (!$isSuper && !empty($adminSession['region']) && !empty($adminSession['area'])) {
-            $userModel->where('region', $adminSession['region'])
-                      ->where('area', $adminSession['area']);
+            $userModel->groupStart();
+            $adminRegions = explode(',', $adminSession['region']);
+            foreach ($adminRegions as $r) {
+                $userModel->orLike('region', trim($r), 'both');
+            }
+            $userModel->groupEnd();
+
+            $userModel->groupStart();
+            $adminAreas = explode(',', $adminSession['area']);
+            foreach ($adminAreas as $a) {
+                $userModel->orLike('area', trim($a), 'both');
+            }
+            $userModel->groupEnd();
         }
         $data['users'] = $userModel->orderBy('nama', 'ASC')->findAll();
 
@@ -68,7 +78,7 @@ class DashboardController extends BaseController
 
     public function getHistory($id)
     {
-        $model = new \App\Models\MutasiModel();
+        $model = $this->mutasiModel;
 
         $page = $this->request->getVar('page') ?? 1;
         $search = $this->request->getVar('searchHistory') ?? '';
@@ -171,9 +181,10 @@ class DashboardController extends BaseController
             ]);
 
             if (!$insert) {
+                log_message('error', 'addUser DB error: ' . json_encode($db->error()));
                 return $this->response->setJSON([
                     'success' => false,
-                    'db_error' => $db->error()
+                    'message' => 'Gagal menyimpan data user.'
                 ]);
             }
 
@@ -188,9 +199,10 @@ class DashboardController extends BaseController
             ]);
 
         } catch (\Throwable $e) {
+            log_message('error', 'addUser exception: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'message' => 'Terjadi kesalahan saat menambahkan user.'
             ]);
         }
     }
@@ -289,8 +301,6 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => $deleted ? true : false]);
     }
 
-    // ── Admin Manage ────────────────────────────────────────────────────────
-
     public function adminList()
     {
         $adminSession = session()->get('admin');
@@ -300,7 +310,7 @@ class DashboardController extends BaseController
         }
 
         $db = \Config\Database::connect();
-        $admins = $db->table('admin')->select('id, nama, username, region, area')->get()->getResultArray();
+        $admins = $db->table('admin')->select('id, nama, username, region, area, is_super, ttd_path')->get()->getResultArray();
         return $this->response->setJSON($admins);
     }
 
@@ -317,12 +327,12 @@ class DashboardController extends BaseController
         $username = trim($this->request->getPost('username'));
         $region   = trim($this->request->getPost('region'));
         $area     = trim($this->request->getPost('area'));
+        $isSuper  = (int) $this->request->getPost('is_super');
 
         if (!$nama || !$username) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
         }
 
-        // Check duplicate username
         $exist = $db->table('admin')->where('username', $username)->get()->getRowArray();
         if ($exist) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Username sudah digunakan']);
@@ -335,7 +345,7 @@ class DashboardController extends BaseController
             'area'       => $area,
             // [SECURITY] Argon2ID hash untuk password kosong (akan di-setup oleh admin baru)
             'password'   => hash_password(''),
-            'is_super'   => 0,
+            'is_super'   => $isSuper,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -351,7 +361,6 @@ class DashboardController extends BaseController
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
 
-        // Prevent self-deletion
         if ($adminSession && $adminSession['id'] == $id) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Tidak dapat menghapus akun sendiri']);
         }
@@ -374,6 +383,7 @@ class DashboardController extends BaseController
         $username = trim($this->request->getPost('username'));
         $region = trim($this->request->getPost('region'));
         $area = trim($this->request->getPost('area'));
+        $isSuper = (int) $this->request->getPost('is_super');
 
         if (!$nama || !$username) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Nama dan Username wajib diisi']);
@@ -381,7 +391,6 @@ class DashboardController extends BaseController
 
         $db = \Config\Database::connect();
         
-        // Check duplicate username
         $exist = $db->table('admin')->where('username', $username)->where('id !=', $id)->get()->getRowArray();
         if ($exist) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Username sudah digunakan']);
@@ -392,6 +401,7 @@ class DashboardController extends BaseController
             'username' => $username,
             'region' => $region,
             'area' => $area,
+            'is_super' => $isSuper,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 
@@ -409,7 +419,6 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
         
         $db->table('admin')->where('id', $id)->update([
-            // [SECURITY] Argon2ID hash untuk password reset (admin baru harus setup saat login)
             'password'   => hash_password(''),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -417,7 +426,185 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true]);
     }
 
-    // ── Return Requests ──────────────────────────────────────────────────────
+    public function uploadAdminTtd($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $file = $this->request->getFile('ttd_file');
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'File tidak valid.']);
+        }
+
+        $mime = $file->getMimeType();
+        if ($mime !== 'image/png') {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Format file harus PNG.']);
+        }
+
+        if ($file->getSizeByUnit('mb') > 2) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Ukuran file maksimal 2MB.']);
+        }
+
+        $ttdDir = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd';
+        if (!is_dir($ttdDir)) {
+            mkdir($ttdDir, 0755, true);
+        }
+
+        $filename = 'admin_' . $id . '.png';
+        $file->move($ttdDir, $filename, true);
+
+        $db = \Config\Database::connect();
+        $db->table('admin')->where('id', $id)->update([
+            'ttd_path' => $filename,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'TTD berhasil diupload.']);
+    }
+
+    public function deleteAdminTtd($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db = \Config\Database::connect();
+        $admin = $db->table('admin')->where('id', $id)->get()->getRowArray();
+
+        if ($admin && !empty($admin['ttd_path'])) {
+            $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd' . DIRECTORY_SEPARATOR . $admin['ttd_path'];
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            $db->table('admin')->where('id', $id)->update([
+                'ttd_path' => null,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'TTD berhasil dihapus.']);
+    }
+
+    public function getAdminTtd($id)
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $db = \Config\Database::connect();
+        $admin = $db->table('admin')->where('id', $id)->get()->getRowArray();
+
+        if (!$admin || empty($admin['ttd_path'])) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'TTD tidak ditemukan.']);
+        }
+
+        $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd' . DIRECTORY_SEPARATOR . $admin['ttd_path'];
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File TTD tidak ditemukan.']);
+        }
+
+        return $this->response->setHeader('Content-Type', 'image/png')
+            ->setBody(file_get_contents($filePath));
+    }
+
+    // ── Self-service Signature Management ─────────────────────────────────────
+
+    public function uploadMySignature()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $id = $adminSession['id'];
+
+        $file = $this->request->getFile('ttd_file');
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'File tidak valid.']);
+        }
+
+        $mime = $file->getMimeType();
+        if ($mime !== 'image/png') {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Format file harus PNG.']);
+        }
+
+        if ($file->getSizeByUnit('mb') > 2) {
+            return $this->response->setJSON(['success' => false, 'msg' => 'Ukuran file maksimal 2MB.']);
+        }
+
+        $ttdDir = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd';
+        if (!is_dir($ttdDir)) {
+            mkdir($ttdDir, 0755, true);
+        }
+
+        $filename = 'admin_' . $id . '.png';
+        $file->move($ttdDir, $filename, true);
+
+        $db = \Config\Database::connect();
+        $db->table('admin')->where('id', $id)->update([
+            'ttd_path' => $filename,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Tanda tangan berhasil diupload.']);
+    }
+
+    public function getMySignature()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $id = $adminSession['id'];
+        $db = \Config\Database::connect();
+        $admin = $db->table('admin')->where('id', $id)->get()->getRowArray();
+
+        if (!$admin || empty($admin['ttd_path'])) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'Tanda tangan belum diupload.']);
+        }
+
+        $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd' . DIRECTORY_SEPARATOR . $admin['ttd_path'];
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File tanda tangan tidak ditemukan.']);
+        }
+
+        return $this->response->setHeader('Content-Type', 'image/png')
+            ->setBody(file_get_contents($filePath));
+    }
+
+    public function deleteMySignature()
+    {
+        $adminSession = session()->get('admin');
+        if (!$adminSession) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $id = $adminSession['id'];
+        $db = \Config\Database::connect();
+        $admin = $db->table('admin')->where('id', $id)->get()->getRowArray();
+
+        if ($admin && !empty($admin['ttd_path'])) {
+            $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'ttd' . DIRECTORY_SEPARATOR . $admin['ttd_path'];
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            $db->table('admin')->where('id', $id)->update([
+                'ttd_path' => null,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => true, 'msg' => 'Tanda tangan berhasil dihapus.']);
+    }
 
     public function getPendingReturns()
     {
@@ -427,7 +614,12 @@ class DashboardController extends BaseController
         }
 
         $returnRequestModel = new \App\Models\ReturnRequestModel();
-        $requests = $returnRequestModel->getPendingRequestsGrouped();
+
+        $isSuperAdmin = (isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin';
+        $adminRegion = !$isSuperAdmin ? ($adminSession['region'] ?? null) : null;
+        $adminArea = !$isSuperAdmin ? ($adminSession['area'] ?? null) : null;
+
+        $requests = $returnRequestModel->getPendingRequestsGrouped($adminRegion, $adminArea);
 
         return $this->response->setJSON(['success' => true, 'data' => $requests]);
     }
@@ -456,24 +648,20 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
-        // Process Approved Requests
         foreach ($approvedIds as $requestId) {
             $request = $returnRequestModel->find($requestId);
             if (!$request || $request['status'] !== 'Pending') {
                 continue;
             }
 
-            // Update return_requests status
             $returnRequestModel->update($requestId, ['status' => 'Approved']);
 
-            // Insert new mutasi status to preserve history
             $mutasiId = $request['id_mutasi'];
             $mutasi = $mutasiModel->find($mutasiId);
             
             if ($mutasi) {
                 $returnedQty = $request['qty'] ?? 1;
 
-                // Insert the new "Kembali" mutasi record for history
                 $mutasiModel->insert([
                     'id_perangkat' => $mutasi['id_perangkat'],
                     'id_non_reg'   => $mutasi['id_non_reg'] ?? null,
@@ -485,26 +673,21 @@ class DashboardController extends BaseController
                 ]);
                 
                 if (!empty($mutasi['id_perangkat'])) {
-                    // Update perangkat status to Tersedia
                     $perangkatId = $mutasi['id_perangkat'];
-                    $perangkatModel->update($perangkatId, ['status' => 'Tersedia']);
+                    $perangkat = $perangkatModel->find($perangkatId);
+                    if ($perangkat && $perangkat['status'] !== 'Tersedia') {
+                        $perangkatModel->update($perangkatId, ['status' => 'Tersedia']);
+                    }
                 } elseif (!empty($mutasi['id_non_reg'])) {
-                    // Non registration item partial logic
                     $originalQty = $mutasi['qty'];
                     $remainingQty = $originalQty - $returnedQty;
                     
                     if ($remainingQty > 0) {
                         $mutasiModel->update($mutasiId, ['qty' => $remainingQty]);
                     } else {
-                        // We do not delete the original Dibawa record because it represents the checkout event.
-                        // However, to stop it from showing up in getDevicesDibawa, getDevicesDibawa currently queries by status='Dibawa'.
-                        // Wait! The user should NO LONGER see this item as "Dibawa" if qty reaches 0. 
-                        // But changing its status to something else would rewrite history!
-                        // Actually, if we change the original status to 'Selesai', it hides it from Dibawa, but keeps it in DB.
                         $mutasiModel->update($mutasiId, ['status' => 'Selesai']);
                     }
 
-                    // Increase quantity in non_registration
                     $nonRegModel = new \App\Models\NonRegistrationModel();
                     $nr = $nonRegModel->find($mutasi['id_non_reg']);
                     if ($nr) {
@@ -515,14 +698,12 @@ class DashboardController extends BaseController
             }
         }
 
-        // Process Rejected Requests
         foreach ($rejectedIds as $requestId) {
             $request = $returnRequestModel->find($requestId);
             if (!$request || $request['status'] !== 'Pending') {
                 continue;
             }
 
-            // Reject the return request, device remains 'Dibawa'
             $returnRequestModel->update($requestId, ['status' => 'Rejected']);
         }
 
@@ -560,7 +741,6 @@ class DashboardController extends BaseController
     {
         $db = \Config\Database::connect();
         
-        // Find latest mutasi for each perangkat
         $subQuery = $db->table('mutasi')
             ->select('id_perangkat, MAX(updated_at) as latest')
             ->groupBy('id_perangkat')
@@ -572,10 +752,6 @@ class DashboardController extends BaseController
         $builder->join('perangkat p', 'p.id = m.id_perangkat');
         $builder->join('users u', 'u.id = m.id_users', 'left');
         
-        // Removed 1 day restriction as requested
-        // $builder->where('m.updated_at <', date('Y-m-d H:i:s', strtotime('-1 day')));
-        
-        // Status condition: Dibawa OR (Terpasang/Terkirim AND is_checked = 0)
         $builder->groupStart()
             ->where('m.status', 'Dibawa')
             ->orGroupStart()
@@ -612,8 +788,6 @@ class DashboardController extends BaseController
         return $this->response->setJSON($result);
     }
 
-    // ── Installation Requests ───────────────────────────────────────────────
-
     public function getPendingInstallations()
     {
         $adminSession = session()->get('admin');
@@ -622,7 +796,12 @@ class DashboardController extends BaseController
         }
 
         $installationModel = new \App\Models\InstallationRequestModel();
-        $requests = $installationModel->getPendingRequestsGrouped();
+
+        $isSuperAdmin = (isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin';
+        $adminRegion = !$isSuperAdmin ? ($adminSession['region'] ?? null) : null;
+        $adminArea = !$isSuperAdmin ? ($adminSession['area'] ?? null) : null;
+
+        $requests = $installationModel->getPendingRequestsGrouped($adminRegion, $adminArea);
 
         return $this->response->setJSON(['success' => true, 'data' => $requests]);
     }
@@ -651,24 +830,20 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
-        // Process Approved Requests
         foreach ($approvedIds as $requestId) {
             $request = $installationModel->find($requestId);
             if (!$request || $request['status'] !== 'Pending') {
                 continue;
             }
 
-            // Update installation_requests status
             $installationModel->update($requestId, ['status' => 'Approved']);
 
-            // Create a new mutasi record for Terpasang
             $mutasiId = $request['id_mutasi'];
             $mutasi = $mutasiModel->find($mutasiId);
 
             if ($mutasi) {
                 $installedQty = $request['qty'] ?? 1;
 
-                // Insert new "Terpasang" record
                 $mutasiModel->insert([
                     'id_perangkat' => $mutasi['id_perangkat'],
                     'id_non_reg'   => $mutasi['id_non_reg'] ?? null,
@@ -680,13 +855,12 @@ class DashboardController extends BaseController
                 ]);
 
                 if (!empty($mutasi['id_perangkat'])) {
-                    // Update perangkat status
                     $perangkatId = $mutasi['id_perangkat'];
-                    $perangkatModel->update($perangkatId, ['status' => 'Tidak Tersedia']);
+                    $perangkat = $perangkatModel->find($perangkatId);
+                    if ($perangkat && $perangkat['status'] !== 'Tidak Tersedia') {
+                        $perangkatModel->update($perangkatId, ['status' => 'Tidak Tersedia']);
+                    }
                     
-                    // The old mutasi should probably just be left alone or marked 'Selesai' 
-                    // But in original code, it updated the existing mutasi directly!
-                    // To keep history, we should leave the "Dibawa" record and maybe mark it "Selesai".
                     $mutasiModel->update($mutasiId, ['status' => 'Selesai']);
                 } elseif (!empty($mutasi['id_non_reg'])) {
                     $originalQty = $mutasi['qty'];
@@ -701,7 +875,6 @@ class DashboardController extends BaseController
             }
         }
 
-        // Process Rejected Requests
         foreach ($rejectedIds as $requestId) {
             $request = $installationModel->find($requestId);
             if (!$request || $request['status'] !== 'Pending') {
@@ -742,19 +915,27 @@ class DashboardController extends BaseController
 
     public function runMigration()
     {
+        // [SECURITY] Disabled in production — use `php spark migrate` instead
+        if (ENVIRONMENT === 'production') {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Disabled in production.']);
+        }
+
         $db = \Config\Database::connect();
+        $results = [];
         try {
             $db->query("ALTER TABLE nodes ADD COLUMN site_sentral VARCHAR(100) NULL");
-            echo "Added site_sentral to nodes table.<br>";
-        } catch (\Exception $e) { echo $e->getMessage() . "<br>"; }
+            $results[] = 'Added site_sentral to nodes table.';
+        } catch (\Exception $e) { $results[] = $e->getMessage(); }
         try {
             $db->query("ALTER TABLE installation_requests ADD COLUMN site_sentral VARCHAR(100) NULL");
-            echo "Added site_sentral to installation_requests table.<br>";
-        } catch (\Exception $e) { echo $e->getMessage() . "<br>"; }
-        return "Migration complete.";
+            $results[] = 'Added site_sentral to installation_requests table.';
+        } catch (\Exception $e) { $results[] = $e->getMessage(); }
+        try {
+            $db->query("ALTER TABLE admin ADD COLUMN IF NOT EXISTS ttd_path VARCHAR(255) NULL");
+            $results[] = 'Added ttd_path to admin table.';
+        } catch (\Exception $e) { $results[] = $e->getMessage(); }
+        return $this->response->setJSON(['success' => true, 'results' => $results]);
     }
-
-    // ── Node Management (Admin) ──────────────────────────────────────────────
 
     public function nodeList()
     {
@@ -793,7 +974,6 @@ class DashboardController extends BaseController
 
         $nodeModel = new \App\Models\NodeModel();
 
-        // Check for duplicates
         $existing = $nodeModel->where('arep', $arep)->where('site_sentral', $siteSentral)->where('node_sentral', $nodeSentral)->first();
         if ($existing) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Node sudah terdaftar.']);
@@ -842,7 +1022,6 @@ class DashboardController extends BaseController
 
             $siteSentral = ($nodeSentral !== '-' && strlen($nodeSentral) >= 6) ? substr($nodeSentral, 0, 6) : '-';
 
-            // Check duplicate
             $exist = $nodeModel->where('arep', $arep)
                                ->where('site_sentral', $siteSentral)
                                ->where('node_sentral', $nodeSentral)
@@ -873,7 +1052,8 @@ class DashboardController extends BaseController
     public function deleteNode($id)
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession) {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
 
@@ -910,7 +1090,6 @@ class DashboardController extends BaseController
 
         $nodeModel = new \App\Models\NodeModel();
 
-        // Check duplicate
         $existing = $nodeModel->where('arep', $arep)
                               ->where('site_sentral', $siteSentral)
                               ->where('node_sentral', $nodeSentral)
@@ -932,7 +1111,8 @@ class DashboardController extends BaseController
     public function bulkDeleteNodes()
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession) {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
         }
 
@@ -955,7 +1135,8 @@ class DashboardController extends BaseController
     public function deleteAllNodes()
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession) {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
         }
 
@@ -968,11 +1149,6 @@ class DashboardController extends BaseController
         }
     }
 
-    /**
-     * Lightweight endpoint to check for data changes.
-     * Returns the latest mutasi updated_at timestamp so the dashboard
-     * can detect when to auto-reload.
-     */
     public function checkUpdates()
     {
         $db = \Config\Database::connect();
@@ -985,11 +1161,6 @@ class DashboardController extends BaseController
         ]);
     }
 
-    // ── BRP (Bukti Request Perangkat) ────────────────────────────────────────
-
-    /**
-     * Get list of available months/years that have BRP documents.
-     */
     public function brpAvailableMonths()
     {
         $adminSession = session()->get('admin');
@@ -1003,9 +1174,6 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true, 'data' => $months]);
     }
 
-    /**
-     * Get BRP documents for a given month/year.
-     */
     public function brpList()
     {
         $adminSession = session()->get('admin');
@@ -1026,10 +1194,6 @@ class DashboardController extends BaseController
         return $this->response->setJSON(['success' => true, 'data' => $documents]);
     }
 
-    /**
-     * Download a BRP PDF by document ID.
-     * TODO(security): Verify requesting admin has permission to access this document.
-     */
     public function brpDownload($id)
     {
         $adminSession = session()->get('admin');
@@ -1041,21 +1205,45 @@ class DashboardController extends BaseController
         $doc = $brpModel->find((int) $id);
 
         if (!$doc) {
+            log_message('error', "BRP Download: Dokumen dengan ID {$id} tidak ditemukan di database.");
             return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'Dokumen tidak ditemukan.']);
         }
 
         $filePath = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $doc['filename'];
 
         if (!file_exists($filePath)) {
-            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File PDF tidak ditemukan di server.']);
+            log_message('error', "BRP Download: File tidak ditemukan di path: {$filePath} (ID: {$id}, filename: {$doc['filename']})");
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'File PDF tidak ditemukan di server. Path: ' . $doc['filename']]);
         }
 
-        return $this->response->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', 'inline; filename="' . $doc['filename'] . '"')
-            ->setBody(file_get_contents($filePath));
+        // Use CI4's download method for proper binary file serving
+        return $this->response->download($filePath, null)->setFileName($doc['filename']);
     }
 
-    // ── NON-REGISTRATION MATERIAL ────────────────────────────────────────
+    public function brpDelete($id)
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
+        }
+
+        $brpModel = new BrpModel();
+        $doc = $brpModel->find((int) $id);
+
+        if (!$doc) {
+            return $this->response->setStatusCode(404)->setJSON(['success' => false, 'msg' => 'Dokumen tidak ditemukan.']);
+        }
+
+        $filePath = WRITEPATH . 'brp' . DIRECTORY_SEPARATOR . $doc['filename'];
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        $brpModel->delete($id);
+
+        return $this->response->setJSON(['success' => true]);
+    }
 
     public function nonRegDashboard()
     {
@@ -1071,6 +1259,10 @@ class DashboardController extends BaseController
         $search = $this->request->getGet('keyword') ?? '';
         $sortBy = $this->request->getGet('sort_by') ?? 'nama_material';
         $sortDir = $this->request->getGet('sort_dir') ?? 'asc';
+
+        $allowedSorts = ['nama_material', 'kode_spec', 'quantity', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'nama_material';
+        $sortDir = strtolower($sortDir) === 'desc' ? 'desc' : 'asc';
 
         $nonRegModel = new \App\Models\NonRegistrationModel();
         
@@ -1096,7 +1288,7 @@ class DashboardController extends BaseController
 
     public function getNonRegHistory($id)
     {
-        $model = new \App\Models\MutasiModel();
+        $model = $this->mutasiModel;
 
         $page = $this->request->getVar('page') ?? 1;
         $search = $this->request->getVar('searchHistory') ?? '';
@@ -1183,7 +1375,8 @@ class DashboardController extends BaseController
     public function deleteNonReg($id)
     {
         $adminSession = session()->get('admin');
-        if (!$adminSession) {
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
 
@@ -1214,7 +1407,6 @@ class DashboardController extends BaseController
             $inserted = 0;
             $updated = 0;
 
-            // Skip header (row 0)
             for ($i = 1; $i < count($sheetData); $i++) {
                 $row = $sheetData[$i];
                 if (empty(trim($row[0])) && empty(trim($row[1]))) continue;
@@ -1248,15 +1440,11 @@ class DashboardController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            return $this->response->setJSON(['success' => false, 'msg' => $e->getMessage()]);
+            log_message('error', 'uploadNonRegExcel error: ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'msg' => 'Gagal memproses file. Pastikan format CSV benar.']);
         }
     }
 
-    /**
-     * Approve or reject peminjaman (borrowing) requests.
-     * Approved: status stays 'Dibawa', mark is_read_admin = true.
-     * Rejected: delete mutasi record, restore perangkat to 'Tersedia' and non-reg stock.
-     */
     public function approvePeminjaman()
     {
         $adminSession = session()->get('admin');
@@ -1281,7 +1469,6 @@ class DashboardController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
-        // Approve: mark as read (confirmed), status stays Dibawa
         foreach ($approvedIds as $mutasiId) {
             $mutasi = $mutasiModel->find((int) $mutasiId);
             if (!$mutasi || $mutasi['status'] !== 'Dibawa') {
@@ -1290,16 +1477,13 @@ class DashboardController extends BaseController
             $mutasiModel->update($mutasiId, ['is_read_admin' => 'true']);
         }
 
-        // Reject: reverse the peminjaman, restore to previous status
         foreach ($rejectedIds as $mutasiId) {
             $mutasi = $mutasiModel->find((int) $mutasiId);
             if (!$mutasi || $mutasi['status'] !== 'Dibawa') {
                 continue;
             }
 
-            // For perangkat: find previous mutasi record to get the status before peminjaman
             if (!empty($mutasi['id_perangkat'])) {
-                // Find the latest mutasi BEFORE this one for the same perangkat
                 $previousMutasi = $db->table('mutasi')
                     ->where('id_perangkat', $mutasi['id_perangkat'])
                     ->where('id <', $mutasiId)
@@ -1309,10 +1493,13 @@ class DashboardController extends BaseController
                     ->getRowArray();
 
                 $previousStatus = $previousMutasi ? $previousMutasi['status'] : 'Tersedia';
-                $perangkatModel->update($mutasi['id_perangkat'], ['status' => $previousStatus]);
+                
+                $perangkat = $perangkatModel->find($mutasi['id_perangkat']);
+                if ($perangkat && $perangkat['status'] !== $previousStatus) {
+                    $perangkatModel->update($mutasi['id_perangkat'], ['status' => $previousStatus]);
+                }
             }
 
-            // Restore non-reg stock
             if (!empty($mutasi['id_non_reg'])) {
                 $nr = $nonRegModel->find($mutasi['id_non_reg']);
                 if ($nr) {
@@ -1321,7 +1508,6 @@ class DashboardController extends BaseController
                 }
             }
 
-            // Delete the rejected mutasi record
             $mutasiModel->delete($mutasiId);
         }
 
@@ -1341,6 +1527,7 @@ class DashboardController extends BaseController
 
     public function getUsersWithDibawa()
     {
+        $adminSession = session()->get('admin');
         $db = \Config\Database::connect();
         
         $builder = $db->table('mutasi m');
@@ -1352,12 +1539,29 @@ class DashboardController extends BaseController
 
         $builder->join("($subQuery) latest_data", 'm.id = latest_data.latest_id');
         
-        $builder->select('m.id as mutasi_id, u.id as user_id, u.nama, m.created_at, p.noreg as perangkat_noreg, p.nama as perangkat_nama, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, m.qty');
+        $builder->select('m.id as mutasi_id, u.id as user_id, u.nama, m.created_at, p.noreg as perangkat_noreg, p.nama as perangkat_nama, nr.kode_spec as nr_noreg, nr.nama_material as nr_nama, m.qty, m.is_read_admin');
         $builder->join('users u', 'u.id = m.id_users');
         $builder->join('perangkat p', 'p.id = m.id_perangkat', 'left');
         $builder->join('non_registration nr', 'nr.id = m.id_non_reg', 'left');
         $builder->where('m.status', 'Dibawa');
-        $builder->where('m.is_read_admin', 'false');
+
+        $isSuperAdmin = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuperAdmin && !empty($adminSession['region']) && !empty($adminSession['area'])) {
+            $builder->groupStart();
+            $adminRegions = explode(',', $adminSession['region']);
+            foreach ($adminRegions as $r) {
+                $builder->orLike('u.region', trim($r), 'both');
+            }
+            $builder->groupEnd();
+
+            $builder->groupStart();
+            $adminAreas = explode(',', $adminSession['area']);
+            foreach ($adminAreas as $a) {
+                $builder->orLike('u.area', trim($a), 'both');
+            }
+            $builder->groupEnd();
+        }
+
         $builder->orderBy('u.nama', 'ASC');
         $builder->orderBy('m.created_at', 'DESC');
         
@@ -1399,7 +1603,9 @@ class DashboardController extends BaseController
                 'noreg' => $noreg,
                 'nama' => $nama,
                 'created_at' => $row['created_at'],
-                'brp_id' => $brpId
+                'qty' => $row['qty'],
+                'brp_id' => $brpId,
+                'is_read_admin' => $row['is_read_admin']
             ];
         }
         

@@ -43,6 +43,18 @@
         [x-cloak] {
             display: none !important;
         }
+
+        /* TomSelect: hide dropdown arrow */
+        .ts-control.no-arrow::after,
+        .ts-wrapper.no-arrow .ts-control::after,
+        .ts-wrapper .ts-control.no-arrow::after {
+            display: none !important;
+            content: none !important;
+        }
+        .ts-wrapper.no-arrow .dropdown-input::before,
+        .ts-wrapper .no-arrow .dropdown-input::before {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -355,7 +367,9 @@
                                 }
                             },
                             fetchPendingReturns() {
-                                fetch('<?= base_url("dashboard/returns") ?>')
+                                fetch('<?= base_url("dashboard/returns") ?>', {
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                })
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
@@ -366,7 +380,9 @@
                                     }).catch(err => console.error(err));
                             },
                             fetchPendingInstalls() {
-                                fetch('<?= base_url("dashboard/installations") ?>')
+                                fetch('<?= base_url("dashboard/installations") ?>', {
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                })
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
@@ -625,7 +641,9 @@
                                 }, 15000);
                             },
                             fetchItems() {
-                                fetch('<?= base_url("dashboard/followUpItems") ?>')
+                                fetch('<?= base_url("dashboard/followUpItems") ?>', {
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                })
                                     .then(res => res.json())
                                     .then(data => {
                                         this.items = data;
@@ -798,7 +816,7 @@
                     <i class="fa-solid fa-users text-lg mb-1"></i>
                     <span class="text-[11px] leading-tight">Peminjaman</span>
                     <template x-if="users.length > 0">
-                        <span class="absolute -top-1 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow"
+                        <span class="absolute -top-1 -right-3 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md"
                             x-text="users.length">
                         </span>
                     </template>
@@ -870,8 +888,7 @@
                                                 <thead class="sticky top-0 bg-gray-100 border-b border-gray-200 z-10">
                                                     <tr>
                                                         <th class="p-2 font-semibold text-gray-700 text-center w-8">
-                                                            <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
-                                                                @change="toggleAllDevices($event)" :checked="checkedDevices.length === selectedUserDevices.length">
+                                                            #
                                                         </th>
                                                         <th class="p-2 font-semibold text-gray-700">No Registrasi</th>
                                                         <th class="p-2 font-semibold text-gray-700">Nama Perangkat</th>
@@ -882,10 +899,7 @@
                                                 <tbody class="divide-y divide-gray-100">
                                                     <template x-for="(dev, index) in selectedUserDevices" :key="dev.mutasi_id">
                                                         <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="hover:bg-blue-50 transition">
-                                                            <td class="p-2 text-center">
-                                                                <input type="checkbox" class="w-3 h-3 cursor-pointer accent-[#1C4D8D]"
-                                                                    :value="dev.mutasi_id.toString()" x-model="checkedDevices">
-                                                            </td>
+                                                            <td class="p-2 text-center text-gray-500 font-medium" x-text="index + 1"></td>
                                                             <td class="p-2 text-gray-800 font-medium" x-text="dev.noreg"></td>
                                                             <td class="p-2 text-gray-800 font-medium" x-text="dev.nama"></td>
                                                             <td class="p-2 whitespace-nowrap">
@@ -904,16 +918,7 @@
                                             </table>
                                         </div>
 
-                                        <div class="border-t border-gray-200 pt-4 flex justify-end gap-2">
-                                            <button @click="rejectAllPeminjaman()"
-                                                class="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition font-semibold text-sm">
-                                                <i class="fa-solid fa-xmark mr-1"></i> Tolak
-                                            </button>
-                                            <button @click="approveSelectedPeminjaman()"
-                                                class="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition font-semibold text-sm">
-                                                <i class="fa-solid fa-check mr-1"></i> Approve
-                                            </button>
-                                        </div>
+                                        <!-- Actions removed as requested -->
                                     </div>
                                 </div>
                             </template>
@@ -930,76 +935,15 @@
                             selectedUserView: false,
                             selectedUser: {},
                             selectedUserDevices: [],
-                            checkedDevices: [],
-                            processing: false,
                             openUserDetail(user) {
                                 this.selectedUser = user;
                                 this.selectedUserDevices = user.devices;
-                                this.checkedDevices = user.devices.map(d => d.mutasi_id.toString());
                                 this.selectedUserView = true;
                             },
                             closeUserDetail() {
                                 this.selectedUserView = false;
                                 this.selectedUser = {};
                                 this.selectedUserDevices = [];
-                                this.checkedDevices = [];
-                            },
-                            toggleAllDevices(event) {
-                                if (event.target.checked) {
-                                    this.checkedDevices = this.selectedUserDevices.map(d => d.mutasi_id.toString());
-                                } else {
-                                    this.checkedDevices = [];
-                                }
-                            },
-                            approveSelectedPeminjaman() {
-                                if (this.selectedUserDevices.length === 0) return;
-                                const approvedIds = this.checkedDevices;
-                                const rejectedIds = this.selectedUserDevices
-                                    .filter(d => !this.checkedDevices.includes(d.mutasi_id.toString()))
-                                    .map(d => d.mutasi_id.toString());
-                                this.submitPeminjaman(approvedIds, rejectedIds);
-                            },
-                            rejectAllPeminjaman() {
-                                if (this.selectedUserDevices.length === 0) return;
-                                const approvedIds = [];
-                                const rejectedIds = this.selectedUserDevices.map(d => d.mutasi_id.toString());
-                                this.submitPeminjaman(approvedIds, rejectedIds);
-                            },
-                            submitPeminjaman(approvedIds, rejectedIds) {
-                                if (this.processing) return;
-                                this.processing = true;
-
-                                let params = new URLSearchParams();
-                                approvedIds.forEach(id => params.append('approved_ids[]', id));
-                                rejectedIds.forEach(id => params.append('rejected_ids[]', id));
-
-                                fetch('<?= base_url('dashboard/peminjaman/approve') ?>', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/x-www-form-urlencoded',
-                                        'X-Requested-With': 'XMLHttpRequest',
-                                        'X-CSRF-TOKEN': csrfToken()
-                                    },
-                                    body: params
-                                })
-                                .then(res => res.json())
-                                .then(res => {
-                                    this.processing = false;
-                                    if (res.success) {
-                                        if (typeof showToast === 'function') showToast(res.msg, 'success');
-                                        this.closeUserDetail();
-                                        this.fetchUsers();
-                                        setTimeout(() => window.location.reload(), 1500);
-                                    } else {
-                                        if (typeof showToast === 'function') showToast(res.msg, 'error');
-                                        else alert(res.msg);
-                                    }
-                                })
-                                .catch(err => {
-                                    this.processing = false;
-                                    console.error('Error:', err);
-                                    if (typeof showToast === 'function') showToast('Terjadi kesalahan sistem', 'error');
-                                });
                             },
                             init() {
                                 this.fetchUsers();
@@ -1017,7 +961,9 @@
                             },
                             fetchUsers() {
                                 this.loading = true;
-                                fetch('<?= base_url('dashboard/usersDibawa') ?>')
+                                fetch('<?= base_url('dashboard/usersDibawa') ?>', {
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                })
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
@@ -1142,10 +1088,16 @@
                                                     <td class="p-2 text-center text-gray-500 text-[10px]" x-text="formatDate(doc.created_at)"></td>
                                                     <td class="p-2 text-center">
                                                         <a :href="'<?= base_url('dashboard/brpDownload') ?>/' + doc.id"
-                                                            target="_blank"
-                                                            class="bg-[#1C4D8D] text-white hover:bg-[#2A62AA] transition px-2.5 py-1 rounded text-[10px] font-semibold inline-flex items-center gap-1 shadow-sm">
-                                                            <i class="fa-solid fa-download"></i> Download
+                                                            target="_blank" title="Download"
+                                                            class="text-[#1C4D8D] hover:text-[#2A62AA] transition text-sm mr-2 inline-flex items-center">
+                                                            <i class="fa-solid fa-download"></i>
                                                         </a>
+                                                        <?php if ((isset(session('admin')['is_super']) && session('admin')['is_super'] == 1) || session('admin')['username'] === 'admin'): ?>
+                                                        <button @click="deleteDoc(doc.id, doc.filename)" title="Delete"
+                                                            class="text-red-600 hover:text-red-400 transition text-sm inline-flex items-center">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             </template>
@@ -1209,6 +1161,41 @@
                                         this.loading = false;
                                     });
                             },
+                            deleteDoc(id, filename) {
+                                Swal.fire({
+                                    title: 'Hapus BRP?',
+                                    text: `Yakin ingin menghapus BRP ${filename}?`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Hapus',
+                                    cancelButtonText: 'Batal',
+                                    confirmButtonColor: '#d33',
+                                    cancelButtonColor: '#3085d6'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        fetch('<?= base_url('dashboard/brpDelete') ?>/' + id, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                                            }
+                                        })
+                                        .then(res => res.json())
+                                        .then(res => {
+                                            if (res.success) {
+                                                if (typeof showToast === 'function') showToast('BRP berhasil dihapus', 'success');
+                                                this.fetchDocuments();
+                                            } else {
+                                                if (typeof showToast === 'function') showToast(res.msg || res.message || 'Gagal menghapus BRP', 'error');
+                                            }
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                            if (typeof showToast === 'function') showToast('Terjadi kesalahan saat menghapus', 'error');
+                                        });
+                                    }
+                                });
+                            },
                             formatDate(dateStr) {
                                 if (!dateStr) return '-';
                                 const d = new Date(dateStr);
@@ -1242,6 +1229,11 @@
                         class="w-full rounded-t-md text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
                         <i class="fa-solid fa-key mr-2" style="color: #1C4D8D;"></i>
                         Ganti Password
+                    </button>
+                    <button onclick="bukaModalSignature()" @click="open = false"
+                        class="w-full text-left px-4 py-3 text-[#1C4D8D] border-b border-gray-300 hover:bg-gray-200">
+                        <i class="fa-solid fa-signature mr-2" style="color: #1C4D8D;"></i>
+                        Signature
                     </button>
                     <!-- <hr class="mx-3 border-t-1 border-gray-300 my-1"/> -->
                     <?php
@@ -1307,6 +1299,10 @@
                 <button type="button" onclick="bukaModalPassword(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
                     <i class="fa-solid fa-key"></i>
                     <span class="text-sm">Ganti Password</span>
+                </button>
+                <button type="button" onclick="bukaModalSignature(); toggleDashMobileMenu();" class="flex items-center gap-3 px-6 py-3 hover:bg-[#163d73] border-l-4 border-transparent transition w-full text-left">
+                    <i class="fa-solid fa-signature"></i>
+                    <span class="text-sm">Signature</span>
                 </button>
                 <?php
                 $adminSessMobile = session()->get('admin');
@@ -1427,6 +1423,73 @@
             </form>
         </div>
     </div>
+
+    <!-- SIGNATURE MODAL -->
+    <div id="overlaySignature"
+        class="fixed inset-0 z-[60] hidden items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-xl w-[90%] md:w-[500px] overflow-hidden">
+            <div class="flex justify-between items-center bg-[#1C4D8D] text-white px-4 py-3">
+                <h3 class="font-bold text-sm">
+                    <i class="fa-solid fa-signature mr-1"></i> Tanda Tangan (Signature)
+                </h3>
+                <button onclick="tutupModalSignature()" class="text-white hover:text-gray-400 transition">
+                    <i class="fa-solid fa-xmark fa-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-5">
+                <!-- Current Signature Preview -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tanda Tangan Saat Ini</label>
+                    <div id="signaturePreviewBox" class="border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-[150px] flex items-center justify-center bg-gray-50 transition-all">
+                        <!-- Empty state -->
+                        <div id="signatureEmpty" class="text-center">
+                            <i class="fa-regular fa-image text-4xl text-gray-300 mb-2"></i>
+                            <p class="text-sm text-gray-400">Belum ada tanda tangan</p>
+                        </div>
+                        <!-- Signature image -->
+                        <img id="signatureImg" src="" alt="Tanda Tangan" class="max-h-[140px] max-w-full object-contain hidden">
+                    </div>
+                </div>
+
+                <!-- Upload Form -->
+                <form id="formUploadSignature" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Upload Tanda Tangan Baru</label>
+                    <div class="flex items-center gap-3">
+                        <label for="signatureFileInput" class="flex-1 cursor-pointer">
+                            <div id="signatureDropZone" class="border-2 border-dashed border-[#1C4D8D] rounded-lg p-3 text-center hover:bg-blue-50 transition-all">
+                                <i class="fa-solid fa-cloud-arrow-up text-[#1C4D8D] text-lg mb-1"></i>
+                                <p id="signatureFileName" class="text-xs text-gray-600">Klik untuk pilih file PNG (maks 2MB)</p>
+                            </div>
+                            <input type="file" id="signatureFileInput" name="ttd_file" accept="image/png" class="hidden" onchange="previewSignatureFile(this)">
+                        </label>
+                    </div>
+                    <!-- Preview of selected file -->
+                    <div id="signatureNewPreview" class="mt-3 hidden">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Preview</label>
+                        <div class="border border-gray-200 rounded-lg p-2 bg-white flex items-center justify-center">
+                            <img id="signatureNewImg" src="" alt="Preview" class="max-h-[100px] max-w-full object-contain">
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center gap-2 mt-4 pt-3 border-t border-gray-200">
+                    <button type="button" id="btnDeleteSignature" onclick="hapusSignature()"
+                        class="bg-red-500 text-white text-sm px-3 py-2 rounded-md font-semibold shadow hover:bg-red-600 transition hidden">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Hapus
+                    </button>
+                    <div class="ml-auto">
+                        <button type="button" onclick="uploadSignature()"
+                            class="bg-[#1C4D8D] text-white text-sm px-4 py-2 rounded-md font-semibold shadow hover:bg-[#3E679E] transition">
+                            <i class="fa-solid fa-upload mr-1"></i> Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <footer class="mt-auto text-xs text-[#1C4D8D] p-2 text-center">
         Unreleased &bull; PT. Aplikanusa Lintasarta &copy; <?= date('Y') ?>
     </footer>
@@ -1515,6 +1578,167 @@
             <?php endif; ?>
         });
     </script>
+
+    <!-- SIGNATURE MODAL SCRIPTS -->
+    <script>
+        const overlaySignature = document.getElementById('overlaySignature');
+
+        function bukaModalSignature() {
+            overlaySignature.classList.remove('hidden');
+            overlaySignature.classList.add('flex');
+            loadCurrentSignature();
+        }
+
+        function tutupModalSignature() {
+            overlaySignature.classList.add('hidden');
+            overlaySignature.classList.remove('flex');
+            // Reset file input
+            document.getElementById('formUploadSignature').reset();
+            document.getElementById('signatureNewPreview').classList.add('hidden');
+            document.getElementById('signatureFileName').textContent = 'Klik untuk pilih file PNG (maks 2MB)';
+        }
+
+        function loadCurrentSignature() {
+            const img = document.getElementById('signatureImg');
+            const empty = document.getElementById('signatureEmpty');
+            const btnDelete = document.getElementById('btnDeleteSignature');
+
+            fetch('<?= base_url('dashboard/getMySignature') ?>', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => {
+                if (res.ok) return res.blob();
+                throw new Error('No signature');
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+                img.classList.remove('hidden');
+                empty.classList.add('hidden');
+                btnDelete.classList.remove('hidden');
+            })
+            .catch(() => {
+                img.classList.add('hidden');
+                img.src = '';
+                empty.classList.remove('hidden');
+                btnDelete.classList.add('hidden');
+            });
+        }
+
+        function previewSignatureFile(input) {
+            const preview = document.getElementById('signatureNewPreview');
+            const previewImg = document.getElementById('signatureNewImg');
+            const fileName = document.getElementById('signatureFileName');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (file.type !== 'image/png') {
+                    Swal.fire({ icon: 'error', title: 'Format Salah', text: 'File harus berformat PNG.', confirmButtonColor: '#1C4D8D' });
+                    input.value = '';
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    Swal.fire({ icon: 'error', title: 'File Terlalu Besar', text: 'Ukuran file maksimal 2MB.', confirmButtonColor: '#1C4D8D' });
+                    input.value = '';
+                    return;
+                }
+
+                fileName.textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.classList.add('hidden');
+                fileName.textContent = 'Klik untuk pilih file PNG (maks 2MB)';
+            }
+        }
+
+        function uploadSignature() {
+            const fileInput = document.getElementById('signatureFileInput');
+            if (!fileInput.files || !fileInput.files[0]) {
+                Swal.fire({ icon: 'warning', title: 'Pilih File', text: 'Pilih file PNG terlebih dahulu.', confirmButtonColor: '#1C4D8D' });
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('ttd_file', fileInput.files[0]);
+
+            fetch('<?= base_url('dashboard/uploadMySignature') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken()
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: res.msg, timer: 1500, showConfirmButton: false });
+                    // Reset form and reload preview
+                    document.getElementById('formUploadSignature').reset();
+                    document.getElementById('signatureNewPreview').classList.add('hidden');
+                    document.getElementById('signatureFileName').textContent = 'Klik untuk pilih file PNG (maks 2MB)';
+                    loadCurrentSignature();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: res.msg, confirmButtonColor: '#1C4D8D' });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat mengupload.', confirmButtonColor: '#1C4D8D' });
+            });
+        }
+
+        function hapusSignature() {
+            Swal.fire({
+                title: 'Hapus Tanda Tangan?',
+                text: 'Tanda tangan akan dihapus secara permanen.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('<?= base_url('dashboard/deleteMySignature') ?>', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken()
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            Swal.fire({ icon: 'success', title: 'Berhasil', text: res.msg, timer: 1500, showConfirmButton: false });
+                            loadCurrentSignature();
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: res.msg, confirmButtonColor: '#1C4D8D' });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan.', confirmButtonColor: '#1C4D8D' });
+                    });
+                }
+            });
+        }
+
+        // Close signature modal when clicking outside
+        overlaySignature.addEventListener('click', function(e) {
+            if (e.target === overlaySignature) {
+                tutupModalSignature();
+            }
+        });
+    </script>
+    <?= view('components/global_scripts') ?>
 </body>
 
 </html>
