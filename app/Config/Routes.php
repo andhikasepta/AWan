@@ -17,6 +17,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/check/(:num)', 'DashboardController::checkMutasi/$1');
     $routes->get('dashboard/userList', 'DashboardController::userList');
     $routes->post('dashboard/addUser', 'DashboardController::addUser');
+    $routes->post('dashboard/importUsers', 'DashboardController::importUsers');
     $routes->post('dashboard/deleteUser/(:num)', 'DashboardController::deleteUser/$1');
     $routes->post('dashboard/updateUser/(:num)', 'DashboardController::updateUser/$1');
     $routes->get('dashboard/adminList', 'DashboardController::adminList');
@@ -81,6 +82,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('dashboard/uploadMySignature', 'DashboardController::uploadMySignature');
     $routes->get('dashboard/getMySignature', 'DashboardController::getMySignature');
     $routes->post('dashboard/deleteMySignature', 'DashboardController::deleteMySignature');
+
+    // Session heartbeat — keeps backend session alive while user is active
+    $routes->get('session/heartbeat', 'AdminController::sessionHeartbeat');
     
     // Non-Registration Material Routes (Admin)
     $routes->get('dashboard/nonreg', 'DashboardController::nonRegDashboard');

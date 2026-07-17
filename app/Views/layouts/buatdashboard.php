@@ -1004,9 +1004,9 @@
                             </button>
                         </div>
 
-                        <!-- Month/Year Selector -->
+                        <!-- Month/Year Selector and Region/Area Filters -->
                         <div class="px-4 pt-4 pb-2 bg-gray-50 border-b border-gray-200">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 mb-3">
                                 <label class="text-xs font-semibold text-gray-600">Periode:</label>
                                 <select x-model="selectedMonth" @change="fetchDocuments()"
                                     class="border border-gray-300 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-gray-100 text-gray-700 font-medium cursor-pointer">
@@ -1033,6 +1033,25 @@
                                     <span class="text-xs text-gray-500 font-medium"
                                         x-text="documents.length + ' dokumen'"></span>
                                 </div>
+                            </div>
+                            
+                            <!-- Region and Area Dropdowns -->
+                            <div class="flex items-center gap-3 mb-2">
+                                <label class="text-xs font-semibold text-gray-600 w-[55px]">Filter:</label>
+                                <select x-model="selectedRegion" @change="onRegionChange()"
+                                    class="w-full md:w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white text-gray-700">
+                                    <option value="">Semua Region</option>
+                                    <template x-for="r in regions" :key="r.name">
+                                        <option :value="r.name" x-text="r.name"></option>
+                                    </template>
+                                </select>
+                                <select x-model="selectedArea" @change="fetchDocuments()"
+                                    class="w-full md:w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1C4D8D] bg-white text-gray-700">
+                                    <option value="">Semua Area</option>
+                                    <template x-for="a in currentAreas" :key="a">
+                                        <option :value="a" x-text="a"></option>
+                                    </template>
+                                </select>
                             </div>
                         </div>
 
@@ -1119,6 +1138,10 @@
                             searchQuery: '',
                             selectedMonth: String(now.getMonth() + 1),
                             selectedYear: String(now.getFullYear()),
+                            selectedRegion: '',
+                            selectedArea: '',
+                            regions: [],
+                            currentAreas: [],
                             get yearOptions() {
                                 const startYear = 2026;
                                 const endYear = startYear + 5;
@@ -1138,14 +1161,38 @@
                             },
                             openModal() {
                                 this.modalOpen = true;
+                                this.fetchRegionals();
                                 this.fetchDocuments();
                             },
                             closeModal() {
                                 this.modalOpen = false;
                             },
+                            fetchRegionals() {
+                                fetch('<?= base_url('dashboard/regionalList') ?>')
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        this.regions = data;
+                                        if (this.selectedRegion) {
+                                            const r = this.regions.find(x => x.name === this.selectedRegion);
+                                            this.currentAreas = r ? r.areas : [];
+                                        }
+                                    });
+                            },
+                            onRegionChange() {
+                                this.selectedArea = '';
+                                const r = this.regions.find(x => x.name === this.selectedRegion);
+                                this.currentAreas = r ? r.areas : [];
+                                this.fetchDocuments();
+                            },
                             fetchDocuments() {
                                 this.loading = true;
-                                fetch(`<?= base_url('dashboard/brpList') ?>?month=${this.selectedMonth}&year=${this.selectedYear}`)
+                                const params = new URLSearchParams({
+                                    month: this.selectedMonth,
+                                    year: this.selectedYear,
+                                    region: this.selectedRegion,
+                                    area: this.selectedArea
+                                });
+                                fetch(`<?= base_url('dashboard/brpList') ?>?${params.toString()}`)
                                     .then(res => res.json())
                                     .then(res => {
                                         if (res.success) {
@@ -1739,6 +1786,141 @@
         });
     </script>
     <?= view('components/global_scripts') ?>
+
+    <!-- Inactivity Auto-Logout (synced with backend session: 20 minutes) -->
+    <script>
+    (function() {
+        // ── Timing constants (synced with Config\Session::$expiration = 1200s) ──
+        const SESSION_LIFETIME = 20 * 60 * 1000; // 20 minutes — same as backend
+        const IDLE_LIMIT       = SESSION_LIFETIME; // frontend mirrors backend
+        const WARNING_AT       = IDLE_LIMIT - (1 * 60 * 1000); // warn 1 min before
+        const HEARTBEAT_INTERVAL = 2 * 60 * 1000; // ping backend every 2 min
+        const HEARTBEAT_URL    = '<?= base_url("session/heartbeat") ?>';
+        const LOGOUT_URL       = '<?= base_url("logout") ?>';
+
+        let idleTimer          = null;
+        let warningTimer       = null;
+        let countdownInterval  = null;
+        let warningSwalShown   = false;
+        let lastHeartbeat      = 0;  // timestamp of last heartbeat ping
+        let resetThrottle      = 0;  // timestamp throttle for resetTimers
+
+        /**
+         * Ping the backend to keep the server-side session alive.
+         * If the backend says the session is dead, redirect immediately.
+         */
+        function sendHeartbeat() {
+            var now = Date.now();
+            if (now - lastHeartbeat < HEARTBEAT_INTERVAL) return; // throttle
+            lastHeartbeat = now;
+
+            fetch(HEARTBEAT_URL, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.alive === false) {
+                    // Backend session expired — force logout
+                    window.location.href = LOGOUT_URL;
+                }
+            })
+            .catch(function() { /* network error — ignore, next ping will retry */ });
+        }
+
+        function resetTimers() {
+            // Throttle: only actually reset once per second to avoid
+            // hundreds of calls from rapid mousemove events
+            var now = Date.now();
+            if (now - resetThrottle < 1000) return;
+            resetThrottle = now;
+
+            // If the warning countdown is showing, dismiss it
+            if (warningSwalShown) {
+                Swal.close();
+                warningSwalShown = false;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            clearTimeout(idleTimer);
+            clearTimeout(warningTimer);
+
+            // Set the warning popup (1 minute before expiry)
+            warningTimer = setTimeout(showWarning, WARNING_AT);
+
+            // Set the hard logout at the session lifetime
+            idleTimer = setTimeout(function() {
+                window.location.href = LOGOUT_URL;
+            }, IDLE_LIMIT);
+
+            // Keep the backend session alive
+            sendHeartbeat();
+
+            // Sync across tabs via localStorage
+            try { localStorage.setItem('am_last_activity', String(now)); } catch(e) {}
+        }
+
+        function showWarning() {
+            warningSwalShown = true;
+            var secondsLeft = Math.round((IDLE_LIMIT - WARNING_AT) / 1000);
+
+            Swal.fire({
+                title: 'Sesi Akan Berakhir',
+                html: '<p class="text-sm">Anda tidak aktif selama beberapa saat.<br>Sesi akan otomatis logout dalam <b id="idleCountdown">' + secondsLeft + '</b> detik.</p>',
+                icon: 'warning',
+                showConfirmButton: true,
+                confirmButtonText: 'Tetap Login',
+                confirmButtonColor: '#1C4D8D',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                timer: secondsLeft * 1000,
+                timerProgressBar: true,
+                didOpen: function() {
+                    var countdownEl = document.getElementById('idleCountdown');
+                    countdownInterval = setInterval(function() {
+                        secondsLeft--;
+                        if (countdownEl) {
+                            countdownEl.textContent = Math.max(secondsLeft, 0);
+                        }
+                    }, 1000);
+                }
+            }).then(function(result) {
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                warningSwalShown = false;
+
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    // Timer expired — force logout
+                    window.location.href = LOGOUT_URL;
+                } else {
+                    // User clicked "Tetap Login" — reset everything + heartbeat
+                    lastHeartbeat = 0; // force immediate heartbeat
+                    resetTimers();
+                }
+            });
+        }
+
+        // Listen for user activity (mouse, keyboard, click, scroll, touch)
+        var activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        activityEvents.forEach(function(evt) {
+            document.addEventListener(evt, resetTimers, { passive: true });
+        });
+
+        // Sync across browser tabs: if another tab resets, we reset too
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'am_last_activity') {
+                resetTimers();
+            }
+        });
+
+        // Start the timers on page load
+        resetTimers();
+    })();
+    </script>
 </body>
 
 </html>

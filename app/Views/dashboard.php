@@ -96,7 +96,7 @@
   </div>
 
   <div class="flex flex-col overflow-hidden min-h-0 mb-4">
-    <div class="overflow-y-auto max-h-[420px] custom-scrollbar">
+    <div class="overflow-y-auto max-h-[55vh] custom-scrollbar">
       <?php
       $currentSort = $_GET['sort_by'] ?? '';
       $currentDir = $_GET['sort_dir'] ?? '';

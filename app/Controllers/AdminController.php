@@ -63,6 +63,28 @@ class AdminController extends BaseController
         }
     }
 
+    /**
+     * Session heartbeat — called by frontend JS to keep the
+     * server-side session alive while the user is active.
+     * Returns JSON so the frontend can detect an expired session.
+     */
+    public function sessionHeartbeat()
+    {
+        // Reading the session is enough to refresh its timestamp
+        $admin = $this->session->get('admin');
+
+        if (!$admin) {
+            return $this->response->setJSON([
+                'alive' => false,
+                'msg'   => 'Session expired',
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'alive' => true,
+        ]);
+    }
+
     public function logout()
     {
         $this->session->destroy();

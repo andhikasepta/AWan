@@ -207,6 +207,62 @@ class DashboardController extends BaseController
         }
     }
 
+    public function importUsers()
+    {
+        $adminSession = session()->get('admin');
+        $isSuper = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuper) {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
+        }
+
+        $json = $this->request->getJSON();
+        $rows = $json->rows ?? [];
+
+        if (empty($rows)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada data valid untuk diimport.']);
+        }
+
+        $db = \Config\Database::connect();
+        $inserted = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $row = (array) $row;
+            $nama = trim($row['nama'] ?? '');
+            $region = trim($row['region'] ?? '');
+            $area = trim($row['area'] ?? '');
+
+            if (!$nama) {
+                $skipped++;
+                continue;
+            }
+
+            // Check duplicate by exact nama match
+            $exist = $db->table('users')->where('nama', $nama)->get()->getRow();
+            if ($exist) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $db->table('users')->insert([
+                    'nama'   => $nama,
+                    'region' => $region,
+                    'area'   => $area,
+                ]);
+                $inserted++;
+            } catch (\Exception $e) {
+                $skipped++;
+            }
+        }
+
+        if ($inserted > 0) {
+            return $this->response->setJSON(['success' => true, 'inserted' => $inserted, 'skipped' => $skipped]);
+        } else {
+            return $this->response->setJSON(['success' => false, 'message' => 'Semua data gagal diimport atau duplikat.']);
+        }
+    }
+
     public function deleteUser($id)
     {
         $adminSession = session()->get('admin');
@@ -739,6 +795,7 @@ class DashboardController extends BaseController
 
     public function followUpItems()
     {
+        $adminSession = session()->get('admin');
         $db = \Config\Database::connect();
         
         $subQuery = $db->table('mutasi')
@@ -759,6 +816,24 @@ class DashboardController extends BaseController
                 ->where('m.is_checked', 0)
             ->groupEnd()
         ->groupEnd();
+
+        // Filter by admin region/area for non-super admins (same pattern as getUsersWithDibawa)
+        $isSuperAdmin = $adminSession && ((isset($adminSession['is_super']) && $adminSession['is_super'] == 1) || $adminSession['username'] === 'admin');
+        if (!$isSuperAdmin && !empty($adminSession['region']) && !empty($adminSession['area'])) {
+            $builder->groupStart();
+            $adminRegions = explode(',', $adminSession['region']);
+            foreach ($adminRegions as $r) {
+                $builder->orLike('u.region', trim($r), 'both');
+            }
+            $builder->groupEnd();
+
+            $builder->groupStart();
+            $adminAreas = explode(',', $adminSession['area']);
+            foreach ($adminAreas as $a) {
+                $builder->orLike('u.area', trim($a), 'both');
+            }
+            $builder->groupEnd();
+        }
         
         $builder->orderBy('m.updated_at', 'ASC');
         
@@ -1181,15 +1256,38 @@ class DashboardController extends BaseController
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'msg' => 'Akses ditolak.']);
         }
 
-        $month = (int) $this->request->getGet('month');
-        $year  = (int) $this->request->getGet('year');
+        $month  = (int) $this->request->getGet('month');
+        $year   = (int) $this->request->getGet('year');
+        $region = trim($this->request->getGet('region') ?? '');
+        $area   = trim($this->request->getGet('area') ?? '');
 
         if ($month < 1 || $month > 12 || $year < 2020) {
             return $this->response->setJSON(['success' => false, 'msg' => 'Bulan/tahun tidak valid.']);
         }
 
-        $brpModel = new BrpModel();
-        $documents = $brpModel->getByMonth($month, $year);
+        if ($region !== '' || $area !== '') {
+            // Filter BRP documents by user region/area via users table
+            $db = \Config\Database::connect();
+            $builder = $db->table('brp_documents bd');
+            $builder->select('bd.*');
+            $builder->join('users u', 'u.nama = bd.user_name', 'inner');
+            $builder->where('bd.period_month', $month);
+            $builder->where('bd.period_year', $year);
+
+            if ($region !== '') {
+                $builder->like('u.region', $region, 'both');
+            }
+            if ($area !== '') {
+                $builder->like('u.area', $area, 'both');
+            }
+
+            $builder->orderBy('bd.generated_number', 'ASC');
+            $builder->groupBy('bd.id');
+            $documents = $builder->get()->getResultArray();
+        } else {
+            $brpModel = new BrpModel();
+            $documents = $brpModel->getByMonth($month, $year);
+        }
 
         return $this->response->setJSON(['success' => true, 'data' => $documents]);
     }

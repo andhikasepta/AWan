@@ -303,6 +303,328 @@
       });
   }
 
+  // --- User Import Feature ---
+  function switchUserTab(tab) {
+      const tabManual = document.getElementById('tabUserManual');
+      const tabCsv = document.getElementById('tabUserCsv');
+      const contentManual = document.getElementById('tabContentUserManual');
+      const contentCsv = document.getElementById('tabContentUserCsv');
+
+      const activeClass = "flex-1 px-4 py-2.5 text-xs font-semibold text-center transition-all duration-200 border-b-2 border-[#1C4D8D] text-[#1C4D8D]";
+      const inactiveClass = "flex-1 px-4 py-2.5 text-xs font-semibold text-center transition-all duration-200 border-b-2 border-transparent text-gray-400 hover:text-[#1C4D8D]";
+
+      if (tab === 'manual') {
+          tabManual.className = activeClass;
+          tabCsv.className = inactiveClass;
+          contentManual.classList.remove('hidden');
+          contentCsv.classList.add('hidden');
+      } else {
+          tabCsv.className = activeClass;
+          tabManual.className = inactiveClass;
+          contentCsv.classList.remove('hidden');
+          contentManual.classList.add('hidden');
+      }
+  }
+
+  function downloadUserCsvTemplate() {
+      if (typeof XLSX !== 'undefined') {
+          const ws = XLSX.utils.json_to_sheet([
+              { nama: "Budi Santoso", region: "CJDO", area: "Semarang" },
+              { nama: "Siti Rahma", region: "JBNJ", area: "Jakarta" }
+          ]);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Template");
+          XLSX.writeFile(wb, "template_user.xlsx");
+      } else {
+          const csvContent = "nama,region,area\nBudi Santoso,CJDO,Semarang\nSiti Rahma,JBNJ,Jakarta";
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'template_user.csv';
+          a.click();
+          URL.revokeObjectURL(url);
+      }
+  }
+
+  const userCsvDropZone = document.getElementById('userCsvDropZone');
+  const userCsvFileInput = document.getElementById('userCsvFileInput');
+  let userCsvParsedData = [];
+
+  if (userCsvDropZone && userCsvFileInput) {
+      userCsvDropZone.addEventListener('click', () => userCsvFileInput.click());
+      userCsvDropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          userCsvDropZone.classList.add('border-[#1C4D8D]', 'bg-blue-50');
+      });
+      userCsvDropZone.addEventListener('dragleave', () => {
+          userCsvDropZone.classList.remove('border-[#1C4D8D]', 'bg-blue-50');
+      });
+      userCsvDropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          userCsvDropZone.classList.remove('border-[#1C4D8D]', 'bg-blue-50');
+          if (e.dataTransfer.files.length) {
+              handleUserCsvFile(e.dataTransfer.files[0]);
+          }
+      });
+      userCsvFileInput.addEventListener('change', (e) => {
+          if (e.target.files.length) {
+              handleUserCsvFile(e.target.files[0]);
+          }
+      });
+  }
+
+  function resetUserCsvDropZoneUI() {
+      const defaultZone = document.getElementById('userCsvDropZoneDefault');
+      const loadingZone = document.getElementById('userCsvDropZoneLoading');
+      if (defaultZone && loadingZone) {
+          defaultZone.classList.remove('hidden');
+          loadingZone.classList.add('hidden');
+      }
+  }
+
+  function parseUserCsvLine(line, delimiter = ',') {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inQuotes) {
+              if (ch === '"' && line[i + 1] === '"') {
+                  current += '"';
+                  i++;
+              } else if (ch === '"') {
+                  inQuotes = false;
+              } else {
+                  current += ch;
+              }
+          } else {
+              if (ch === '"') {
+                  inQuotes = true;
+              } else if (ch === delimiter) {
+                  result.push(current.trim());
+                  current = '';
+              } else {
+                  current += ch;
+              }
+          }
+      }
+      result.push(current.trim());
+      return result;
+  }
+
+  function handleUserCsvFile(file) {
+      if (!file) return;
+
+      const ext = file.name.split('.').pop().toLowerCase();
+      const validExts = ['csv', 'xlsx', 'xls'];
+
+      if (!validExts.includes(ext)) {
+          showToast('Format file harus .csv, .xlsx, atau .xls', 'warning');
+          return;
+      }
+
+      const defaultZone = document.getElementById('userCsvDropZoneDefault');
+      const loadingZone = document.getElementById('userCsvDropZoneLoading');
+      if (defaultZone && loadingZone) {
+          defaultZone.classList.add('hidden');
+          loadingZone.classList.remove('hidden');
+      }
+
+      setTimeout(() => {
+          if (ext === 'csv') {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                  const text = e.target.result;
+                  const lines = text.split(/\r?\n/).filter(l => l.trim());
+
+                  if (lines.length < 2) {
+                      showToast('File kosong atau hanya berisi header', 'warning');
+                      resetUserCsvDropZoneUI();
+                      return;
+                  }
+
+                  let delimiter = ',';
+                  const firstLine = lines[0];
+                  if ((firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length) {
+                      delimiter = ';';
+                  }
+
+                  const header = parseUserCsvLine(lines[0], delimiter).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                  const namaIdx = header.indexOf('nama');
+                  const regionIdx = header.indexOf('region');
+                  const areaIdx = header.indexOf('area');
+
+                  if (namaIdx === -1) {
+                      showToast('Header harus mengandung minimal kolom "nama"', 'error');
+                      resetUserCsvDropZoneUI();
+                      return;
+                  }
+
+                  userCsvParsedData = [];
+                  for (let i = 1; i < lines.length; i++) {
+                      const cols = parseUserCsvLine(lines[i], delimiter);
+                      const nama = (cols[namaIdx] || '').trim();
+                      const region = regionIdx !== -1 ? (cols[regionIdx] || '').trim() : '';
+                      const area = areaIdx !== -1 ? (cols[areaIdx] || '').trim() : '';
+
+                      if (nama) {
+                          userCsvParsedData.push({ nama, region, area, status: 'checking', message: 'Memeriksa...' });
+                      }
+                  }
+                  finishUserFileParse();
+              };
+              reader.readAsText(file);
+          } else {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                  try {
+                      const data = new Uint8Array(e.target.result);
+                      const workbook = XLSX.read(data, { type: 'array' });
+                      const sheetName = workbook.SheetNames[0];
+                      const sheet = workbook.Sheets[sheetName];
+                      const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                      if (jsonData.length === 0) {
+                          showToast('File Excel kosong', 'warning');
+                          resetUserCsvDropZoneUI();
+                          return;
+                      }
+
+                      const firstRow = jsonData[0];
+                      const keys = Object.keys(firstRow).map(k => k.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                      if (!keys.includes('nama')) {
+                          showToast('Header harus mengandung minimal kolom "nama"', 'error');
+                          resetUserCsvDropZoneUI();
+                          return;
+                      }
+
+                      userCsvParsedData = [];
+                      jsonData.forEach(row => {
+                          let nama = '';
+                          let region = '';
+                          let area = '';
+                          for (let k in row) {
+                              const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                              if (cleanKey === 'nama') nama = String(row[k]).trim();
+                              if (cleanKey === 'region') region = String(row[k]).trim();
+                              if (cleanKey === 'area') area = String(row[k]).trim();
+                          }
+                          if (nama) {
+                              userCsvParsedData.push({ nama, region, area, status: 'checking', message: 'Memeriksa...' });
+                          }
+                      });
+                      finishUserFileParse();
+                  } catch (err) {
+                      showToast('Gagal membaca file Excel', 'error');
+                      resetUserCsvDropZoneUI();
+                  }
+              };
+              reader.readAsArrayBuffer(file);
+          }
+      }, 50);
+  }
+
+  function finishUserFileParse() {
+      document.getElementById('userCsvUploadZone').classList.add('hidden');
+      document.getElementById('userCsvPreviewArea').classList.remove('hidden');
+      document.getElementById('userCsvPreviewArea').classList.add('flex');
+      
+      userCsvParsedData.forEach(row => {
+          if (!row.nama) {
+              row.status = 'invalid';
+              row.message = 'Nama Kosong';
+          } else {
+              // Existing duplicate check logic happens on backend, we just mark valid here
+              row.status = 'valid';
+              row.message = 'Valid';
+          }
+      });
+      
+      renderUserCsvPreview();
+      
+      const validCount = userCsvParsedData.filter(r => r.status === 'valid').length;
+      document.getElementById('btn_import_user_csv').disabled = (validCount === 0);
+  }
+
+  function renderUserCsvPreview() {
+      const tbody = document.getElementById('userCsvPreviewBody');
+      tbody.innerHTML = '';
+      let valid = 0, invalid = 0, dup = 0;
+
+      userCsvParsedData.forEach((row, idx) => {
+          if (row.status === 'valid') valid++;
+          else if (row.status === 'duplicate') dup++;
+          else invalid++;
+
+          let statusBadge = '';
+          if (row.status === 'checking') statusBadge = `<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-spinner fa-spin mr-1"></i>${row.message}</span>`;
+          else if (row.status === 'valid') statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-check mr-1"></i>${row.message}</span>`;
+          else if (row.status === 'duplicate') statusBadge = `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-xmark mr-1"></i>${row.message}</span>`;
+          else statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-exclamation mr-1"></i>${row.message}</span>`;
+
+          tbody.innerHTML += `
+              <tr class="odd:bg-white even:bg-gray-50 border-b border-gray-100">
+                  <td class="px-3 py-2 text-center text-gray-500">${idx + 1}</td>
+                  <td class="px-3 py-2 font-medium text-gray-700">${row.nama || '-'}</td>
+                  <td class="px-3 py-2 text-gray-600">${row.region || '-'}</td>
+                  <td class="px-3 py-2 text-gray-600">${row.area || '-'}</td>
+                  <td class="px-3 py-2 text-center">${statusBadge}</td>
+              </tr>
+          `;
+      });
+
+      document.getElementById('userCsvTotalCount').innerText = userCsvParsedData.length;
+      document.getElementById('userCsvValidCount').innerText = valid;
+      document.getElementById('userCsvDupCount').innerText = dup;
+      document.getElementById('userCsvInvCount').innerText = invalid;
+  }
+
+  function resetUserCsvImport() {
+      userCsvParsedData = [];
+      document.getElementById('userCsvFileInput').value = '';
+      document.getElementById('userCsvUploadZone').classList.remove('hidden');
+      document.getElementById('userCsvPreviewArea').classList.add('hidden');
+      document.getElementById('userCsvPreviewArea').classList.remove('flex');
+      resetUserCsvDropZoneUI();
+  }
+
+  function submitUserCsvImport() {
+      const btn = document.getElementById('btn_import_user_csv');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+      const validRows = userCsvParsedData.filter(r => r.status === 'valid').map(r => ({ nama: r.nama, region: r.region, area: r.area }));
+
+      fetch('<?= base_url('dashboard/importUsers') ?>', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+          },
+          body: JSON.stringify({ rows: validRows })
+      })
+      .then(res => res.json())
+      .then(res => {
+          if (res.success) {
+              showToast(`Berhasil mengimport ${res.inserted} user. Lewati: ${res.skipped}`, 'success');
+              resetUserCsvImport();
+              switchUserTab('manual');
+              loadUsers();
+          } else {
+              showToast(res.message || 'Gagal mengimport data', 'error');
+              btn.disabled = false;
+              btn.innerHTML = '<i class="fa-solid fa-file-import"></i><span>Import Data</span>';
+          }
+      })
+      .catch(() => {
+          showToast('Terjadi kesalahan server', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-file-import"></i><span>Import Data</span>';
+      });
+  }
+
   function cancelNewUser() {
     const row = document.getElementById("newUserRow");
     if (row) row.remove();
@@ -609,7 +931,7 @@
         valueField: "id",
         labelField: "text",
         searchField: ["kode_spec", "nama_perangkat"],
-        create: false,
+        create: true,
         controlClass: 'ts-control no-arrow',
         load: function (query, callback) {
           if (!query.length) return callback();
@@ -627,6 +949,11 @@
         onChange: function (value) {
           const namaInput = document.getElementById("nama");
           const namaWrapper = document.getElementById("namaWrapper");
+          if (!value) {
+            namaInput.value = "";
+            namaWrapper.classList.remove("hidden");
+            return;
+          }
           if (/^\d+$/.test(value)) {
             fetch(`<?= base_url('perangkat/getSpecById') ?>?id=${value}`)
               .then(res => res.json())
@@ -635,7 +962,7 @@
                 namaWrapper.classList.add("hidden");
               });
           } else {
-            namaInput.value = value;
+            namaInput.value = "";
             namaWrapper.classList.remove("hidden");
           }
         }
